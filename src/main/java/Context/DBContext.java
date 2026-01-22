@@ -13,7 +13,7 @@ public class DBContext {
         try {
             // Edit URL, username, password to authenticate with your MS SQL Server
             String url = "jdbc:sqlserver://localhost:1433;"
-                    + "databaseName=?;"
+                    + "databaseName=IVAN;"
                     + "encrypt=true;"
                     + "trustServerCertificate=true;";
             String username = "sa";
@@ -38,7 +38,7 @@ public class DBContext {
         System.out.println("--- BẮT ĐẦU KIỂM TRA KẾT NỐI DATABASE ---");
 
         if (db.connection != null) {
-            System.out.println("✅ Kết nối cơ sở dữ liệu 'warehouseDB' thành công!");
+            System.out.println("✅ Kết nối cơ sở dữ liệu 'IVAN' thành công!");
 
             // Close the connection
             try {
@@ -51,7 +51,7 @@ public class DBContext {
             System.out.println("❌ Kết nối cơ sở dữ liệu thất bại.");
             System.out.println("Kiểm tra lại các yếu tố sau:");
             System.out.println("1. **Driver SQL Server (JDBC)** đã được thêm vào dự án.");
-            System.out.println("2. **Thông tin đăng nhập** (sa/123) và **databaseName** (warehouseDB) chính xác.");
+            System.out.println("2. **Thông tin đăng nhập** (sa/123) và **databaseName** (IVAN) chính xác.");
             System.out.println("3. **SQL Server** có đang chạy và cho phép kết nối từ xa trên cổng 1433.");
         }
     }

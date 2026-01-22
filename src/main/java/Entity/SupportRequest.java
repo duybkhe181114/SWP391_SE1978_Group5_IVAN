@@ -5,158 +5,99 @@ import java.time.LocalDateTime;
 public class SupportRequest {
 
     private Integer requestId;
-    private Integer userId;
+    private Integer createdBy;
     private Integer categoryId;
-    private String subject;
     private String description;
-    private String priority;
+    private String proofUrl;
     private String status;
-    private Integer assignedTo;
-    private LocalDateTime assignedDate;
-    private String resolution;
-    private Integer resolvedBy;
-    private LocalDateTime resolvedDate;
-    private Integer satisfactionRating;
-    private String satisfactionFeedback;
-    private String attachmentUrls;
-    private LocalDateTime createdAt;
-    private LocalDateTime updatedAt;
+    private Integer reviewedBy;
+    private java.time.LocalDateTime reviewedAt;
+    private String rejectReason;
+    private java.time.LocalDateTime createdAt;
 
-    // ===== Getter & Setter =====
+    public SupportRequest() {
+    }
+
+    public SupportRequest(Integer requestId, Integer createdBy, Integer categoryId, String description, String proofUrl, String status, Integer reviewedBy, LocalDateTime reviewedAt, String rejectReason, LocalDateTime createdAt) {
+        this.requestId = requestId;
+        this.createdBy = createdBy;
+        this.categoryId = categoryId;
+        this.description = description;
+        this.proofUrl = proofUrl;
+        this.status = status;
+        this.reviewedBy = reviewedBy;
+        this.reviewedAt = reviewedAt;
+        this.rejectReason = rejectReason;
+        this.createdAt = createdAt;
+    }
 
     public Integer getRequestId() {
         return requestId;
     }
-
     public void setRequestId(Integer requestId) {
         this.requestId = requestId;
     }
 
-    public Integer getUserId() {
-        return userId;
+    public Integer getCreatedBy() {
+        return createdBy;
     }
-
-    public void setUserId(Integer userId) {
-        this.userId = userId;
+    public void setCreatedBy(Integer createdBy) {
+        this.createdBy = createdBy;
     }
 
     public Integer getCategoryId() {
         return categoryId;
     }
-
     public void setCategoryId(Integer categoryId) {
         this.categoryId = categoryId;
-    }
-
-    public String getSubject() {
-        return subject;
-    }
-
-    public void setSubject(String subject) {
-        this.subject = subject;
     }
 
     public String getDescription() {
         return description;
     }
-
     public void setDescription(String description) {
         this.description = description;
     }
 
-    public String getPriority() {
-        return priority;
+    public String getProofUrl() {
+        return proofUrl;
     }
-
-    public void setPriority(String priority) {
-        this.priority = priority;
+    public void setProofUrl(String proofUrl) {
+        this.proofUrl = proofUrl;
     }
 
     public String getStatus() {
         return status;
     }
-
     public void setStatus(String status) {
         this.status = status;
     }
 
-    public Integer getAssignedTo() {
-        return assignedTo;
+    public Integer getReviewedBy() {
+        return reviewedBy;
+    }
+    public void setReviewedBy(Integer reviewedBy) {
+        this.reviewedBy = reviewedBy;
     }
 
-    public void setAssignedTo(Integer assignedTo) {
-        this.assignedTo = assignedTo;
+    public java.time.LocalDateTime getReviewedAt() {
+        return reviewedAt;
+    }
+    public void setReviewedAt(java.time.LocalDateTime reviewedAt) {
+        this.reviewedAt = reviewedAt;
     }
 
-    public LocalDateTime getAssignedDate() {
-        return assignedDate;
+    public String getRejectReason() {
+        return rejectReason;
+    }
+    public void setRejectReason(String rejectReason) {
+        this.rejectReason = rejectReason;
     }
 
-    public void setAssignedDate(LocalDateTime assignedDate) {
-        this.assignedDate = assignedDate;
-    }
-
-    public String getResolution() {
-        return resolution;
-    }
-
-    public void setResolution(String resolution) {
-        this.resolution = resolution;
-    }
-
-    public Integer getResolvedBy() {
-        return resolvedBy;
-    }
-
-    public void setResolvedBy(Integer resolvedBy) {
-        this.resolvedBy = resolvedBy;
-    }
-
-    public LocalDateTime getResolvedDate() {
-        return resolvedDate;
-    }
-
-    public void setResolvedDate(LocalDateTime resolvedDate) {
-        this.resolvedDate = resolvedDate;
-    }
-
-    public Integer getSatisfactionRating() {
-        return satisfactionRating;
-    }
-
-    public void setSatisfactionRating(Integer satisfactionRating) {
-        this.satisfactionRating = satisfactionRating;
-    }
-
-    public String getSatisfactionFeedback() {
-        return satisfactionFeedback;
-    }
-
-    public void setSatisfactionFeedback(String satisfactionFeedback) {
-        this.satisfactionFeedback = satisfactionFeedback;
-    }
-
-    public String getAttachmentUrls() {
-        return attachmentUrls;
-    }
-
-    public void setAttachmentUrls(String attachmentUrls) {
-        this.attachmentUrls = attachmentUrls;
-    }
-
-    public LocalDateTime getCreatedAt() {
+    public java.time.LocalDateTime getCreatedAt() {
         return createdAt;
     }
-
-    public void setCreatedAt(LocalDateTime createdAt) {
+    public void setCreatedAt(java.time.LocalDateTime createdAt) {
         this.createdAt = createdAt;
-    }
-
-    public LocalDateTime getUpdatedAt() {
-        return updatedAt;
-    }
-
-    public void setUpdatedAt(LocalDateTime updatedAt) {
-        this.updatedAt = updatedAt;
     }
 }
