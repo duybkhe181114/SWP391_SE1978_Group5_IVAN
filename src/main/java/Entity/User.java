@@ -13,11 +13,10 @@ public class User {
     public User() {
     }
 
-    public User(Integer userId, String email, String passwordHash, Boolean isActive, LocalDateTime createdAt) {
+    public User(Integer userId, String email, String passwordHash, LocalDateTime createdAt) {
         this.userId = userId;
         this.email = email;
         this.passwordHash = passwordHash;
-        this.isActive = isActive;
         this.createdAt = createdAt;
     }
 // Getter & Setter
