@@ -12,17 +12,15 @@ public class Organization {
     private String address;
     private String website;
     private Integer createdBy;
-    private java.time.LocalDateTime createdAt;
-    private java.time.LocalDateTime updatedAt;
+    private LocalDateTime createdAt;
+    private LocalDateTime updatedAt;
 
-    public Integer getOrganizationId() {
-        return organizationId;
-    }
-    public void setOrganizationId(Integer organizationId) {
-        this.organizationId = organizationId;
+    public Organization() {
     }
 
-    public Organization(Integer organizationId, String name, String description, String phone, String email, String address, String website, Integer createdBy, LocalDateTime createdAt, LocalDateTime updatedAt) {
+    public Organization(Integer organizationId, String name, String description,
+                        String phone, String email, String address, String website,
+                        Integer createdBy, LocalDateTime createdAt, LocalDateTime updatedAt) {
         this.organizationId = organizationId;
         this.name = name;
         this.description = description;
@@ -35,12 +33,18 @@ public class Organization {
         this.updatedAt = updatedAt;
     }
 
-    public Organization() {
+    public Integer getOrganizationId() {
+        return organizationId;
+    }
+
+    public void setOrganizationId(Integer organizationId) {
+        this.organizationId = organizationId;
     }
 
     public String getName() {
         return name;
     }
+
     public void setName(String name) {
         this.name = name;
     }
@@ -48,6 +52,7 @@ public class Organization {
     public String getDescription() {
         return description;
     }
+
     public void setDescription(String description) {
         this.description = description;
     }
@@ -55,6 +60,7 @@ public class Organization {
     public String getPhone() {
         return phone;
     }
+
     public void setPhone(String phone) {
         this.phone = phone;
     }
@@ -62,6 +68,7 @@ public class Organization {
     public String getEmail() {
         return email;
     }
+
     public void setEmail(String email) {
         this.email = email;
     }
@@ -69,6 +76,7 @@ public class Organization {
     public String getAddress() {
         return address;
     }
+
     public void setAddress(String address) {
         this.address = address;
     }
@@ -76,6 +84,7 @@ public class Organization {
     public String getWebsite() {
         return website;
     }
+
     public void setWebsite(String website) {
         this.website = website;
     }
@@ -83,21 +92,24 @@ public class Organization {
     public Integer getCreatedBy() {
         return createdBy;
     }
+
     public void setCreatedBy(Integer createdBy) {
         this.createdBy = createdBy;
     }
 
-    public java.time.LocalDateTime getCreatedAt() {
+    public LocalDateTime getCreatedAt() {
         return createdAt;
     }
-    public void setCreatedAt(java.time.LocalDateTime createdAt) {
+
+    public void setCreatedAt(LocalDateTime createdAt) {
         this.createdAt = createdAt;
     }
 
-    public java.time.LocalDateTime getUpdatedAt() {
+    public LocalDateTime getUpdatedAt() {
         return updatedAt;
     }
-    public void setUpdatedAt(java.time.LocalDateTime updatedAt) {
+
+    public void setUpdatedAt(LocalDateTime updatedAt) {
         this.updatedAt = updatedAt;
     }
 }

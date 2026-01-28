@@ -34,6 +34,7 @@ public class LoginAsUserController extends HttpServlet {
 
             response.setContentType("text/plain; charset=UTF-8");
             response.getWriter().println("✅ Login successful");
+
         } else {
             request.setAttribute("error", "Invalid email or password");
             request.getRequestDispatcher("/WEB-INF/Authen/LoginAsUser.jsp")
