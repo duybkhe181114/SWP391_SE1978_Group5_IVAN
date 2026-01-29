@@ -14,7 +14,10 @@
               ${e.startDate} – ${e.endDate}
           </p>
 
-          <a href="login" class="btn btn-primary">Register</a>
+          <form method="post" action="${pageContext.request.contextPath}/volunteer/register">
+            <input type="hidden" name="eventId" value="${e.eventId}">
+            <button type="submit" class="btn btn-primary">Register</button>
+          </form>
         </div>
       </div>
     </c:forEach>

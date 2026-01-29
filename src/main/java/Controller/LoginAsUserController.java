@@ -31,9 +31,9 @@ public class LoginAsUserController extends HttpServlet {
         if (user != null) {
             HttpSession session = request.getSession();
             session.setAttribute("USER", user);
+            session.setAttribute("userId", user.getUserId());
 
-            response.setContentType("text/plain; charset=UTF-8");
-            response.getWriter().println("✅ Login successful");
+            response.sendRedirect(request.getContextPath() + "/home");
 
         } else {
             request.setAttribute("error", "Invalid email or password");

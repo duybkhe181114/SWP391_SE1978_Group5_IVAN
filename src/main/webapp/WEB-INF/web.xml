@@ -11,9 +11,69 @@
         <servlet-class>Controller.HomeController</servlet-class>
     </servlet>
 
+    <servlet>
+        <servlet-name>orgDashboard</servlet-name>
+        <servlet-class>Controller.OrganizationDashboardController</servlet-class>
+    </servlet>
+
+    <servlet>
+        <servlet-name>volunteerDashboard</servlet-name>
+        <servlet-class>Controller.VolunteerDashboardController</servlet-class>
+    </servlet>
+    
+    <servlet>
+        <servlet-name>createEvent</servlet-name>
+        <servlet-class>Controller.CreateEventController</servlet-class>
+    </servlet>
+    
+    <servlet>
+        <servlet-name>volunteerRegister</servlet-name>
+        <servlet-class>Controller.VolunteerRegistrationController</servlet-class>
+    </servlet>
+    
+    <servlet>
+        <servlet-name>manageVolunteers</servlet-name>
+        <servlet-class>Controller.ManageVolunteersController</servlet-class>
+    </servlet>
+    
+    <servlet>
+        <servlet-name>mockLogin</servlet-name>
+        <servlet-class>Controller.MockLoginController</servlet-class>
+    </servlet>
+
     <servlet-mapping>
         <servlet-name>home</servlet-name>
         <url-pattern>/home</url-pattern>
+    </servlet-mapping>
+
+    <servlet-mapping>
+        <servlet-name>orgDashboard</servlet-name>
+        <url-pattern>/organization/dashboard</url-pattern>
+    </servlet-mapping>
+
+    <servlet-mapping>
+        <servlet-name>volunteerDashboard</servlet-name>
+        <url-pattern>/volunteer/dashboard</url-pattern>
+    </servlet-mapping>
+    
+    <servlet-mapping>
+        <servlet-name>createEvent</servlet-name>
+        <url-pattern>/organization/create-event</url-pattern>
+    </servlet-mapping>
+    
+    <servlet-mapping>
+        <servlet-name>volunteerRegister</servlet-name>
+        <url-pattern>/volunteer/register</url-pattern>
+    </servlet-mapping>
+    
+    <servlet-mapping>
+        <servlet-name>manageVolunteers</servlet-name>
+        <url-pattern>/organization/manage-volunteers</url-pattern>
+    </servlet-mapping>
+    
+    <servlet-mapping>
+        <servlet-name>mockLogin</servlet-name>
+        <url-pattern>/mock-login</url-pattern>
     </servlet-mapping>
 
 </web-app>
