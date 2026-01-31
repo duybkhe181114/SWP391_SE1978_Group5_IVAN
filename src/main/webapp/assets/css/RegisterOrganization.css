@@ -1,0 +1,138 @@
+* {
+    box-sizing: border-box;
+    font-family: "Segoe UI", Tahoma, sans-serif;
+}
+
+body {
+    margin: 0;
+    background: #f3f5fa;
+    height: 100vh;
+}
+
+.page-wrapper {
+    height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.register-box {
+    width: 420px;
+    background: #ffffff;
+    border-radius: 10px;
+    padding: 32px 34px;
+    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.08);
+}
+
+.register-box h2 {
+    text-align: center;
+    font-size: 22px;
+    font-weight: 600;
+    margin-bottom: 6px;
+}
+
+.sub-text {
+    text-align: center;
+    font-size: 14px;
+    color: #777;
+    margin-bottom: 22px;
+}
+
+/* INPUT */
+.input-box {
+    position: relative;
+    margin-bottom: 14px;
+}
+
+.input-box i {
+    position: absolute;
+    top: 50%;
+    left: 12px;
+    transform: translateY(-50%);
+    color: #9aa0a6;
+}
+
+.input-box input {
+    width: 100%;
+    padding: 11px 12px 11px 38px;
+    border-radius: 6px;
+    border: 1px solid #ddd;
+    font-size: 14px;
+}
+
+.input-box input:focus {
+    outline: none;
+    border-color: #4a7cff;
+}
+
+/* PHONE */
+.phone-box {
+    display: flex;
+    align-items: center;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    padding: 0 10px;
+}
+
+.phone-box span {
+    font-size: 14px;
+    margin-right: 6px;
+}
+
+.phone-box input {
+    border: none;
+    flex: 1;
+    padding: 11px 6px;
+}
+
+.phone-box input:focus {
+    outline: none;
+}
+
+/* PASSWORD RULES */
+.password-rules {
+    list-style: none;
+    padding-left: 0;
+    margin: 6px 0 14px;
+    font-size: 12px;
+    color: #555;
+}
+
+.password-rules li {
+    margin-bottom: 4px;
+}
+
+.password-rules i {
+    color: #4caf50;
+    margin-right: 6px;
+}
+
+/* BUTTON */
+.btn-register {
+    width: 100%;
+    background: #4a7cff;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    padding: 12px;
+    font-size: 15px;
+    font-weight: 500;
+    cursor: pointer;
+}
+
+.btn-register:hover {
+    background: #3f6fe0;
+}
+
+/* LOGIN TEXT */
+.login-text {
+    margin-top: 18px;
+    text-align: center;
+    font-size: 13px;
+}
+
+.login-text a {
+    color: #4a7cff;
+    text-decoration: none;
+    font-weight: 500;
+}
