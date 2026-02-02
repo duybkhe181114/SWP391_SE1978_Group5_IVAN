@@ -46,12 +46,12 @@
             
             <div class="form-group">
                 <label>Start Date *</label>
-                <input type="datetime-local" name="startDate" required>
+                <input type="date" name="startDate" required>
             </div>
             
             <div class="form-group">
                 <label>End Date *</label>
-                <input type="datetime-local" name="endDate" required>
+                <input type="date" name="endDate" required>
             </div>
             
             <div class="form-group">

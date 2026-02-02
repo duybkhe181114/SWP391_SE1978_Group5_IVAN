@@ -30,7 +30,7 @@
             <div class="error">${error}</div>
         <% } %>
         
-        <form method="post" action="${pageContext.request.contextPath}/loginasuser">
+        <form method="post" action="${pageContext.request.contextPath}/login">
             <div class="form-group">
                 <label>Email</label>
                 <input type="email" name="email" required placeholder="Enter your email">

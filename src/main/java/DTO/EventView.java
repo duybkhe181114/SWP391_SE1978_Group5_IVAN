@@ -12,6 +12,7 @@ public class EventView {
     private Integer organizationId;
     private String organizationName;
     private String organizationLogoUrl;
+    private String status;
 
     // --- Getters and Setters ---
 
@@ -77,5 +78,13 @@ public class EventView {
 
     public void setOrganizationLogoUrl(String organizationLogoUrl) {
         this.organizationLogoUrl = organizationLogoUrl;
+    }
+
+    public String getStatus() {
+        return status;
+    }
+
+    public void setStatus(String status) {
+        this.status = status;
     }
 }
