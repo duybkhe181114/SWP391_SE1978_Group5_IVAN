@@ -27,10 +27,30 @@ public class CreateEventController extends HttpServlet {
             String endDate = request.getParameter("endDate");
             int requiredVolunteers = Integer.parseInt(request.getParameter("requiredVolunteers"));
             
-            // Mock organizationId - sau này lấy từ session
-            int organizationId = 1;
+            HttpSession session = request.getSession(false);
             
+            if (session == null) {
+                response.sendRedirect(request.getContextPath() + "/login");
+                return;
+            }
+            
+            Integer userId = (Integer) session.getAttribute("userId");
+            
+            if (userId == null) {
+                response.sendRedirect(request.getContextPath() + "/login");
+                return;
+            }
+            
+            // Get organizationId from userId
             EventDAO dao = new EventDAO();
+            Integer organizationId = dao.getOrganizationIdByUserId(userId);
+            
+            if (organizationId == null) {
+                request.setAttribute("error", "Organization not found");
+                request.getRequestDispatcher("/WEB-INF/views/create-event.jsp").forward(request, response);
+                return;
+            }
+            
             boolean success = dao.createEvent(title, description, location, startDate, endDate, 
                                              requiredVolunteers, organizationId);
             

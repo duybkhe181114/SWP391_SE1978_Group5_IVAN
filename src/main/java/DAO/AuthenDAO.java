@@ -11,9 +11,10 @@ public class AuthenDAO extends DBContext {
     public User login(String email, String password) {
 
         String sql = """
-            SELECT UserId, Email, IsActive, CreatedAt
-            FROM Users
-            WHERE Email = ? AND PasswordHash = ? AND IsActive = 1
+            SELECT u.UserId, u.Email, u.IsActive, u.CreatedAt, ur.Role
+            FROM Users u
+            LEFT JOIN UserRoles ur ON u.UserId = ur.UserId
+            WHERE u.Email = ? AND u.PasswordHash = ? AND u.IsActive = 1
         """;
 
         try {
@@ -38,6 +39,21 @@ public class AuthenDAO extends DBContext {
             e.printStackTrace();
         }
 
+        return null;
+    }
+    
+    public String getUserRole(int userId) {
+        String sql = "SELECT Role FROM UserRoles WHERE UserId = ?";
+        try {
+            PreparedStatement ps = connection.prepareStatement(sql);
+            ps.setInt(1, userId);
+            ResultSet rs = ps.executeQuery();
+            if (rs.next()) {
+                return rs.getString("Role");
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
         return null;
     }
 }

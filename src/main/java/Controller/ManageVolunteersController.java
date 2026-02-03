@@ -12,7 +12,12 @@ public class ManageVolunteersController extends HttpServlet {
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         
-        int eventId = Integer.parseInt(request.getParameter("eventId"));
+        String eventIdParam = request.getParameter("eventId");
+        if (eventIdParam == null) {
+            response.sendRedirect(request.getContextPath() + "/organization/dashboard");
+            return;
+        }
+        int eventId = Integer.parseInt(eventIdParam);
         
         EventRegistrationDAO dao = new EventRegistrationDAO();
         List<Map<String, Object>> volunteers = dao.getVolunteersByEvent(eventId);

@@ -1,127 +1,117 @@
 <style>
   .footer {
-    background: rgba(6, 8, 12, 0.9);
-    backdrop-filter: blur(18px);
-    -webkit-backdrop-filter: blur(18px);
-    border-top: 1px solid rgba(255,255,255,0.06);
-    color: rgba(255,255,255,0.7);
-    padding: 56px 0 32px;
+    background: #1a202c;
+    color: white;
+    padding: 60px 0 30px;
     margin-top: 80px;
   }
-
-  .footer-content {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  .footer-content { 
+    display: grid; 
+    grid-template-columns: 2fr 1fr 1fr 1fr;
     gap: 40px;
     margin-bottom: 40px;
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 0 40px 40px;
   }
-
-  /* ===== SECTION ===== */
-  .footer-section h3 {
-    font-size: 14px;
-    font-weight: 600;
-    letter-spacing: 0.6px;
-    margin-bottom: 16px;
+  .footer-section h3 { 
+    font-size: 16px; 
+    margin-bottom: 20px;
     color: #fff;
+    font-weight: 700;
     text-transform: uppercase;
+    letter-spacing: 0.5px;
   }
-
-  .footer-section p {
-    font-size: 14px;
+  .footer-section.brand h3 {
+    font-size: 24px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    text-transform: none;
+    letter-spacing: -1px;
+  }
+  .footer-section p { 
+    color: #a0aec0;
     line-height: 1.6;
-    margin-bottom: 10px;
-    color: rgba(255,255,255,0.65);
-  }
-
-  .footer-section a {
+    margin-bottom: 12px;
     font-size: 14px;
-    color: rgba(255,255,255,0.65);
+  }
+  .footer-section a { 
+    color: #a0aec0; 
     text-decoration: none;
-    display: inline-block;
+    display: block;
     margin-bottom: 10px;
-    transition: color 0.2s ease;
+    transition: color 0.2s;
+    font-size: 14px;
   }
-
-  .footer-section a:hover {
-    color: #fff;
+  .footer-section a:hover { color: #667eea; }
+  .footer-bottom { 
+    text-align: center; 
+    padding-top: 30px; 
+    border-top: 1px solid rgba(255,255,255,0.1);
+    color: #718096;
+    font-size: 14px;
+    max-width: 1400px;
+    margin: 0 auto;
+    padding-left: 40px;
+    padding-right: 40px;
   }
-
-  /* ===== SOCIAL ===== */
-  .social-links {
-    display: flex;
-    gap: 12px;
-    margin-top: 8px;
-  }
-
-  .social-links a {
-    width: 36px;
-    height: 36px;
-    border-radius: 10px;
-    background: rgba(255,255,255,0.06);
-    border: 1px solid rgba(255,255,255,0.08);
-    display: flex;
-    align-items: center;
+  .social-links { display: flex; gap: 12px; margin-top: 20px; }
+  .social-links a { 
+    width: 36px; 
+    height: 36px; 
+    background: #2d3748;
+    border-radius: 8px;
+    display: flex; 
+    align-items: center; 
     justify-content: center;
-    font-size: 13px;
+    transition: all 0.2s;
     font-weight: 600;
-    color: rgba(255,255,255,0.75);
-    transition: background 0.2s ease, color 0.2s ease;
   }
-
-  .social-links a:hover {
-    background: rgba(255,255,255,0.12);
-    color: #fff;
-  }
-
-  /* ===== BOTTOM ===== */
-  .footer-bottom {
-    text-align: center;
-    padding-top: 24px;
-    border-top: 1px solid rgba(255,255,255,0.06);
-    font-size: 13px;
-    color: rgba(255,255,255,0.55);
-  }
+  .social-links a:hover { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; transform: translateY(-2px); }
 </style>
 
 <footer class="footer">
-  <div class="container">
-    <div class="footer-content">
-
-      <div class="footer-section">
-        <h3>IVAN</h3>
-        <p>International Volunteer Assistance Network</p>
-        <p>Connecting volunteers with meaningful opportunities worldwide.</p>
-      </div>
-
-      <div class="footer-section">
-        <h3>Quick Links</h3>
-        <a href="${pageContext.request.contextPath}/home">Home</a>
-        <a href="#">Browse Events</a>
-        <a href="#">About</a>
-        <a href="#">Contact</a>
-      </div>
-
-      <div class="footer-section">
-        <h3>For Organizations</h3>
-        <a href="#">Create Event</a>
-        <a href="#">Dashboard</a>
-        <a href="#">Resources</a>
-      </div>
-
-      <div class="footer-section">
-        <h3>Connect</h3>
-        <div class="social-links">
-          <a href="#" title="Facebook">Fb</a>
-          <a href="#" title="Twitter">Tw</a>
-          <a href="#" title="Instagram">Ig</a>
-          <a href="#" title="LinkedIn">In</a>
-        </div>
+  <div class="footer-content">
+    <div class="footer-section brand">
+      <h3>IVAN</h3>
+      <p>International Volunteer Assistance Network</p>
+      <p>Connecting passionate volunteers with meaningful opportunities to make a real difference in communities worldwide.</p>
+      <div class="social-links">
+        <a href="#" title="Facebook">F</a>
+        <a href="#" title="Twitter">T</a>
+        <a href="#" title="Instagram">IG</a>
+        <a href="#" title="LinkedIn">in</a>
       </div>
 
     </div>
-
-    <div class="footer-bottom">
-      © 2026 IVAN. All rights reserved.
+    
+    <div class="footer-section">
+      <h3>Quick Links</h3>
+      <a href="${pageContext.request.contextPath}/home">Home</a>
+      <a href="#">Browse Events</a>
+      <a href="#">About Us</a>
+      <a href="#">Contact</a>
     </div>
+    
+    <div class="footer-section">
+      <h3>For Organizations</h3>
+      <a href="#">Create Event</a>
+      <a href="#">Dashboard</a>
+      <a href="#">Resources</a>
+      <a href="#">Support</a>
+    </div>
+    
+    <div class="footer-section">
+      <h3>Support</h3>
+      <a href="#">Help Center</a>
+      <a href="#">Terms of Service</a>
+      <a href="#">Privacy Policy</a>
+      <a href="#">FAQ</a>
+    </div>
+  </div>
+  
+  <div class="footer-bottom">
+    <p>&copy; 2026 IVAN. All rights reserved. Made with love for volunteers worldwide.</p>
   </div>
 </footer>
