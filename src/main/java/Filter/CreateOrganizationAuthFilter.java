@@ -6,7 +6,7 @@ import jakarta.servlet.annotation.WebFilter;
 import jakarta.servlet.http.*;
 import java.io.IOException;
 
-@WebFilter(urlPatterns = {"/RegisterOrganizations.jsp", "/create-organization"})
+@WebFilter(urlPatterns = {"/RegisterOrganizations.jsp", "/createorganization"})
 public class CreateOrganizationAuthFilter implements Filter {
 
     @Override
@@ -22,7 +22,7 @@ public class CreateOrganizationAuthFilter implements Filter {
 
         if (user == null) {
             // Chưa login → redirect về login page
-            response.sendRedirect(request.getContextPath() + "/login.jsp");
+            response.sendRedirect(request.getContextPath() + "/login");
         } else {
             // Đã login → tiếp tục request
             chain.doFilter(req, res);

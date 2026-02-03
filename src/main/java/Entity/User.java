@@ -8,6 +8,9 @@ public class User {
     private String email;
     private String passwordHash;
     private Boolean isActive;
+    private Integer phoneNumber;
+    private String firstName;
+    private String lastName;
     private java.time.LocalDateTime createdAt;
 
     public User() {
@@ -19,7 +22,39 @@ public class User {
         this.passwordHash = passwordHash;
         this.createdAt = createdAt;
     }
-// Getter & Setter
+
+    public Boolean getActive() {
+        return isActive;
+    }
+
+    public void setActive(Boolean active) {
+        isActive = active;
+    }
+
+    public Integer getPhoneNumber() {
+        return phoneNumber;
+    }
+
+    public void setPhoneNumber(Integer phoneNumber) {
+        this.phoneNumber = phoneNumber;
+    }
+
+    public String getFirstName() {
+        return firstName;
+    }
+
+    public void setFirstName(String firstName) {
+        this.firstName = firstName;
+    }
+
+    public String getLastName() {
+        return lastName;
+    }
+
+    public void setLastName(String lastName) {
+        this.lastName = lastName;
+    }
+    // Getter & Setter
 
     public Integer getUserId() {
         return userId;
