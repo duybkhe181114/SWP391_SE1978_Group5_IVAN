@@ -4,10 +4,12 @@ import DAO.EventDAO;
 import DAO.SupportRequestDAO;
 import DTO.EventView;
 import jakarta.servlet.*;
+import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.*;
 import java.io.IOException;
 import java.util.List;
 
+@WebServlet("/home")
 public class HomeController extends HttpServlet {
 
     @Override
