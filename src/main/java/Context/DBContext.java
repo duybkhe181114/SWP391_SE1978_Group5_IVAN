@@ -12,10 +12,11 @@ public class DBContext {
     public DBContext() {
         try {
             // Edit URL, username, password to authenticate with your MS SQL Server
-            String url = "jdbc:sqlserver://DESKTOP-8FC85IC\\SQLEXPRESS:1433;"
-                    + "databaseName=IVAN;"
-                    + "encrypt=true;"
-                    + "trustServerCertificate=true;";
+            String url =
+                    "jdbc:sqlserver://localhost:1433;"
+                            + "databaseName=IVAN;"
+                            + "encrypt=true;"
+                            + "trustServerCertificate=true;";
             String username = "sa";
             String password = "123";
 
