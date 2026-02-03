@@ -7,11 +7,6 @@
         version="6.0">
 
     <servlet>
-        <servlet-name>home</servlet-name>
-        <servlet-class>Controller.HomeController</servlet-class>
-    </servlet>
-
-    <servlet>
         <servlet-name>orgDashboard</servlet-name>
         <servlet-class>Controller.OrganizationDashboardController</servlet-class>
     </servlet>
@@ -40,11 +35,6 @@
         <servlet-name>mockLogin</servlet-name>
         <servlet-class>Controller.MockLoginController</servlet-class>
     </servlet>
-
-    <servlet-mapping>
-        <servlet-name>home</servlet-name>
-        <url-pattern>/home</url-pattern>
-    </servlet-mapping>
 
     <servlet-mapping>
         <servlet-name>orgDashboard</servlet-name>

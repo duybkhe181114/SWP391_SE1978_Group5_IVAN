@@ -2,9 +2,11 @@ package Controller;
 
 import Entity.User;
 import jakarta.servlet.*;
+import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.*;
 import java.io.IOException;
 
+@WebServlet("/home")
 public class HomeController extends HttpServlet {
 
     @Override

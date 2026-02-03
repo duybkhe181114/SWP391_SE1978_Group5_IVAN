@@ -83,6 +83,7 @@
         <a href="#" title="Instagram">IG</a>
         <a href="#" title="LinkedIn">in</a>
       </div>
+
     </div>
     
     <div class="footer-section">
