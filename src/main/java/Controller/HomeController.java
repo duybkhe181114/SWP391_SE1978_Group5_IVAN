@@ -22,7 +22,6 @@ public class HomeController extends HttpServlet {
         request.setAttribute("events", eventDAO.getApprovedEventsForHome());
         request.setAttribute("supportRequests", supportDAO.getApprovedSupportRequests());
 
-        // ⚠️ QUAN TRỌNG: forward đúng đường dẫn trong WEB-INF
         request.getRequestDispatcher("/WEB-INF/views/home.jsp")
                 .forward(request, response);
     }

@@ -3,7 +3,6 @@ package DAO;
 import Context.DBContext;
 import DTO.EventView;
 import java.sql.*;
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -13,20 +12,21 @@ public class EventDAO extends DBContext {
         List<EventView> list = new ArrayList<>();
 
         String sql = """
-        SELECT 
-            e.EventId,
-            e.Title,
-            e.Location,
-            e.StartDate,
-            e.EndDate,
-            o.OrganizationId,
-            o.Name AS OrganizationName,
-            o.Website AS LogoUrl
-        FROM dbo.Events e
-        JOIN dbo.Organizations o 
-            ON e.OrganizationId = o.OrganizationId
-        WHERE e.Status = 'Approved'
-        ORDER BY e.StartDate ASC
+
+                SELECT\s
+    e.EventId,
+    e.Title,
+    e.Location,
+    e.StartDate,
+    e.EndDate,
+    e.CoverImageUrl,
+    o.OrganizationId,
+    o.Name AS OrganizationName
+FROM Events e
+JOIN Organizations o\s
+    ON e.OrganizationId = o.OrganizationId
+WHERE e.Status = 'Approved'
+ORDER BY e.StartDate ASC
     """;
 
         try (PreparedStatement ps = connection.prepareStatement(sql);
@@ -50,7 +50,7 @@ public class EventDAO extends DBContext {
                 
                 ev.setOrganizationId(rs.getInt("OrganizationId"));
                 ev.setOrganizationName(rs.getString("OrganizationName"));
-                ev.setOrganizationLogoUrl(rs.getString("LogoUrl"));
+                ev.setEventImageUrl(rs.getString("CoverImageUrl"));
 
                 list.add(ev);
             }
