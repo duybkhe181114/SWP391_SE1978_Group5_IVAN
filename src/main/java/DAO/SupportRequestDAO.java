@@ -13,15 +13,14 @@ public class SupportRequestDAO extends DBContext {
         List<SupportRequest> list = new ArrayList<>();
 
         String sql = """
-            SELECT request_id,
-                   category_id,
-                   subject,
-                   description,
-                   status,
-                   created_at
-            FROM SupportRequest
-            WHERE status = 'APPROVED'
-            ORDER BY created_at DESC
+            SELECT RequestId,
+                   CategoryId,
+                   Description,
+                   Status,
+                   CreatedAt
+            FROM SupportRequests
+            WHERE Status = 'Approved'
+            ORDER BY CreatedAt DESC
         """;
 
         try (PreparedStatement ps = connection.prepareStatement(sql);
@@ -29,13 +28,12 @@ public class SupportRequestDAO extends DBContext {
 
             while (rs.next()) {
                 SupportRequest sr = new SupportRequest();
-                sr.setRequestId(rs.getInt("request_id"));
-                sr.setCategoryId(rs.getInt("category_id"));
-                sr.setSubject(rs.getString("subject"));
-                sr.setDescription(rs.getString("description"));
-                sr.setStatus(rs.getString("status"));
+                sr.setRequestId(rs.getInt("RequestId"));
+                sr.setCategoryId(rs.getInt("CategoryId"));
+                sr.setDescription(rs.getString("Description"));
+                sr.setStatus(rs.getString("Status"));
 
-                Timestamp created = rs.getTimestamp("created_at");
+                Timestamp created = rs.getTimestamp("CreatedAt");
                 if (created != null) {
                     sr.setCreatedAt(created.toLocalDateTime());
                 }

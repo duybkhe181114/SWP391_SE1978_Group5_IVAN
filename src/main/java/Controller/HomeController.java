@@ -2,12 +2,14 @@ package Controller;
 
 import DAO.EventDAO;
 import DAO.SupportRequestDAO;
-import DTO.EventView;
-import jakarta.servlet.*;
-import jakarta.servlet.http.*;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.annotation.WebServlet;
+import jakarta.servlet.http.HttpServlet;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import java.util.List;
 
+@WebServlet(name = "HomeController", urlPatterns = {"/home"})
 public class HomeController extends HttpServlet {
 
     @Override
@@ -17,9 +19,8 @@ public class HomeController extends HttpServlet {
         EventDAO eventDAO = new EventDAO();
         SupportRequestDAO supportDAO = new SupportRequestDAO();
 
-        List<EventView> events = eventDAO.getApprovedEventsForHome();
-
-        request.setAttribute("events", events);
+        request.setAttribute("events", eventDAO.getApprovedEventsForHome());
+        request.setAttribute("supportRequests", supportDAO.getApprovedSupportRequests());
 
         request.getRequestDispatcher("/WEB-INF/views/home.jsp")
                 .forward(request, response);

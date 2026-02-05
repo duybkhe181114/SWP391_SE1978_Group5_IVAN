@@ -1,19 +1,28 @@
 package DTO;
 
 import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.util.Date;
 
 public class EventView {
+
     private Integer eventId;
     private String eventName;
     private String location;
     private LocalDateTime startDate;
     private LocalDateTime endDate;
 
+    // Event image (cover)
+    private String eventImageUrl;
+
+    // Organization info
     private Integer organizationId;
     private String organizationName;
     private String organizationLogoUrl;
 
-    // --- Getters and Setters ---
+    private String status;
+
+    // ===== Getters & Setters =====
 
     public Integer getEventId() {
         return eventId;
@@ -55,6 +64,14 @@ public class EventView {
         this.endDate = endDate;
     }
 
+    public String getEventImageUrl() {
+        return eventImageUrl;
+    }
+
+    public void setEventImageUrl(String eventImageUrl) {
+        this.eventImageUrl = eventImageUrl;
+    }
+
     public Integer getOrganizationId() {
         return organizationId;
     }
@@ -78,4 +95,23 @@ public class EventView {
     public void setOrganizationLogoUrl(String organizationLogoUrl) {
         this.organizationLogoUrl = organizationLogoUrl;
     }
+
+    public String getStatus() {
+        return status;
+    }
+
+    public void setStatus(String status) {
+        this.status = status;
+    }
+
+    public Date getStartDateAsDate() {
+        return startDate == null ? null :
+                Date.from(startDate.atZone(ZoneId.systemDefault()).toInstant());
+    }
+
+    public Date getEndDateAsDate() {
+        return endDate == null ? null :
+                Date.from(endDate.atZone(ZoneId.systemDefault()).toInstant());
+    }
 }
+
