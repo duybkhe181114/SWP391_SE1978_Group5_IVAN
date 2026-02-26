@@ -1,6 +1,7 @@
 package Controller;
 
 import DAO.AdminUserDAO;
+import DAO.SkillDAO; // Thêm import này
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
@@ -12,6 +13,7 @@ import java.io.IOException;
 public class AdminManageUsersController extends HttpServlet {
 
     private AdminUserDAO dao = new AdminUserDAO();
+    private SkillDAO skillDAO = new SkillDAO(); //
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
@@ -38,8 +40,10 @@ public class AdminManageUsersController extends HttpServlet {
         int totalUsers = dao.countUsers(q, role, status, fromDate, toDate);
         int totalPages = (int) Math.ceil((double) totalUsers / pageSize);
 
-        request.setAttribute("users",
-                dao.filterUsers(q, role, status, fromDate, toDate, page, pageSize));
+        request.setAttribute("users", dao.filterUsers(q, role, status, fromDate, toDate, page, pageSize));
+
+        // Ném danh sách allSkills sang cho Modal
+        request.setAttribute("allSkills", skillDAO.getAll());
 
         request.setAttribute("currentPage", page);
         request.setAttribute("totalPages", totalPages);
@@ -61,12 +65,17 @@ public class AdminManageUsersController extends HttpServlet {
         int userId = Integer.parseInt(request.getParameter("userId"));
 
         if ("edit".equals(action)) {
-            String fullName = request.getParameter("fullName");
+            // Nhận các tham số mới
+            String firstName = request.getParameter("firstName");
+            String lastName = request.getParameter("lastName");
             String phone = request.getParameter("phone");
             String province = request.getParameter("province");
+            String address = request.getParameter("address");
             String newRole = request.getParameter("role");
+            String[] skills = request.getParameterValues("skills");
 
-            dao.updateUser(userId, fullName, phone, province, newRole);
+            dao.updateUser(userId, firstName, lastName, phone, province, address, newRole, skills);
+
         } else {
             dao.toggleUserStatus(userId);
         }
@@ -79,4 +88,3 @@ public class AdminManageUsersController extends HttpServlet {
         return "Admin".equals(role);
     }
 }
-

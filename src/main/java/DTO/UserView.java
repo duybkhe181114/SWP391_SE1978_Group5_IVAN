@@ -13,8 +13,10 @@ public class UserView {
     private String fullName;
     private String phone;
     private String province;
-
-    // ===== GETTERS & SETTERS =====
+    private String firstName;
+    private String lastName;
+    private String address;
+    private String skillIds;    // ===== GETTERS & SETTERS =====
 
     public int getUserId() {
         return userId;
@@ -78,5 +80,37 @@ public class UserView {
 
     public void setProvince(String province) {
         this.province = province;
+    }
+
+    public String getFirstName() {
+        return firstName;
+    }
+
+    public void setFirstName(String firstName) {
+        this.firstName = firstName;
+    }
+
+    public String getLastName() {
+        return lastName;
+    }
+
+    public void setLastName(String lastName) {
+        this.lastName = lastName;
+    }
+
+    public String getAddress() {
+        return address;
+    }
+
+    public void setAddress(String address) {
+        this.address = address;
+    }
+
+    public String getSkillIds() {
+        return skillIds;
+    }
+
+    public void setSkillIds(String skillIds) {
+        this.skillIds = skillIds;
     }
 }
