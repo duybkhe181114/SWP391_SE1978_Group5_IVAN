@@ -514,3 +514,180 @@ img {
     gap: 10px;
     margin-top: 16px;
 }
+
+/* ================= PROFILE PAGE ================= */
+
+.profile-wrapper {
+    max-width: 900px;
+    margin: 40px auto;
+    padding: 0 20px;
+}
+
+.profile-card {
+    background: #ffffff;
+    border-radius: 16px;
+    padding: 32px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+}
+
+.profile-title {
+    font-size: 26px;
+    font-weight: 600;
+    margin-bottom: 24px;
+    color: #1f2937;
+}
+
+.section-title {
+    font-size: 18px;
+    font-weight: 600;
+    margin: 30px 0 15px;
+    color: #374151;
+}
+
+.form-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 20px;
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+}
+
+.form-group label {
+    font-size: 14px;
+    margin-bottom: 6px;
+    color: #6b7280;
+}
+
+.form-group input,
+.form-group select {
+    padding: 10px 12px;
+    border-radius: 10px;
+    border: 1px solid #e5e7eb;
+    font-size: 14px;
+    transition: 0.2s;
+}
+
+.form-group input:focus,
+.form-group select:focus {
+    outline: none;
+    border-color: #7c3aed;
+    box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.1);
+}
+
+.full-width {
+    grid-column: span 2;
+}
+
+.skills-group {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.skill-item {
+    background: #f3f4f6;
+    padding: 8px 12px;
+    border-radius: 20px;
+    font-size: 13px;
+}
+
+.profile-btn {
+    margin-top: 30px;
+    padding: 12px 24px;
+    border-radius: 12px;
+    border: none;
+    background: linear-gradient(135deg, #7c3aed, #6366f1);
+    color: white;
+    font-weight: 600;
+    cursor: pointer;
+    transition: 0.2s;
+}
+
+.profile-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(124, 58, 237, 0.3);
+}
+
+.success-message {
+    background: #ecfdf5;
+    color: #065f46;
+    padding: 12px 16px;
+    border-radius: 10px;
+    margin-bottom: 20px;
+}
+
+/* Style khung chứa skills */
+.skills-group {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-top: 10px;
+}
+
+/* Container của mỗi skill */
+.skill-item {
+    display: inline-block;
+}
+
+/* Ẩn cái ô vuông checkbox mặc định đi cho đỡ vướng mắt */
+.skill-checkbox {
+    display: none;
+}
+
+/* Tạo hình dáng Badge (Nền xám nhạt khi chưa được chọn) */
+.skill-badge {
+    display: inline-block;
+    padding: 8px 18px;
+    border-radius: 30px; /* Bo góc tròn hẳn */
+    font-size: 14px;
+    font-weight: 600;
+    color: #64748b; /* Chữ xám */
+    background-color: #f1f5f9; /* Nền xám nhạt */
+    border: 2px solid transparent;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    user-select: none; /* Không cho bôi đen text khi click click nhiều lần */
+}
+
+/* Hiệu ứng khi hover chuột vào (cho vui mắt) */
+.skill-badge:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08);
+    background-color: #e2e8f0;
+}
+
+/* --- MA THUẬT NẰM Ở ĐÂY --- */
+/* Khi checkbox được CHỌN, thẻ label đứng ngay sau nó sẽ đổi màu */
+/* Dùng nth-child(7n + x) để cứ 7 skill thì màu sắc lại xoay vòng 1 lần */
+
+/* 1. Đỏ */
+.skill-item:nth-child(7n+1) .skill-checkbox:checked + .skill-badge {
+    background-color: #ef4444; color: white; box-shadow: 0 4px 12px rgba(239,68,68,0.3);
+}
+/* 2. Xanh biển */
+.skill-item:nth-child(7n+2) .skill-checkbox:checked + .skill-badge {
+    background-color: #3b82f6; color: white; box-shadow: 0 4px 12px rgba(59,130,246,0.3);
+}
+/* 3. Xanh ngọc */
+.skill-item:nth-child(7n+3) .skill-checkbox:checked + .skill-badge {
+    background-color: #10b981; color: white; box-shadow: 0 4px 12px rgba(16,185,129,0.3);
+}
+/* 4. Vàng cam */
+.skill-item:nth-child(7n+4) .skill-checkbox:checked + .skill-badge {
+    background-color: #f59e0b; color: white; box-shadow: 0 4px 12px rgba(245,158,11,0.3);
+}
+/* 5. Tím */
+.skill-item:nth-child(7n+5) .skill-checkbox:checked + .skill-badge {
+    background-color: #8b5cf6; color: white; box-shadow: 0 4px 12px rgba(139,92,246,0.3);
+}
+/* 6. Hồng */
+.skill-item:nth-child(7n+6) .skill-checkbox:checked + .skill-badge {
+    background-color: #ec4899; color: white; box-shadow: 0 4px 12px rgba(236,72,153,0.3);
+}
+/* 7. Xanh mòng két */
+.skill-item:nth-child(7n+7) .skill-checkbox:checked + .skill-badge {
+    background-color: #14b8a6; color: white; box-shadow: 0 4px 12px rgba(20,184,166,0.3);
+}

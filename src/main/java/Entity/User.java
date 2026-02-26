@@ -9,7 +9,7 @@ public class User {
     private String passwordHash;
     private Boolean isActive;
     private java.time.LocalDateTime createdAt;
-
+    private String role;
     public User() {
     }
 
@@ -20,7 +20,13 @@ public class User {
         this.createdAt = createdAt;
     }
 // Getter & Setter
+    public String getRole() {
+    return role;
+    }
 
+    public void setRole(String role) {
+        this.role = role;
+    }
     public Integer getUserId() {
         return userId;
     }
