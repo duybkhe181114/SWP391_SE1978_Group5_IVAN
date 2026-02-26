@@ -4,12 +4,10 @@ import DAO.AuthenDAO;
 import Entity.User;
 
 import jakarta.servlet.ServletException;
-import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.*;
 
 import java.io.IOException;
 
-@WebServlet("/login")
 public class LoginAsUserController extends HttpServlet {
 
     protected void processRequest(HttpServletRequest request, HttpServletResponse response)
@@ -18,7 +16,7 @@ public class LoginAsUserController extends HttpServlet {
         String email = request.getParameter("email");
         String password = request.getParameter("password");
 
-        // ===== MỞ FORM LẦN ĐẦU =====
+        // Nếu vào bằng GET (chưa submit form)
         if (email == null || password == null) {
             request.getRequestDispatcher("/WEB-INF/Authen/LoginAsUser.jsp")
                     .forward(request, response);
@@ -28,27 +26,23 @@ public class LoginAsUserController extends HttpServlet {
         AuthenDAO dao = new AuthenDAO();
         User user = dao.login(email, password);
 
-        // ===== ĐĂNG NHẬP THÀNH CÔNG =====
         if (user != null) {
-
+            String role = dao.getUserRole(user.getUserId());
+            
             HttpSession session = request.getSession();
             session.setAttribute("USER", user);
-            session.setAttribute("USER_ID", user.getUserId());   // dùng cho change password
+            session.setAttribute("userId", user.getUserId());
+            session.setAttribute("userRole", role);
 
-            request.setAttribute("SUCCESS",
-                    "Đăng nhập thành công! Xin chào " + user.getEmail());
+            response.sendRedirect(request.getContextPath() + "/home");
 
+        } else {
+            request.setAttribute("error", "Invalid email or password");
+            request.getRequestDispatcher("/WEB-INF/Authen/LoginAsUser.jsp")
+                    .forward(request, response);
         }
-        // ===== ĐĂNG NHẬP THẤT BẠI =====
-        else {
-            request.setAttribute("ERROR",
-                    "Email hoặc mật khẩu không đúng");
-        }
-
-        // Ở lại trang login để hiện message
-        request.getRequestDispatcher("/WEB-INF/Authen/LoginAsUser.jsp")
-                .forward(request, response);
     }
+
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
