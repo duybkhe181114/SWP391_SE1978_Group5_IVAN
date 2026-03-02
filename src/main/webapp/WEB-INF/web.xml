@@ -11,20 +11,12 @@
         <servlet-class>Controller.OrganizationDashboardController</servlet-class>
     </servlet>
 
-    <servlet>
-        <servlet-name>volunteerDashboard</servlet-name>
-        <servlet-class>Controller.VolunteerDashboardController</servlet-class>
-    </servlet>
     
     <servlet>
         <servlet-name>createEvent</servlet-name>
         <servlet-class>Controller.CreateEventController</servlet-class>
     </servlet>
-    
-    <servlet>
-        <servlet-name>volunteerRegister</servlet-name>
-        <servlet-class>Controller.VolunteerRegistrationController</servlet-class>
-    </servlet>
+
     
     <servlet>
         <servlet-name>manageVolunteers</servlet-name>
@@ -50,11 +42,6 @@
         <servlet-name>manageEvents</servlet-name>
         <servlet-class>Controller.ManageEventsController</servlet-class>
     </servlet>
-    
-    <servlet>
-        <servlet-name>eventDetail</servlet-name>
-        <servlet-class>Controller.EventDetailController</servlet-class>
-    </servlet>
 
     <servlet-mapping>
         <servlet-name>orgDashboard</servlet-name>
@@ -62,19 +49,14 @@
     </servlet-mapping>
 
     <servlet-mapping>
-        <servlet-name>volunteerDashboard</servlet-name>
-        <url-pattern>/volunteer/dashboard</url-pattern>
-    </servlet-mapping>
-    
-    <servlet-mapping>
         <servlet-name>createEvent</servlet-name>
         <url-pattern>/organization/create-event</url-pattern>
     </servlet-mapping>
     
-    <servlet-mapping>
-        <servlet-name>volunteerRegister</servlet-name>
-        <url-pattern>/volunteer/register</url-pattern>
-    </servlet-mapping>
+<!--    <servlet-mapping>-->
+<!--        <servlet-name>volunteerRegister</servlet-name>-->
+<!--        <url-pattern>/volunteer/register</url-pattern>-->
+<!--    </servlet-mapping>-->
     
     <servlet-mapping>
         <servlet-name>manageVolunteers</servlet-name>
@@ -99,11 +81,6 @@
     <servlet-mapping>
         <servlet-name>manageEvents</servlet-name>
         <url-pattern>/admin/manage-events</url-pattern>
-    </servlet-mapping>
-    
-    <servlet-mapping>
-        <servlet-name>eventDetail</servlet-name>
-        <url-pattern>/event/detail</url-pattern>
     </servlet-mapping>
 
 </web-app>

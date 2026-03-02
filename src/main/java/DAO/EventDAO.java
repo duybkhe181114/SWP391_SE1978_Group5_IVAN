@@ -210,17 +210,18 @@ ORDER BY e.StartDate ASC
         }
         return list;
     }
-    
+
     public EventView getEventById(int eventId) {
         String sql = """
             SELECT e.EventId, e.Title, e.Description, e.Location, e.StartDate, e.EndDate, 
-                   e.MaxVolunteers, e.Status, e.CreatedAt,
-                   o.OrganizationId, o.Name AS OrganizationName
+                   e.MaxVolunteers, e.Status, e.CoverImageUrl, e.CreatedAt,
+                   o.OrganizationId, o.Name AS OrganizationName,
+                   (SELECT COUNT(*) FROM EventRegistrations er WHERE er.EventId = e.EventId) AS CurrentVolunteers
             FROM Events e
             JOIN Organizations o ON e.OrganizationId = o.OrganizationId
             WHERE e.EventId = ?
         """;
-        
+
         try (PreparedStatement ps = connection.prepareStatement(sql)) {
             ps.setInt(1, eventId);
             ResultSet rs = ps.executeQuery();
@@ -228,25 +229,24 @@ ORDER BY e.StartDate ASC
                 EventView ev = new EventView();
                 ev.setEventId(rs.getInt("EventId"));
                 ev.setEventName(rs.getString("Title"));
+                ev.setDescription(rs.getString("Description"));
                 ev.setLocation(rs.getString("Location"));
+                ev.setMaxVolunteers(rs.getInt("MaxVolunteers"));
+                ev.setCurrentVolunteers(rs.getInt("CurrentVolunteers"));
                 ev.setStatus(rs.getString("Status"));
+                ev.setEventImageUrl(rs.getString("CoverImageUrl"));
+                ev.setOrganizationId(rs.getInt("OrganizationId"));
                 ev.setOrganizationName(rs.getString("OrganizationName"));
-                
+
                 java.sql.Date startDate = rs.getDate("StartDate");
-                if (startDate != null) {
-                    ev.setStartDate(startDate.toLocalDate().atStartOfDay());
-                }
-                
+                if (startDate != null) ev.setStartDate(startDate.toLocalDate().atStartOfDay());
+
                 java.sql.Date endDate = rs.getDate("EndDate");
-                if (endDate != null) {
-                    ev.setEndDate(endDate.toLocalDate().atStartOfDay());
-                }
-                
+                if (endDate != null) ev.setEndDate(endDate.toLocalDate().atStartOfDay());
+
                 return ev;
             }
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+        } catch (Exception e) { e.printStackTrace(); }
         return null;
     }
     
@@ -287,5 +287,120 @@ ORDER BY e.StartDate ASC
             e.printStackTrace();
         }
         return 0;
+    }
+
+    // xem user này đã đăng ký sự kiện này chưa
+    public String getEnrollmentStatus(int eventId, int volunteerId) {
+        String sql = "SELECT Status FROM EventRegistrations WHERE EventId = ? AND VolunteerId = ?";
+        try (PreparedStatement ps = connection.prepareStatement(sql)) {
+            ps.setInt(1, eventId);
+            ps.setInt(2, volunteerId);
+            ResultSet rs = ps.executeQuery();
+            if (rs.next()) {
+                return rs.getString("Status"); // Trả về Pending, Approved, hoặc Rejected
+            }
+        } catch (Exception e) { e.printStackTrace(); }
+        return null; // Chưa đăng ký
+    }
+    //enroll
+    public boolean enrollEvent(int eventId, int volunteerId) {
+        String sql = "INSERT INTO EventRegistrations (EventId, VolunteerId, Status, AppliedAt) VALUES (?, ?, 'Pending', GETDATE())";
+        try (PreparedStatement ps = connection.prepareStatement(sql)) {
+            ps.setInt(1, eventId);
+            ps.setInt(2, volunteerId);
+            return ps.executeUpdate() > 0;
+        } catch (Exception e) { e.printStackTrace(); }
+        return false;
+    }
+
+//cancel
+    public boolean cancelEnrollment(int eventId, int volunteerId) {
+        String sql = "DELETE FROM EventRegistrations WHERE EventId = ? AND VolunteerId = ?";
+        try (PreparedStatement ps = connection.prepareStatement(sql)) {
+            ps.setInt(1, eventId);
+            ps.setInt(2, volunteerId);
+            return ps.executeUpdate() > 0;
+        } catch (Exception e) { e.printStackTrace(); }
+        return false;
+    }
+
+    public List<EventView> searchEvents(String keyword,
+                                        String location,
+                                        String sortBy,
+                                        int page,
+                                        int pageSize) {
+
+        List<EventView> list = new ArrayList<>();
+        int offset = (page - 1) * pageSize;
+
+        String sql = "SELECT e.EventId, e.Title, e.Description, e.Location, " +
+                "e.StartDate, e.EndDate, e.MaxVolunteers, e.CoverImageUrl, e.CreatedAt, " +
+                "o.Name AS OrganizationName, " +
+                "(SELECT COUNT(*) FROM EventRegistrations er WHERE er.EventId = e.EventId) AS CurrentVolunteers " +
+                "FROM Events e " +
+                "JOIN Organizations o ON e.OrganizationId = o.OrganizationId " +
+                "WHERE e.Status = 'Approved' ";
+
+        if (keyword != null && !keyword.isEmpty())
+            sql += " AND e.Title LIKE ? ";
+
+        if (location != null && !location.isEmpty())
+            sql += " AND e.Location LIKE ? ";
+
+        // Smart sort: đẩy event đã qua xuống cuối
+        if ("newest".equals(sortBy)) {
+            sql += " ORDER BY CASE WHEN e.StartDate < GETDATE() THEN 1 ELSE 0 END ASC, " +
+                    "e.CreatedAt DESC ";
+        } else {
+            sql += " ORDER BY CASE WHEN e.StartDate < GETDATE() THEN 1 ELSE 0 END ASC, " +
+                    "e.StartDate ASC ";
+        }
+
+        sql += " OFFSET ? ROWS FETCH NEXT ? ROWS ONLY ";
+
+        try (PreparedStatement ps = connection.prepareStatement(sql)) {
+
+            int paramIdx = 1;
+
+            if (keyword != null && !keyword.isEmpty())
+                ps.setString(paramIdx++, "%" + keyword + "%");
+
+            if (location != null && !location.isEmpty())
+                ps.setString(paramIdx++, "%" + location + "%");
+
+            ps.setInt(paramIdx++, offset);
+            ps.setInt(paramIdx, pageSize);
+
+            ResultSet rs = ps.executeQuery();
+
+            while (rs.next()) {
+                EventView ev = new EventView();
+
+                ev.setEventId(rs.getInt("EventId"));
+                ev.setEventName(rs.getString("Title"));
+                ev.setDescription(rs.getString("Description"));
+                ev.setLocation(rs.getString("Location"));
+                ev.setOrganizationName(rs.getString("OrganizationName"));
+                ev.setEventImageUrl(rs.getString("CoverImageUrl"));
+
+                ev.setMaxVolunteers(rs.getInt("MaxVolunteers"));
+                ev.setCurrentVolunteers(rs.getInt("CurrentVolunteers"));
+
+                java.sql.Date startDate = rs.getDate("StartDate");
+                if (startDate != null)
+                    ev.setStartDate(startDate.toLocalDate().atStartOfDay());
+
+                java.sql.Date endDate = rs.getDate("EndDate");
+                if (endDate != null)
+                    ev.setEndDate(endDate.toLocalDate().atStartOfDay());
+
+                list.add(ev);
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return list;
     }
 }

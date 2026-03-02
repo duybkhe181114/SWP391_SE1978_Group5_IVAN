@@ -21,7 +21,9 @@ public class EventView {
     private String organizationLogoUrl;
 
     private String status;
-
+    private String description;
+    private Integer maxVolunteers;
+    private Integer currentVolunteers;
     // ===== Getters & Setters =====
 
     public Integer getEventId() {
@@ -112,6 +114,40 @@ public class EventView {
     public Date getEndDateAsDate() {
         return endDate == null ? null :
                 Date.from(endDate.atZone(ZoneId.systemDefault()).toInstant());
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
+    }
+
+    public Integer getMaxVolunteers() {
+        return maxVolunteers;
+    }
+
+    public void setMaxVolunteers(Integer maxVolunteers) {
+        this.maxVolunteers = maxVolunteers;
+    }
+
+    public Integer getCurrentVolunteers() {
+        return currentVolunteers;
+    }
+
+    public void setCurrentVolunteers(Integer currentVolunteers) {
+        this.currentVolunteers = currentVolunteers;
+    }
+
+    public boolean getIsExpired() {
+        if (startDate == null) return false;
+        return startDate.isBefore(LocalDateTime.now());
+    }
+
+    public boolean getIsFull() {
+        if (maxVolunteers == null || maxVolunteers <= 0) return false;
+        return currentVolunteers != null && currentVolunteers >= maxVolunteers;
     }
 }
 
