@@ -1,7 +1,9 @@
 package Controller;
 
 import DAO.AuthenDAO;
+import DAO.UserProfileDAO;
 import Entity.User;
+import Entity.UserProfile;
 
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.*;
@@ -16,7 +18,6 @@ public class LoginAsUserController extends HttpServlet {
         String email = request.getParameter("email");
         String password = request.getParameter("password");
 
-        // Nếu vào bằng GET (chưa submit form)
         if (email == null || password == null) {
             request.getRequestDispatcher("/WEB-INF/Authen/LoginAsUser.jsp")
                     .forward(request, response);
@@ -28,11 +29,25 @@ public class LoginAsUserController extends HttpServlet {
 
         if (user != null) {
             String role = dao.getUserRole(user.getUserId());
-            
+
             HttpSession session = request.getSession();
             session.setAttribute("USER", user);
             session.setAttribute("userId", user.getUserId());
             session.setAttribute("userRole", role);
+
+            UserProfileDAO profileDAO = new UserProfileDAO();
+            UserProfile profile = profileDAO.getByUserId(user.getUserId());
+
+            String displayName = "User";
+            if (profile != null && profile.getFirstName() != null) {
+                displayName = profile.getFirstName();
+                if (profile.getLastName() != null) {
+                    displayName += " " + profile.getLastName();
+                }
+            } else {
+                displayName = email.substring(0, email.indexOf("@"));
+            }
+            session.setAttribute("userName", displayName);
 
             response.sendRedirect(request.getContextPath() + "/home");
 
@@ -42,7 +57,6 @@ public class LoginAsUserController extends HttpServlet {
                     .forward(request, response);
         }
     }
-
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)

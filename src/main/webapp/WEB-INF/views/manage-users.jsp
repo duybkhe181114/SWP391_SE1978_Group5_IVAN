@@ -126,15 +126,18 @@
               <div style="display:flex; gap:8px;">
 
                 <!-- EDIT -->
-                <button type="button"
+                 <button type="button"
                         class="btn-action info"
                         onclick="openEditModal(
                                 '${u.userId}',
                                 '${u.email}',
-                                '${u.fullName}',
+                                '${u.firstName}',
+                                '${u.lastName}',
                                 '${u.phone}',
                                 '${u.province}',
-                                '${u.role}'
+                                '${u.address}',
+                                '${u.role}',
+                                '${u.skillIds}'
                                 )">
                   Edit
                 </button>
@@ -187,45 +190,70 @@
 </div>
 
 <div id="editUserModal" class="modal-overlay">
-  <div class="modal">
-    <h3>Edit User</h3>
-    <form method="post"
-          action="${pageContext.request.contextPath}/admin/manage-users">
+  <div class="modal" style="width: 600px; max-width: 90%; max-height: 90vh; overflow-y: auto;">
+    <h3>Edit User Profile</h3>
+    <form method="post" action="${pageContext.request.contextPath}/admin/manage-users">
 
       <input type="hidden" name="userId" id="editUserId"/>
       <input type="hidden" name="action" value="edit" />
+
       <div class="form-group">
         <label>Email</label>
-        <input type="text" id="editEmail" disabled />
+        <input type="text" id="editEmail" disabled style="background: #f1f5f9; color: #64748b;" />
       </div>
 
-      <div class="form-group">
-        <label>Full Name</label>
-        <input type="text" name="fullName" id="editFullName" />
+      <div class="form-grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+          <div class="form-group">
+            <label>First Name</label>
+            <input type="text" name="firstName" id="editFirstName" />
+          </div>
+
+          <div class="form-group">
+            <label>Last Name</label>
+            <input type="text" name="lastName" id="editLastName" />
+          </div>
+
+          <div class="form-group">
+            <label>Phone</label>
+            <input type="text" name="phone" id="editPhone" />
+          </div>
+
+          <div class="form-group">
+            <label>Role</label>
+            <select name="role" id="editRole">
+              <option value="Admin">Admin</option>
+              <option value="Organization">Organization</option>
+              <option value="Coordinator">Coordinator</option>
+              <option value="Volunteer">Volunteer</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label>Province</label>
+            <input type="text" name="province" id="editProvince" />
+          </div>
+
+          <div class="form-group">
+            <label>Address</label>
+            <input type="text" name="address" id="editAddress" />
+          </div>
       </div>
 
-      <div class="form-group">
-        <label>Phone</label>
-        <input type="text" name="phone" id="editPhone" />
+      <div class="form-group" style="margin-top: 15px;">
+        <label>Skills</label>
+        <div class="skills-group" style="display: flex; flex-wrap: wrap; gap: 10px; margin-top: 8px;">
+            <c:forEach var="skill" items="${allSkills}">
+                <label style="font-size: 13px; display: flex; align-items: center; gap: 5px; cursor: pointer;">
+                    <input type="checkbox" name="skills" value="${skill.skillId}" class="admin-skill-cb" style="width: auto;" />
+                    ${skill.skillName}
+                </label>
+            </c:forEach>
+        </div>
       </div>
 
-      <div class="form-group">
-        <label>Province</label>
-        <input type="text" name="province" id="editProvince" />
-      </div>
-
-      <div class="form-group">
-        <label>Role</label>
-        <select name="role" id="editRole">
-          <option value="Admin">Admin</option>
-          <option value="Organization">Organization</option>
-          <option value="Volunteer">Volunteer</option>
-        </select>
-      </div>
-
-      <div class="modal-actions">
-        <button type="submit" class="btn-primary">Save Changes</button>
+      <div class="modal-actions" style="margin-top: 25px;">
         <button type="button" class="btn-clear" onclick="closeEditModal()">Cancel</button>
+        <button type="submit" class="btn-primary">Save Changes</button>
       </div>
     </form>
   </div>
@@ -234,18 +262,26 @@
 
 
 <script>
-  function openEditModal(id, email, fullName, phone, province, role) {
+function openEditModal(id, email, firstName, lastName, phone, province, address, role, skillIdsStr) {
     document.getElementById("editUserId").value = id;
     document.getElementById("editEmail").value = email;
-    document.getElementById("editFullName").value = fullName || "";
+    document.getElementById("editFirstName").value = firstName || "";
+    document.getElementById("editLastName").value = lastName || "";
     document.getElementById("editPhone").value = phone || "";
     document.getElementById("editProvince").value = province || "";
+    document.getElementById("editAddress").value = address || "";
     document.getElementById("editRole").value = role;
 
-    document.getElementById("editUserModal").style.display = "flex";
-  }
+    document.querySelectorAll('.admin-skill-cb').forEach(cb => cb.checked = false);
 
-  function closeEditModal() {
-    document.getElementById("editUserModal").style.display = "none";
+    if (skillIdsStr && skillIdsStr.trim() !== "") {
+        let selectedSkills = skillIdsStr.split(',');
+        selectedSkills.forEach(skillId => {
+            let checkbox = document.querySelector('.admin-skill-cb[value="' + skillId.trim() + '"]');
+            if (checkbox) checkbox.checked = true;
+        });
+    }
+
+    document.getElementById("editUserModal").style.display = "flex";
   }
 </script>
