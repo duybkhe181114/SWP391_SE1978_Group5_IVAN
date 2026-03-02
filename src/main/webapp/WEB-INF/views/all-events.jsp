@@ -4,7 +4,6 @@
 <jsp:include page="/components/header.jsp"/>
 
 <style>
-    /* Fix Filter Bar: Dàn hàng ngang chuyên nghiệp */
     .filter-section {
         background: white;
         padding: 30px;
@@ -68,9 +67,9 @@
 
                         <span class="card-tag" style="${e.isExpired || e.isFull ? 'color: #ef4444; background: #fee2e2;' : ''}">
                             <c:choose>
-                                <c:when test="${e.isExpired}">⏳ Ended</c:when>
-                                <c:when test="${e.isFull}">🚫 Full Slots</c:when>
-                                <c:otherwise>🔥 ${e.maxVolunteers == 0 ? 'Unlimited' : e.maxVolunteers} Slots</c:otherwise>
+                                <c:when test="${e.isExpired}">&#9203; Ended</c:when>
+                                <c:when test="${e.isFull}">&#128683; Full Slots</c:when>
+                                <c:otherwise>&#128293; ${e.maxVolunteers == 0 ? 'Unlimited' : e.maxVolunteers} Slots</c:otherwise>
                             </c:choose>
                         </span>
 
