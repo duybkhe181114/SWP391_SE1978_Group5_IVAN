@@ -13,12 +13,9 @@
         if (userRole != null) {
       %>
       <div class="user-menu">
-        <div class="user-btn">
-        <div class="user-menu">
-<div class="user-btn" style="white-space: nowrap; height: 42px; display: flex; align-items: center;">
+        <div class="user-btn" style="white-space: nowrap; height: 42px; display: flex; align-items: center;">
           <span style="font-weight: 600;">Hi, ${not empty sessionScope.userName ? sessionScope.userName : 'User'}</span>
           <span style="font-size: 11px; margin-left: 6px;">&#9662;</span>
-        </div>
         </div>
         <div class="dropdown-menu">
           <div class="dropdown-content">
@@ -29,6 +26,7 @@
             <a href="${pageContext.request.contextPath}/admin/dashboard">Dashboard</a>
             <a href="${pageContext.request.contextPath}/admin/manage-events">Manage Events</a>
             <a href="${pageContext.request.contextPath}/admin/manage-users">Manage Users</a>
+            <a href="${pageContext.request.contextPath}/admin/review-profiles">Review Profiles</a>
             <% } else { %>
             <a href="${pageContext.request.contextPath}/volunteer/dashboard">Dashboard</a>
             <% } %>

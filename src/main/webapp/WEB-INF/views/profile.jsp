@@ -1,6 +1,6 @@
 <%@ page contentType="text/html;charset=UTF-8" %>
 <%@ taglib prefix="c" uri="jakarta.tags.core" %>
-
+<%@ taglib prefix="fmt" uri="jakarta.tags.fmt" %>
 <jsp:include page="/components/header.jsp"/>
 
 <style>
@@ -119,18 +119,22 @@
                     </form>
                 </c:when>
 
-
-                <%-- ========================================== --%>
-                <%-- MÀN HÌNH VIEW PROFILE (MẶC ĐỊNH)           --%>
-                <%-- ========================================== --%>
                 <c:otherwise>
                     <h2 class="section-title" style="font-size: 26px; margin-bottom: 24px; border: none;">
                         <span style="color: #667eea;">●</span> My Profile
                     </h2>
 
+                    <%-- HIỆN THÔNG BÁO TÙY THEO TRẠNG THÁI --%>
                     <c:if test="${param.success == 1}">
                         <div class="success-message" style="margin-bottom: 20px;">
                             Profile updated successfully!
+                        </div>
+                    </c:if>
+
+                    <%-- THÔNG BÁO PENDING DÀNH CHO LUỒNG MỚI --%>
+                    <c:if test="${param.success == 2 || hasPendingRequest}">
+                        <div class="success-message" style="background: #e0f2fe; color: #0284c7; border: 1px solid #bae6fd; margin-bottom: 20px;">
+                            <i style="margin-right: 5px;">⏳</i> <strong>Pending Approval:</strong> Your profile update request has been submitted and is waiting for admin approval.
                         </div>
                     </c:if>
 
@@ -201,19 +205,86 @@
                         </c:forEach>
 
                         <c:if test="${!hasSkill}">
-                            <span style="color:#94a3b8; font-style:italic; display: block; padding: 10px 0;">No skills added yet. Click Edit Profile to add skills.</span>
+                            <span style="color:#94a3b8; font-style:italic; display: block; padding: 10px 0;">No skills added yet.</span>
                         </c:if>
                     </div>
 
-                    <div style="margin-top: 40px; text-align: right;">
-                         <a href="?action=edit" class="btn-primary" style="display: inline-block; text-decoration: none; padding: 12px 24px;">
-                            Edit Profile
-                         </a>
+                    <div style="margin-top: 40px; display: flex; gap: 12px; justify-content: flex-end; align-items: center;">
+                                             <button type="button" class="btn-clear" onclick="document.getElementById('historyModal').style.display='flex'" style="padding: 12px 24px; border: 1px solid #e2e8f0; border-radius: 8px; background: white; cursor: pointer;">
+                                                 View History
+                                             </button>
+
+                                             <%-- XỬ LÝ KHÓA NÚT NẾU ĐANG CÓ REQUEST PENDING --%>
+                                             <c:choose>
+                                                 <c:when test="${hasPendingRequest}">
+                                                     <span style="color: #64748b; font-size: 14px; margin-right: 15px;">Update is locked while pending.</span>
+                                                     <button class="btn-primary" style="background: #cbd5e1; cursor: not-allowed; border: none; padding: 12px 24px; border-radius: 8px; color: white;" disabled>
+                                                         Edit Profile
+                                                     </button>
+                                                 </c:when>
+                                                 <c:otherwise>
+                                                     <a href="?action=edit" class="btn-primary" style="display: inline-block; text-decoration: none; padding: 12px 24px; border-radius: 8px; background: #667eea; color: white;">
+                                                        Edit Profile
+                                                     </a>
+                                                 </c:otherwise>
+                                             </c:choose>
+                                        </div>
+
+<div id="historyModal" class="modal-overlay" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.4); justify-content: center; align-items: center; z-index: 2000;">
+                        <div class="modal" style="background: white; width: 700px; max-width: 95%; max-height: 80vh; overflow-y: auto; padding: 24px; border-radius: 12px;">
+                            <h3 style="margin-bottom: 16px;">Update Request History</h3>
+                            <table class="table" style="width: 100%; border-collapse: collapse; margin-top: 15px;">
+                                <thead>
+                                    <tr style="background: #f8fafc; text-align: left;">
+                                        <th style="padding: 12px; border-bottom: 1px solid #e2e8f0;">Requested At</th>
+                                        <th style="padding: 12px; border-bottom: 1px solid #e2e8f0;">Reviewed At</th>
+                                        <th style="padding: 12px; border-bottom: 1px solid #e2e8f0;">Status</th>
+                                        <th style="padding: 12px; border-bottom: 1px solid #e2e8f0;">Admin Note</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <c:forEach items="${requestHistory}" var="req">
+                                        <tr>
+                                            <td style="padding: 12px; border-bottom: 1px solid #f1f5f9; font-size: 13px; color: #475569; font-weight: 500;">
+                                                <fmt:formatDate value="${req.requestedAt}" pattern="dd MMM, yyyy HH:mm"/>
+                                            </td>
+
+                                            <td style="padding: 12px; border-bottom: 1px solid #f1f5f9; font-size: 13px; color: #64748b;">
+                                                <c:choose>
+                                                    <c:when test="${not empty req.reviewedAt}">
+                                                        <fmt:formatDate value="${req.reviewedAt}" pattern="dd MMM, yyyy HH:mm"/>
+                                                    </c:when>
+                                                    <c:otherwise>
+                                                        <span style="color: #cbd5e1; font-style: italic;">Pending...</span>
+                                                    </c:otherwise>
+                                                </c:choose>
+                                            </td>
+
+                                            <td style="padding: 12px; border-bottom: 1px solid #f1f5f9;">
+                                                <c:choose>
+                                                    <c:when test="${req.status == 'Approved'}"><span class="badge" style="background: #dcfce7; color: #166534; padding: 4px 8px; border-radius: 6px; font-size: 12px;">Approved</span></c:when>
+                                                    <c:when test="${req.status == 'Rejected'}"><span class="badge" style="background: #fee2e2; color: #991b1b; padding: 4px 8px; border-radius: 6px; font-size: 12px;">Rejected</span></c:when>
+                                                    <c:otherwise><span class="badge" style="background: #fef08a; color: #854d0e; padding: 4px 8px; border-radius: 6px; font-size: 12px;">Pending</span></c:otherwise>
+                                                </c:choose>
+                                            </td>
+
+                                            <td style="padding: 12px; border-bottom: 1px solid #f1f5f9; font-size: 13px; color: #334155;">
+                                                ${empty req.reviewNote ? '<i style="color:#94a3b8">No note</i>' : req.reviewNote}
+                                            </td>
+                                        </tr>
+                                    </c:forEach>
+                                    <c:if test="${empty requestHistory}">
+                                        <tr><td colspan="4" style="text-align: center; padding: 20px; color: #94a3b8;">No history found.</td></tr>
+                                    </c:if>
+                                </tbody>
+                            </table>
+                            <div class="modal-actions" style="margin-top: 20px; text-align: right;">
+                                <button type="button" class="btn-clear" onclick="document.getElementById('historyModal').style.display='none'" style="padding: 10px 20px; background: #f1f5f9; border: none; border-radius: 8px; cursor: pointer; font-weight: 600;">Close</button>
+                            </div>
+                        </div>
                     </div>
                 </c:otherwise>
-
             </c:choose>
-
         </div>
     </div>
 </div>
