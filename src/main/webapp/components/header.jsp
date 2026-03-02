@@ -5,7 +5,7 @@
 
     <nav class="nav">
       <a href="${pageContext.request.contextPath}/home">Home</a>
-      <a href="#">Events</a>
+      <a href="${pageContext.request.contextPath}/events">Events</a>
       <a href="#">About</a>
 
       <%

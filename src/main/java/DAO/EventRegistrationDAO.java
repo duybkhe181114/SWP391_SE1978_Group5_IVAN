@@ -1,130 +1,135 @@
 package DAO;
 
 import Context.DBContext;
+import DTO.EventView;
 import java.sql.*;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 
 public class EventRegistrationDAO extends DBContext {
 
-    // ==============================
-    // REGISTER FOR EVENT
-    // ==============================
-    public boolean registerForEvent(int eventId, int volunteerId) {
-
+    // 1. Lấy thống kê Dashboard cho Volunteer (Total, Upcoming, Completed)
+    public int[] getVolunteerStats(int volunteerId) {
+        int[] stats = new int[3]; // [0]: Total, [1]: Upcoming, [2]: Completed
         String sql = """
-            INSERT INTO EventRegistrations (EventId, VolunteerId, Status, AppliedAt)
-            VALUES (?, ?, 'Pending', GETDATE())
+            SELECT 
+                COUNT(*) AS TotalApplied,
+                SUM(CASE WHEN er.Status = 'Approved' AND e.StartDate >= GETDATE() THEN 1 ELSE 0 END) AS Upcoming,
+                SUM(CASE WHEN er.Status = 'Approved' AND e.EndDate < GETDATE() THEN 1 ELSE 0 END) AS Completed
+            FROM EventRegistrations er
+            JOIN Events e ON er.EventId = e.EventId
+            WHERE er.VolunteerId = ?
         """;
 
         try (PreparedStatement ps = connection.prepareStatement(sql)) {
-            ps.setInt(1, eventId);
-            ps.setInt(2, volunteerId);
-            return ps.executeUpdate() > 0;
-
-        } catch (Exception e) {
+            ps.setInt(1, volunteerId);
+            ResultSet rs = ps.executeQuery();
+            if (rs.next()) {
+                stats[0] = rs.getInt("TotalApplied");
+                stats[1] = rs.getInt("Upcoming");
+                stats[2] = rs.getInt("Completed");
+            }
+        } catch (SQLException e) {
             e.printStackTrace();
         }
-        return false;
+        return stats;
     }
 
-    // ==============================
-    // GET VOLUNTEERS BY EVENT
-    // ==============================
-    public List<Map<String, Object>> getVolunteersByEvent(int eventId) {
-
-        List<Map<String, Object>> list = new ArrayList<>();
-
+    public List<EventView> getMyRegisteredEvents(int volunteerId) {
+        List<EventView> list = new ArrayList<>();
         String sql = """
-            SELECT er.RegistrationId,
-                   er.Status,
-                   er.AppliedAt,
-                   u.UserId,
-                   u.Email,
-                   up.FullName,
-                   up.Phone,
-                   up.DateOfBirth,
-                   up.Gender,
-                   up.Address
+            SELECT 
+                e.EventId, e.Title, e.Location, e.StartDate, e.EndDate, 
+                er.Status AS RegistrationStatus, er.AppliedAt
+            FROM EventRegistrations er
+            JOIN Events e ON er.EventId = e.EventId
+            WHERE er.VolunteerId = ?
+            ORDER BY er.AppliedAt DESC
+        """;
+
+        try (PreparedStatement ps = connection.prepareStatement(sql)) {
+            ps.setInt(1, volunteerId);
+            ResultSet rs = ps.executeQuery();
+            while (rs.next()) {
+                EventView ev = new EventView();
+                ev.setEventId(rs.getInt("EventId"));
+                ev.setEventName(rs.getString("Title"));
+                ev.setLocation(rs.getString("Location"));
+
+                // Mượn field Status của EventView để lưu Status của phần Đăng ký (Pending/Approved/Rejected)
+                ev.setStatus(rs.getString("RegistrationStatus"));
+
+                Date startDate = rs.getDate("StartDate");
+                if (startDate != null) ev.setStartDate(startDate.toLocalDate().atStartOfDay());
+
+                Date endDate = rs.getDate("EndDate");
+                if (endDate != null) ev.setEndDate(endDate.toLocalDate().atStartOfDay());
+
+                list.add(ev);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return list;
+    }
+
+    // ==========================================================
+    // CÁC HÀM DÀNH CHO ORGANIZATION QUẢN LÝ TÌNH NGUYỆN VIÊN
+    // ==========================================================
+
+    public List<Map<String, Object>> getVolunteersByEvent(int eventId) {
+        List<Map<String, Object>> list = new ArrayList<>();
+        String sql = """
+            SELECT
+                er.RegistrationId, er.Status, er.AppliedAt,
+                u.Email, up.FirstName, up.LastName, up.Phone
             FROM EventRegistrations er
             JOIN Users u ON er.VolunteerId = u.UserId
             LEFT JOIN UserProfiles up ON u.UserId = up.UserId
             WHERE er.EventId = ?
             ORDER BY er.AppliedAt DESC
         """;
-
         try (PreparedStatement ps = connection.prepareStatement(sql)) {
-
             ps.setInt(1, eventId);
             ResultSet rs = ps.executeQuery();
-
             while (rs.next()) {
+                Map<String, Object> map = new java.util.HashMap<>();
+                map.put("registrationId", rs.getInt("RegistrationId"));
+                map.put("status", rs.getString("Status"));
+                map.put("appliedAt", rs.getTimestamp("AppliedAt"));
+                map.put("email", rs.getString("Email"));
 
-                Map<String, Object> volunteer = new HashMap<>();
+                String fName = rs.getString("FirstName");
+                String lName = rs.getString("LastName");
+                map.put("fullName", (fName != null ? fName : "") + " " + (lName != null ? lName : ""));
+                map.put("phone", rs.getString("Phone"));
 
-                volunteer.put("registrationId", rs.getInt("RegistrationId"));
-                volunteer.put("status", rs.getString("Status"));
-                volunteer.put("appliedAt", rs.getTimestamp("AppliedAt"));
-
-                volunteer.put("userId", rs.getInt("UserId"));
-                volunteer.put("email", rs.getString("Email"));
-
-                volunteer.put("fullName", rs.getString("FullName"));
-                volunteer.put("phone", rs.getString("Phone"));
-                volunteer.put("dateOfBirth", rs.getDate("DateOfBirth"));
-                volunteer.put("gender", rs.getString("Gender"));
-                volunteer.put("address", rs.getString("Address"));
-
-                list.add(volunteer);
+                list.add(map);
             }
-
-        } catch (Exception e) {
+        } catch (SQLException e) {
             e.printStackTrace();
         }
-
         return list;
     }
 
-    // ==============================
-    // APPROVE VOLUNTEER
-    // ==============================
     public boolean approveVolunteer(int registrationId) {
-
-        String sql = """
-            UPDATE EventRegistrations
-            SET Status = 'Approved',
-                ReviewedAt = GETDATE()
-            WHERE RegistrationId = ?
-        """;
-
+        String sql = "UPDATE EventRegistrations SET Status = 'Approved' WHERE RegistrationId = ?";
         try (PreparedStatement ps = connection.prepareStatement(sql)) {
-
             ps.setInt(1, registrationId);
             return ps.executeUpdate() > 0;
-
-        } catch (Exception e) {
+        } catch (SQLException e) {
             e.printStackTrace();
         }
         return false;
     }
 
-    // ==============================
-    // REJECT VOLUNTEER
-    // ==============================
     public boolean rejectVolunteer(int registrationId) {
-
-        String sql = """
-            UPDATE EventRegistrations
-            SET Status = 'Rejected',
-                ReviewedAt = GETDATE()
-            WHERE RegistrationId = ?
-        """;
-
+        String sql = "UPDATE EventRegistrations SET Status = 'Rejected' WHERE RegistrationId = ?";
         try (PreparedStatement ps = connection.prepareStatement(sql)) {
-
             ps.setInt(1, registrationId);
             return ps.executeUpdate() > 0;
-
-        } catch (Exception e) {
+        } catch (SQLException e) {
             e.printStackTrace();
         }
         return false;
