@@ -1,0 +1,73 @@
+/* ===== Support Request List ===== */
+
+.page-section {
+padding: 60px 80px;
+}
+
+.section-title {
+font-size: 28px;
+font-weight: 800;
+margin-bottom: 32px;
+}
+
+.request-grid {
+display: grid;
+grid-template-columns: repeat(3, 1fr);
+gap: 24px;
+}
+
+.request-card {
+border: 1px solid #eee;
+padding: 20px;
+background: #fff;
+transition: 0.2s;
+}
+
+.request-card:hover {
+transform: translateY(-4px);
+}
+
+.request-card h3 {
+font-size: 18px;
+margin-bottom: 8px;
+}
+
+.request-meta {
+font-size: 14px;
+color: #666;
+margin-bottom: 6px;
+}
+
+.status {
+display: inline-block;
+padding: 4px 10px;
+font-size: 12px;
+font-weight: 600;
+border-radius: 4px;
+margin-top: 8px;
+}
+
+.status-pending {
+background: #f4f4f4;
+}
+
+.status-approved {
+background: #d4edda;
+color: #155724;
+}
+
+.status-rejected {
+background: #f8d7da;
+color: #721c24;
+}
+
+.view-btn {
+margin-top: 12px;
+display: inline-block;
+padding: 8px 14px;
+font-size: 13px;
+font-weight: 600;
+background: #000;
+color: #fff;
+text-decoration: none;
+}

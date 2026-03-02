@@ -1,0 +1,129 @@
+* {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    font-family: "Segoe UI", Roboto, sans-serif;
+    background: linear-gradient(135deg, #f4f9f4, #e8f5e9);
+}
+
+.container {
+    display: flex;
+    justify-content: center;
+    padding: 60px 20px;
+}
+
+.card {
+    background: #ffffff;
+    width: 750px;
+    padding: 40px;
+    border-radius: 20px;
+    box-shadow: 0 20px 50px rgba(0,0,0,0.08);
+    transition: 0.3s ease;
+}
+
+.card:hover {
+    transform: translateY(-3px);
+}
+
+h2 {
+    text-align: center;
+    font-size: 28px;
+    margin-bottom: 8px;
+    color: #1b5e20;
+}
+
+.subtitle {
+    text-align: center;
+    color: #666;
+    margin-bottom: 35px;
+    font-size: 15px;
+}
+
+h3 {
+    margin-top: 35px;
+    font-size: 18px;
+    color: #2e7d32;
+    padding-bottom: 8px;
+    border-bottom: 2px solid #e8f5e9;
+}
+
+label {
+    display: block;
+    margin-top: 18px;
+    font-weight: 600;
+    font-size: 14px;
+    color: #333;
+}
+
+input, select, textarea {
+    width: 100%;
+    padding: 12px 14px;
+    margin-top: 8px;
+    border-radius: 10px;
+    border: 1px solid #ddd;
+    font-size: 14px;
+    transition: 0.2s ease;
+    background: #fafafa;
+}
+
+input:focus, select:focus, textarea:focus {
+    border-color: #4caf50;
+    background: #ffffff;
+    box-shadow: 0 0 0 3px rgba(76,175,80,0.15);
+    outline: none;
+}
+
+textarea {
+    height: 130px;
+    resize: none;
+}
+
+.confirm {
+    margin: 25px 0;
+    display: flex;
+    align-items: center;
+    font-size: 14px;
+}
+
+.confirm input {
+    width: auto;
+    transform: scale(1.2);
+    margin-right: 10px;
+}
+
+button {
+    width: 100%;
+    padding: 15px;
+    background: linear-gradient(135deg, #43a047, #2e7d32);
+    border: none;
+    color: white;
+    font-size: 16px;
+    font-weight: 600;
+    border-radius: 12px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 8px 20px rgba(46,125,50,0.25);
+}
+
+button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 12px 25px rgba(46,125,50,0.35);
+}
+
+button:active {
+    transform: translateY(0);
+    box-shadow: 0 6px 15px rgba(46,125,50,0.2);
+}
+/* ===== Required Field Red Star ===== */
+label.required::after {
+    content: " *";
+    color: #e53935;
+    font-weight: bold;
+}
+
+/* Nếu muốn sao đỏ nổi hơn */
+label.required {
+    position: relative;
+}
