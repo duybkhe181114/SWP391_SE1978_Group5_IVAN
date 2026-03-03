@@ -9,7 +9,7 @@ import java.io.IOException;
 import java.util.List;
 
 @WebServlet("/viewSpRequestAdmin")
-public class ViewSpRequestAdminController extends HttpServlet {
+public class AdminViewSpRequestController extends HttpServlet {
 
     protected void processRequest(HttpServletRequest request,
                                   HttpServletResponse response)
@@ -18,7 +18,7 @@ public class ViewSpRequestAdminController extends HttpServlet {
         SupportRequestDAO dao = new SupportRequestDAO();
 
         // Admin xem tất cả
-        List<SupportRequest> list = dao.getAllForAdmin();
+        List<SupportRequest> list = dao.getPendingSPRForAdmin();
 
         request.setAttribute("requestList", list);
 

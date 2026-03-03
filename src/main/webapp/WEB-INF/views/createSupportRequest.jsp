@@ -1,3 +1,5 @@
+<%@ page contentType="text/html;charset=UTF-8" %>
+<%@ taglib prefix="c" uri="jakarta.tags.core" %>
 <!DOCTYPE html>
 <html>
 <head>
@@ -22,15 +24,17 @@
             <input type="text" name="title" required
                    placeholder="Short summary of the situation">
 
-            <label class="required">Type of Support</label>
-            <select name="supportType" required>
-                <option value="">-- Select Support Type --</option>
-                <option value="MEDICAL">Medical Support</option>
-                <option value="FOOD">Food & Essential Supplies</option>
-                <option value="EDUCATION">Education Support</option>
-                <option value="DISASTER">Disaster Relief</option>
-                <option value="FINANCIAL">Financial Assistance</option>
-            </select>
+<label class="required">Type of Support</label>
+<select name="categoryId" required>
+    <option value="">-- Select Support Type --</option>
+
+    <c:forEach var="c" items="${categories}">
+        <option value="${c.categoryId}">
+            ${c.name}
+        </option>
+    </c:forEach>
+
+</select>
 
             <label class="required">Urgency Level</label>
             <select name="priority" required>

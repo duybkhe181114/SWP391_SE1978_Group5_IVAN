@@ -51,22 +51,10 @@ public class SupportRequestDAO extends DBContext {
 
         String sql = """
         INSERT INTO SupportRequests (
-            Title,
-            CategoryId,
-            Priority,
-            SupportLocation,
-            BeneficiaryName,
-            AffectedPeople,
-            EstimatedAmount,
-            Description,
-            ProofImageUrl,
-            ContactEmail,
-            ContactPhone,
-            CreatedBy,
-            Status,
-            CreatedAt,
-            UpdatedAt,
-            IsDeleted
+            Title, CategoryId, Priority, SupportLocation,
+            BeneficiaryName, AffectedPeople, EstimatedAmount,
+            Description, ProofUrl, ContactEmail, ContactPhone,
+            CreatedBy, Status, CreatedAt, UpdatedAt, IsDeleted
         )
         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     """;
@@ -74,7 +62,13 @@ public class SupportRequestDAO extends DBContext {
         try (PreparedStatement ps = connection.prepareStatement(sql)) {
 
             ps.setString(1, sr.getTitle());
-            ps.setString(2, sr.getCategoryId());
+
+            // CategoryId
+            if (sr.getCategoryId() != null && !sr.getCategoryId().trim().isEmpty())
+                ps.setInt(2, Integer.parseInt(sr.getCategoryId()));
+            else
+                ps.setNull(2, Types.INTEGER);
+
             ps.setString(3, sr.getPriority());
             ps.setString(4, sr.getSupportLocation());
             ps.setString(5, sr.getBeneficiaryName());
@@ -94,21 +88,27 @@ public class SupportRequestDAO extends DBContext {
             ps.setString(10, sr.getContactEmail());
             ps.setString(11, sr.getContactPhone());
 
-            ps.setInt(12, sr.getCreatedBy());
+            if (sr.getCreatedBy() != null)
+                ps.setInt(12, sr.getCreatedBy());
+            else
+                ps.setNull(12, Types.INTEGER);
+
             ps.setString(13, sr.getStatus());
 
-            ps.setTimestamp(14, Timestamp.valueOf(sr.getCreatedAt()));
-            ps.setTimestamp(15, Timestamp.valueOf(sr.getUpdatedAt()));
+            ps.setTimestamp(14, new Timestamp(System.currentTimeMillis()));
+            ps.setTimestamp(15, new Timestamp(System.currentTimeMillis()));
 
-            ps.setBoolean(16, sr.getIsDeleted());
+            ps.setBoolean(16, sr.getIsDeleted() != null ? sr.getIsDeleted() : false);
 
             ps.executeUpdate();
+
+            System.out.println("INSERT SUCCESS");
 
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
-    public List<SupportRequest> getAllForAdmin() {
+    public List<SupportRequest> getPendingSPRForAdmin() {
 
         List<SupportRequest> list = new ArrayList<>();
 
@@ -118,6 +118,11 @@ public class SupportRequestDAO extends DBContext {
                CategoryId,
                Priority,
                Status,
+               BeneficiaryName,
+               SupportLocation,
+               AffectedPeople,
+               EstimatedAmount,
+               CreatedBy,
                CreatedAt
         FROM SupportRequests
         WHERE IsDeleted = 0
@@ -136,6 +141,12 @@ public class SupportRequestDAO extends DBContext {
                 sr.setCategoryId(rs.getString("CategoryId"));
                 sr.setPriority(rs.getString("Priority"));
                 sr.setStatus(rs.getString("Status"));
+
+                sr.setBeneficiaryName(rs.getString("BeneficiaryName"));
+                sr.setSupportLocation(rs.getString("SupportLocation"));
+                sr.setAffectedPeople(rs.getInt("AffectedPeople"));
+                sr.setEstimatedAmount(rs.getDouble("EstimatedAmount"));
+                sr.setCreatedBy(rs.getInt("CreatedBy"));
 
                 Timestamp created = rs.getTimestamp("CreatedAt");
                 if (created != null) {
@@ -180,7 +191,7 @@ public class SupportRequestDAO extends DBContext {
                     sr.setEstimatedAmount((Double) rs.getObject("EstimatedAmount"));
                     sr.setContactEmail(rs.getString("ContactEmail"));
                     sr.setContactPhone(rs.getString("ContactPhone"));
-                    sr.setProofImageUrl(rs.getString("ProofImageUrl"));
+                    sr.setProofImageUrl(rs.getString("ProofUrl"));
                     sr.setStatus(rs.getString("Status"));
                     sr.setRejectReason(rs.getString("RejectReason"));
                     sr.setAdminNote(rs.getString("AdminNote"));
