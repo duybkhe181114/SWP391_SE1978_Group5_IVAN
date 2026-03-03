@@ -1,9 +1,0 @@
--- Make sure you are using the correct database
-USE IVAN;
-GO
-
--- Check Events table structure
-SELECT TABLE_NAME, COLUMN_NAME, DATA_TYPE, IS_NULLABLE
-FROM INFORMATION_SCHEMA.COLUMNS 
-WHERE TABLE_NAME = 'Events'
-ORDER BY ORDINAL_POSITION;

@@ -12,22 +12,22 @@ public class EventDAO extends DBContext {
         List<EventView> list = new ArrayList<>();
 
         String sql = """
-
-                SELECT\s
-    e.EventId,
-    e.Title,
-    e.Location,
-    e.StartDate,
-    e.EndDate,
-    e.CoverImageUrl,
-    o.OrganizationId,
-    o.Name AS OrganizationName
-FROM Events e
-JOIN Organizations o\s
-    ON e.OrganizationId = o.OrganizationId
-WHERE e.Status = 'Approved'
-ORDER BY e.StartDate ASC
-    """;
+                
+                                SELECT\s
+                    e.EventId,
+                    e.Title,
+                    e.Location,
+                    e.StartDate,
+                    e.EndDate,
+                    e.CoverImageUrl,
+                    o.OrganizationId,
+                    o.Name AS OrganizationName
+                FROM Events e
+                JOIN Organizations o\s
+                    ON e.OrganizationId = o.OrganizationId
+                WHERE e.Status = 'Approved'
+                ORDER BY e.StartDate ASC
+                """;
 
         try (PreparedStatement ps = connection.prepareStatement(sql);
              ResultSet rs = ps.executeQuery()) {
