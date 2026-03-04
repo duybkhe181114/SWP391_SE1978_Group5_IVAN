@@ -2,7 +2,7 @@ package Controller;
 
 import Entity.SupportRequest;
 import DAO.SupportRequestDAO;
-
+import DAO.SupportCategoryDAO;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.MultipartConfig;
 import jakarta.servlet.annotation.WebServlet;
@@ -13,19 +13,20 @@ import java.time.LocalDateTime;
 
 @WebServlet("/createSupportRequest")
 @MultipartConfig
-public class SupportRequestController extends HttpServlet {
+public class CreateSupportRequestController extends HttpServlet {
 
     protected void processRequest(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
 
         request.setCharacterEncoding("UTF-8");
 
-        // ===== LẤY DATA TỪ FORM =====
+        // ===== TẠO ENTITY TRƯỚC =====
+        SupportRequest sr = new SupportRequest();
+
+        // ===== LẤY DATA =====
         String title = request.getParameter("title");
 
-        // ⚠ Sửa đúng: parse Integer
         String categoryId = request.getParameter("categoryId");
-
         String priority = request.getParameter("priority");
         String location = request.getParameter("supportLocation");
         String beneficiaryName = request.getParameter("beneficiaryName");
@@ -62,8 +63,6 @@ public class SupportRequestController extends HttpServlet {
         }
 
         // ===== SET ENTITY =====
-        SupportRequest sr = new SupportRequest();
-
         sr.setTitle(title);
         sr.setCategoryId(categoryId);
         sr.setPriority(priority);
@@ -76,7 +75,13 @@ public class SupportRequestController extends HttpServlet {
         sr.setContactEmail(email);
         sr.setContactPhone(phone);
 
-        sr.setCreatedBy((Integer) request.getSession().getAttribute("userId"));
+        Object userObj = request.getSession().getAttribute("userId");
+
+        if (userObj != null) {
+            sr.setCreatedBy((Integer) userObj);
+        } else {
+            sr.setCreatedBy(null);
+        }
         sr.setStatus("PENDING");
         sr.setCreatedAt(LocalDateTime.now());
         sr.setUpdatedAt(LocalDateTime.now());
@@ -98,6 +103,9 @@ public class SupportRequestController extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
+
+        SupportCategoryDAO categoryDAO = new SupportCategoryDAO();
+        request.setAttribute("categories", categoryDAO.getAll());
 
         request.getRequestDispatcher("/WEB-INF/views/createSupportRequest.jsp")
                 .forward(request, response);

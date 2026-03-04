@@ -1,4 +1,6 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
+<%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
+
 <!DOCTYPE html>
 <html>
 <head>
@@ -47,7 +49,6 @@
             margin-bottom: 15px;
             color: #34495e;
             text-transform: uppercase;
-            letter-spacing: 0.5px;
         }
 
         .grid {
@@ -105,35 +106,11 @@
             border: none;
             font-weight: 600;
             cursor: pointer;
-            transition: 0.2s ease-in-out;
         }
 
-        .approve-btn {
-            background: #28a745;
-            color: white;
-        }
-
-        .approve-btn:hover {
-            background: #218838;
-        }
-
-        .reject-btn {
-            background: #dc3545;
-            color: white;
-        }
-
-        .reject-btn:hover {
-            background: #c82333;
-        }
-
-        .back-btn {
-            background: #6c757d;
-            color: white;
-        }
-
-        .back-btn:hover {
-            background: #5a6268;
-        }
+        .approve-btn { background: #28a745; color: white; }
+        .reject-btn { background: #dc3545; color: white; }
+        .back-btn { background: #6c757d; color: white; }
 
         textarea {
             width: 100%;
@@ -143,23 +120,13 @@
             border-radius: 8px;
             border: 1px solid #ccc;
         }
-
-        #rejectBox {
-            margin-top: 15px;
-        }
-
     </style>
 
     <script>
         function showRejectBox() {
             document.getElementById("rejectBox").style.display = "block";
         }
-
-        function goBack() {
-            window.history.back();
-        }
     </script>
-
 </head>
 <body>
 
@@ -168,7 +135,10 @@
 
         <div class="header">
             <h2>Support Request Detail</h2>
-            <button class="back-btn" onclick="goBack()">← Back</button>
+
+            <a href="${pageContext.request.contextPath}/viewSpRequestAdmin">
+                <button type="button" class="back-btn">← Back</button>
+            </a>
         </div>
 
         <!-- BASIC INFO -->
@@ -176,11 +146,11 @@
             <div class="section-title">Basic Information</div>
             <div class="grid">
                 <div class="label">Title:</div>
-                <div class="value">Emergency Medical Support for Child</div>
+                <div class="value">${requestDetail.title}</div>
 
                 <div class="label">Description:</div>
                 <div class="value description-box">
-                    A 6-year-old child needs urgent heart surgery but the family cannot afford the medical expenses.
+                    ${requestDetail.description}
                 </div>
             </div>
         </div>
@@ -190,43 +160,43 @@
             <div class="section-title">Support Details</div>
             <div class="grid">
                 <div class="label">Category:</div>
-                <div class="value">MEDICAL</div>
+                <div class="value">${requestDetail.categoryName}</div>
 
                 <div class="label">Priority:</div>
-                <div class="value">URGENT</div>
+                <div class="value">${requestDetail.priority}</div>
 
                 <div class="label">Location:</div>
-                <div class="value">Ho Chi Minh City</div>
+                <div class="value">${requestDetail.supportLocation}</div>
 
                 <div class="label">Beneficiary:</div>
-                <div class="value">Nguyen Van A</div>
+                <div class="value">${requestDetail.beneficiaryName}</div>
 
                 <div class="label">Affected People:</div>
-                <div class="value">1</div>
+                <div class="value">${requestDetail.affectedPeople}</div>
 
                 <div class="label">Estimated Amount:</div>
-                <div class="value">$ 5000</div>
+                <div class="value">$ ${requestDetail.estimatedAmount}</div>
             </div>
         </div>
 
-        <!-- CONTACT INFO -->
-        <div class="section">
-            <div class="section-title">Contact Information</div>
-            <div class="grid">
-                <div class="label">Email:</div>
-                <div class="value">support@example.com</div>
+<div class="section-title">Contact Information</div>
+<div class="grid">
 
-                <div class="label">Phone:</div>
-                <div class="value">0901234567</div>
-            </div>
-        </div>
+    <div class="label">Email:</div>
+    <div class="value">
+        ${requestDetail.contactEmail}
+    </div>
 
-        <!-- PROOF -->
-        <div class="section">
-            <div class="section-title">Proof</div>
-            <img src="https://via.placeholder.com/350x220.png?text=Proof+Image"
-                 class="proof-img" alt="Proof Image"/>
-        </div>
+    <div class="label">Phone:</div>
+    <div class="value">
+        ${requestDetail.contactPhone}
+    </div>
+
+</div>
+
+<img src="${requestDetail.proofImageUrl}"
+     class="proof-img"
+     alt="Proof Image"/>
 
         <!-- SYSTEM INFO -->
         <div class="section">
@@ -234,29 +204,63 @@
             <div class="grid">
                 <div class="label">Status:</div>
                 <div class="value">
-                    <span class="status-badge PENDING">PENDING</span>
+                    <span class="status-badge ${requestDetail.status}">
+                        ${requestDetail.status}
+                    </span>
                 </div>
 
                 <div class="label">Created At:</div>
-                <div class="value">2026-03-03 10:30:00</div>
+                <div class="value">${requestDetail.createdAt}</div>
 
                 <div class="label">Created By:</div>
-                <div class="value">User ID: 101</div>
+                <div class="value">User ID: ${requestDetail.createdBy}</div>
             </div>
         </div>
 
         <!-- ACTIONS -->
-        <div class="actions">
-            <button class="approve-btn">Approve</button>
-            <button class="reject-btn" onclick="showRejectBox()">Reject</button>
-        </div>
-
-        <div id="rejectBox" style="display:none;">
-            <textarea placeholder="Enter reject reason..."></textarea>
+        <c:if test="${requestDetail.status == 'PENDING'}">
             <div class="actions">
-                <button class="reject-btn">Confirm Reject</button>
+
+                <!-- APPROVE -->
+                <form action="${pageContext.request.contextPath}/updateSupportRequestStatus"
+                      method="post">
+                    <input type="hidden" name="requestId"
+                           value="${requestDetail.requestId}"/>
+                    <input type="hidden" name="status" value="APPROVED"/>
+                    <button type="submit" class="approve-btn">
+                        Approve
+                    </button>
+                </form>
+
+                <!-- REJECT -->
+                <button type="button"
+                        class="reject-btn"
+                        onclick="showRejectBox()">
+                    Reject
+                </button>
             </div>
-        </div>
+
+            <!-- REJECT BOX -->
+            <div id="rejectBox" style="display:none;">
+                <form action="${pageContext.request.contextPath}/updateSupportRequestStatus"
+                      method="post">
+
+                    <input type="hidden" name="requestId"
+                           value="${requestDetail.requestId}"/>
+                    <input type="hidden" name="status" value="REJECTED"/>
+
+                    <textarea name="rejectReason"
+                              placeholder="Enter reject reason..."
+                              required></textarea>
+
+                    <div class="actions">
+                        <button type="submit" class="reject-btn">
+                            Confirm Reject
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </c:if>
 
     </div>
 </div>
