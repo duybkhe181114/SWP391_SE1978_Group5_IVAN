@@ -226,7 +226,7 @@
         </div>
 
         <%-- ===== ADMIN: Approve / Reject (chỉ khi PENDING) ===== --%>
-        <c:if test="${userRole == 'ADMIN' && requestDetail.status == 'PENDING'}">
+        <c:if test="${userRole == 'Admin' && requestDetail.status == 'PENDING'}">
             <div class="actions">
 
                 <!-- APPROVE -->
