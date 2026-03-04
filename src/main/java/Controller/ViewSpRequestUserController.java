@@ -12,34 +12,40 @@ import java.util.List;
 public class ViewSpRequestUserController extends HttpServlet {
 
     protected void processRequest(HttpServletRequest request,
-                                  HttpServletResponse response)
+            HttpServletResponse response)
             throws ServletException, IOException {
 
-        // Lấy userId từ session
-        Integer userId = (Integer) request.getSession()
-                .getAttribute("userId");
+        HttpSession session = request.getSession(false);
+
+        // Kiểm tra login
+        if (session == null || session.getAttribute("userId") == null) {
+            response.sendRedirect(request.getContextPath() + "/login");
+            return;
+        }
+
+        Integer userId = (Integer) session.getAttribute("userId");
 
         SupportRequestDAO dao = new SupportRequestDAO();
 
-        // User chỉ thấy APPROVED của mình
-        List<SupportRequest> list = dao.getApprovedByUser(userId);
+        // User xem TẤT CẢ request của mình (mọi trạng thái)
+        List<SupportRequest> list = dao.getAllByUser(userId);
 
         request.setAttribute("requestList", list);
 
-        request.getRequestDispatcher("/WEB-INF/views/user-SupportRequestList.jsp")
+        request.getRequestDispatcher("/WEB-INF/views/my-support-requests.jsp")
                 .forward(request, response);
     }
 
     @Override
     protected void doGet(HttpServletRequest request,
-                         HttpServletResponse response)
+            HttpServletResponse response)
             throws ServletException, IOException {
         processRequest(request, response);
     }
 
     @Override
     protected void doPost(HttpServletRequest request,
-                          HttpServletResponse response)
+            HttpServletResponse response)
             throws ServletException, IOException {
         processRequest(request, response);
     }

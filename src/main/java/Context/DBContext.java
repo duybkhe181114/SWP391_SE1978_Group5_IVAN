@@ -12,16 +12,14 @@ public class DBContext {
     public DBContext() {
         try {
             // Edit URL, username, password to authenticate with your MS SQL Server
-            String url =
-                    "jdbc:sqlserver://localhost:1433;"
-                            + "databaseName=IVAN;"
-                            + "encrypt=true;"
-                            + "trustServerCertificate=true;";
-            String username = "sa";
-            String password = "123";
+            String url = "jdbc:sqlserver://localhost:1433;"
+                    + "databaseName=IVAN;"
+                    + "encrypt=true;"
+                    + "trustServerCertificate=true;"
+                    + "integratedSecurity=true;";
 
             Class.forName("com.microsoft.sqlserver.jdbc.SQLServerDriver");
-            connection = DriverManager.getConnection(url, username, password);
+            connection = DriverManager.getConnection(url);
         } catch (ClassNotFoundException | SQLException ex) {
             // Logging the exception detail for debugging
             Logger.getLogger(DBContext.class.getName()).log(Level.SEVERE, "Failed to connect to database.", ex);
@@ -30,7 +28,8 @@ public class DBContext {
 
     /**
      * Main method to test the database connection.
-     * If you are running this in an IDE, ensure you have the SQL Server JDBC driver added to your project's libraries.
+     * If you are running this in an IDE, ensure you have the SQL Server JDBC driver
+     * added to your project's libraries.
      */
     public static void main(String[] args) {
         // Create an instance of DBContext to attempt the connection
@@ -52,8 +51,10 @@ public class DBContext {
             System.out.println("❌ Kết nối cơ sở dữ liệu thất bại.");
             System.out.println("Kiểm tra lại các yếu tố sau:");
             System.out.println("1. **Driver SQL Server (JDBC)** đã được thêm vào dự án.");
-            System.out.println("2. **Thông tin đăng nhập** (sa/123) và **databaseName** (IVAN) chính xác.");
+            System.out.println("2. **databaseName** (IVAN) chính xác và đã bật chế độ Windows Authentication.");
             System.out.println("3. **SQL Server** có đang chạy và cho phép kết nối từ xa trên cổng 1433.");
+            System.out.println(
+                    "4. Gói thư viện **mssql-jdbc_auth.dll** cần đúng phiên bản và nằm trong đường dẫn hệ thống/của dự án.");
         }
     }
 }

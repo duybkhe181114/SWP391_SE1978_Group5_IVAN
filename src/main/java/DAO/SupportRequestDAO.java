@@ -13,18 +13,18 @@ public class SupportRequestDAO extends DBContext {
         List<SupportRequest> list = new ArrayList<>();
 
         String sql = """
-            SELECT RequestId,
-                   CategoryId,
-                   Description,
-                   Status,
-                   CreatedAt
-            FROM SupportRequests
-            WHERE Status = 'Approved'
-            ORDER BY CreatedAt DESC
-        """;
+                    SELECT RequestId,
+                           CategoryId,
+                           Description,
+                           Status,
+                           CreatedAt
+                    FROM SupportRequests
+                    WHERE Status = 'Approved'
+                    ORDER BY CreatedAt DESC
+                """;
 
         try (PreparedStatement ps = connection.prepareStatement(sql);
-             ResultSet rs = ps.executeQuery()) {
+                ResultSet rs = ps.executeQuery()) {
 
             while (rs.next()) {
                 SupportRequest sr = new SupportRequest();
@@ -47,17 +47,18 @@ public class SupportRequestDAO extends DBContext {
 
         return list;
     }
+
     public void insert(SupportRequest sr) {
 
         String sql = """
-        INSERT INTO SupportRequests (
-            Title, CategoryId, Priority, SupportLocation,
-            BeneficiaryName, AffectedPeople, EstimatedAmount,
-            Description, ProofUrl, ContactEmail, ContactPhone,
-            CreatedBy, Status, CreatedAt, UpdatedAt, IsDeleted
-        )
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-    """;
+                    INSERT INTO SupportRequests (
+                        Title, CategoryId, Priority, SupportLocation,
+                        BeneficiaryName, AffectedPeople, EstimatedAmount,
+                        Description, ProofUrl, ContactEmail, ContactPhone,
+                        CreatedBy, Status, CreatedAt, UpdatedAt, IsDeleted
+                    )
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                """;
 
         try (PreparedStatement ps = connection.prepareStatement(sql)) {
 
@@ -108,32 +109,33 @@ public class SupportRequestDAO extends DBContext {
             e.printStackTrace();
         }
     }
+
     public List<SupportRequest> getALLSPRForAdmin() {
 
         List<SupportRequest> list = new ArrayList<>();
 
         String sql = """
-    SELECT r.RequestId,
-           r.Title,
-           r.CategoryId,
-           c.Name AS CategoryName,
-           r.Priority,
-           r.Status,
-           r.BeneficiaryName,
-           r.SupportLocation,
-           r.AffectedPeople,
-           r.EstimatedAmount,
-           r.CreatedBy,
-           r.CreatedAt
-    FROM SupportRequests r
-    LEFT JOIN SupportCategories c
-           ON r.CategoryId = c.CategoryId
-    WHERE r.IsDeleted = 0
-    ORDER BY r.CreatedAt DESC
-""";
+                    SELECT r.RequestId,
+                           r.Title,
+                           r.CategoryId,
+                           c.Name AS CategoryName,
+                           r.Priority,
+                           r.Status,
+                           r.BeneficiaryName,
+                           r.SupportLocation,
+                           r.AffectedPeople,
+                           r.EstimatedAmount,
+                           r.CreatedBy,
+                           r.CreatedAt
+                    FROM SupportRequests r
+                    LEFT JOIN SupportCategories c
+                           ON r.CategoryId = c.CategoryId
+                    WHERE r.IsDeleted = 0
+                    ORDER BY r.CreatedAt DESC
+                """;
 
         try (PreparedStatement ps = connection.prepareStatement(sql);
-             ResultSet rs = ps.executeQuery()) {
+                ResultSet rs = ps.executeQuery()) {
 
             while (rs.next()) {
 
@@ -166,15 +168,16 @@ public class SupportRequestDAO extends DBContext {
 
         return list;
     }
+
     public SupportRequest getById(int requestId) {
 
         String sql = """
-SELECT r.*, c.Name AS CategoryName
-FROM SupportRequests r
-LEFT JOIN SupportCategories c
-ON r.CategoryId = c.CategoryId
-WHERE r.RequestId = ? AND r.IsDeleted = 0
-    """;
+                SELECT r.*, c.Name AS CategoryName
+                FROM SupportRequests r
+                LEFT JOIN SupportCategories c
+                ON r.CategoryId = c.CategoryId
+                WHERE r.RequestId = ? AND r.IsDeleted = 0
+                    """;
 
         try (PreparedStatement ps = connection.prepareStatement(sql)) {
 
@@ -207,9 +210,12 @@ WHERE r.RequestId = ? AND r.IsDeleted = 0
                     Timestamp updated = rs.getTimestamp("UpdatedAt");
                     Timestamp reviewed = rs.getTimestamp("ReviewedAt");
 
-                    if (created != null) sr.setCreatedAt(created.toLocalDateTime());
-                    if (updated != null) sr.setUpdatedAt(updated.toLocalDateTime());
-                    if (reviewed != null) sr.setReviewedAt(reviewed.toLocalDateTime());
+                    if (created != null)
+                        sr.setCreatedAt(created.toLocalDateTime());
+                    if (updated != null)
+                        sr.setUpdatedAt(updated.toLocalDateTime());
+                    if (reviewed != null)
+                        sr.setReviewedAt(reviewed.toLocalDateTime());
 
                     sr.setReviewedBy((Integer) rs.getObject("ReviewedBy"));
                     sr.setIsDeleted(rs.getBoolean("IsDeleted"));
@@ -224,17 +230,18 @@ WHERE r.RequestId = ? AND r.IsDeleted = 0
 
         return null;
     }
+
     public void approveRequest(int requestId, int adminId, String adminNote) {
 
         String sql = """
-        UPDATE SupportRequests
-        SET Status = 'APPROVED',
-            AdminNote = ?,
-            ReviewedAt = ?,
-            ReviewedBy = ?,
-            UpdatedAt = ?
-        WHERE RequestId = ?
-    """;
+                    UPDATE SupportRequests
+                    SET Status = 'APPROVED',
+                        AdminNote = ?,
+                        ReviewedAt = ?,
+                        ReviewedBy = ?,
+                        UpdatedAt = ?
+                    WHERE RequestId = ?
+                """;
 
         try (PreparedStatement ps = connection.prepareStatement(sql)) {
 
@@ -252,21 +259,22 @@ WHERE r.RequestId = ? AND r.IsDeleted = 0
             e.printStackTrace();
         }
     }
+
     public void rejectRequest(int requestId,
-                              int adminId,
-                              String rejectReason,
-                              String adminNote) {
+            int adminId,
+            String rejectReason,
+            String adminNote) {
 
         String sql = """
-        UPDATE SupportRequests
-        SET Status = 'REJECTED',
-            RejectReason = ?,
-            AdminNote = ?,
-            ReviewedAt = ?,
-            ReviewedBy = ?,
-            UpdatedAt = ?
-        WHERE RequestId = ?
-    """;
+                    UPDATE SupportRequests
+                    SET Status = 'REJECTED',
+                        RejectReason = ?,
+                        AdminNote = ?,
+                        ReviewedAt = ?,
+                        ReviewedBy = ?,
+                        UpdatedAt = ?
+                    WHERE RequestId = ?
+                """;
 
         try (PreparedStatement ps = connection.prepareStatement(sql)) {
 
@@ -285,16 +293,17 @@ WHERE r.RequestId = ? AND r.IsDeleted = 0
             e.printStackTrace();
         }
     }
+
     public List<SupportRequest> getByStatus(String status) {
 
         List<SupportRequest> list = new ArrayList<>();
 
         String sql = """
-        SELECT RequestId, Title, CategoryId, Priority, Status, CreatedAt
-        FROM SupportRequests
-        WHERE Status = ? AND IsDeleted = 0
-        ORDER BY CreatedAt DESC
-    """;
+                    SELECT RequestId, Title, CategoryId, Priority, Status, CreatedAt
+                    FROM SupportRequests
+                    WHERE Status = ? AND IsDeleted = 0
+                    ORDER BY CreatedAt DESC
+                """;
 
         try (PreparedStatement ps = connection.prepareStatement(sql)) {
 
@@ -327,18 +336,19 @@ WHERE r.RequestId = ? AND r.IsDeleted = 0
 
         return list;
     }
+
     public List<SupportRequest> getApprovedByUser(int userId) {
 
         List<SupportRequest> list = new ArrayList<>();
 
         String sql = """
-        SELECT RequestId, Title, CategoryId, Priority, Status, CreatedAt
-        FROM SupportRequests
-        WHERE CreatedBy = ?
-          AND Status = 'APPROVED'
-          AND IsDeleted = 0
-        ORDER BY CreatedAt DESC
-    """;
+                    SELECT RequestId, Title, CategoryId, Priority, Status, CreatedAt
+                    FROM SupportRequests
+                    WHERE CreatedBy = ?
+                      AND Status = 'APPROVED'
+                      AND IsDeleted = 0
+                    ORDER BY CreatedAt DESC
+                """;
 
         try (PreparedStatement ps = connection.prepareStatement(sql)) {
 
@@ -371,13 +381,14 @@ WHERE r.RequestId = ? AND r.IsDeleted = 0
 
         return list;
     }
+
     public SupportRequest getSPRById(int id) {
 
         String sql = """
-        SELECT *
-        FROM SupportRequests
-        WHERE RequestId = ?
-    """;
+                    SELECT *
+                    FROM SupportRequests
+                    WHERE RequestId = ?
+                """;
 
         try (PreparedStatement ps = connection.prepareStatement(sql)) {
 
@@ -414,17 +425,18 @@ WHERE r.RequestId = ? AND r.IsDeleted = 0
 
         return null;
     }
+
     public void updateStatus(int requestId,
-                             String status,
-                             String rejectReason) {
+            String status,
+            String rejectReason) {
 
         String sql = """
-        UPDATE SupportRequests
-        SET status = ?,
-            rejectReason = ?,
-            reviewedAt = GETDATE()
-        WHERE requestId = ?
-    """;
+                    UPDATE SupportRequests
+                    SET status = ?,
+                        rejectReason = ?,
+                        reviewedAt = GETDATE()
+                    WHERE requestId = ?
+                """;
 
         try (PreparedStatement ps = connection.prepareStatement(sql)) {
 
@@ -443,16 +455,18 @@ WHERE r.RequestId = ? AND r.IsDeleted = 0
         } catch (Exception e) {
             e.printStackTrace();
         }
-    }public void approveRequestvunh(int requestId) {
+    }
+
+    public void approveRequestvunh(int requestId) {
 
         String sql = """
-        UPDATE SupportRequests
-        SET Status = 'APPROVED',
-            ReviewedAt = GETDATE(),
-            ReviewedBy = 1,
-            UpdatedAt = GETDATE()
-        WHERE RequestId = ?
-    """;
+                    UPDATE SupportRequests
+                    SET Status = 'APPROVED',
+                        ReviewedAt = GETDATE(),
+                        ReviewedBy = 1,
+                        UpdatedAt = GETDATE()
+                    WHERE RequestId = ?
+                """;
 
         try (PreparedStatement ps = connection.prepareStatement(sql)) {
 
@@ -464,17 +478,19 @@ WHERE r.RequestId = ? AND r.IsDeleted = 0
         } catch (Exception e) {
             e.printStackTrace();
         }
-    }public void rejectRequestvunh(int requestId, String rejectReason) {
+    }
+
+    public void rejectRequestvunh(int requestId, String rejectReason) {
 
         String sql = """
-        UPDATE SupportRequests
-        SET Status = 'REJECTED',
-            RejectReason = ?,
-            ReviewedAt = GETDATE(),
-            ReviewedBy = 1,
-            UpdatedAt = GETDATE()
-        WHERE RequestId = ?
-    """;
+                    UPDATE SupportRequests
+                    SET Status = 'REJECTED',
+                        RejectReason = ?,
+                        ReviewedAt = GETDATE(),
+                        ReviewedBy = 1,
+                        UpdatedAt = GETDATE()
+                    WHERE RequestId = ?
+                """;
 
         try (PreparedStatement ps = connection.prepareStatement(sql)) {
 
@@ -488,15 +504,40 @@ WHERE r.RequestId = ? AND r.IsDeleted = 0
             e.printStackTrace();
         }
     }
+
+    public void acceptRequest(int requestId, int organizationUserId) {
+
+        String sql = """
+                    UPDATE SupportRequests
+                    SET Status = 'ACCEPTED',
+                        ReviewedAt = GETDATE(),
+                        ReviewedBy = ?,
+                        UpdatedAt = GETDATE()
+                    WHERE RequestId = ?
+                """;
+
+        try (PreparedStatement ps = connection.prepareStatement(sql)) {
+
+            ps.setInt(1, organizationUserId);
+            ps.setInt(2, requestId);
+
+            int rows = ps.executeUpdate();
+            System.out.println("Accept updated rows: " + rows);
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
     public SupportRequest getByIdvunh(int requestId) {
 
         String sql = """
-        SELECT r.*, c.Name AS CategoryName
-        FROM SupportRequests r
-        LEFT JOIN SupportCategories c
-               ON r.CategoryId = c.CategoryId
-        WHERE r.RequestId = ? 
-    """;
+                    SELECT r.*, c.Name AS CategoryName
+                    FROM SupportRequests r
+                    LEFT JOIN SupportCategories c
+                           ON r.CategoryId = c.CategoryId
+                    WHERE r.RequestId = ?
+                """;
 
         try (PreparedStatement ps = connection.prepareStatement(sql)) {
 
@@ -530,9 +571,12 @@ WHERE r.RequestId = ? AND r.IsDeleted = 0
                 Timestamp updated = rs.getTimestamp("UpdatedAt");
                 Timestamp reviewed = rs.getTimestamp("ReviewedAt");
 
-                if (created != null) sr.setCreatedAt(created.toLocalDateTime());
-                if (updated != null) sr.setUpdatedAt(updated.toLocalDateTime());
-                if (reviewed != null) sr.setReviewedAt(reviewed.toLocalDateTime());
+                if (created != null)
+                    sr.setCreatedAt(created.toLocalDateTime());
+                if (updated != null)
+                    sr.setUpdatedAt(updated.toLocalDateTime());
+                if (reviewed != null)
+                    sr.setReviewedAt(reviewed.toLocalDateTime());
 
                 sr.setReviewedBy((Integer) rs.getObject("ReviewedBy"));
                 sr.setIsDeleted(rs.getBoolean("IsDeleted"));
@@ -545,5 +589,59 @@ WHERE r.RequestId = ? AND r.IsDeleted = 0
         }
 
         return null;
+    }
+
+    public List<SupportRequest> getAllByUser(int userId) {
+
+        List<SupportRequest> list = new ArrayList<>();
+
+        String sql = """
+                    SELECT r.RequestId, r.Title, r.CategoryId, c.Name AS CategoryName,
+                           r.Priority, r.Status, r.SupportLocation,
+                           r.BeneficiaryName, r.AffectedPeople, r.EstimatedAmount,
+                           r.CreatedBy, r.CreatedAt, r.RejectReason
+                    FROM SupportRequests r
+                    LEFT JOIN SupportCategories c ON r.CategoryId = c.CategoryId
+                    WHERE r.CreatedBy = ? AND r.IsDeleted = 0
+                    ORDER BY r.CreatedAt DESC
+                """;
+
+        try (PreparedStatement ps = connection.prepareStatement(sql)) {
+
+            ps.setInt(1, userId);
+
+            try (ResultSet rs = ps.executeQuery()) {
+
+                while (rs.next()) {
+
+                    SupportRequest sr = new SupportRequest();
+
+                    sr.setRequestId(rs.getInt("RequestId"));
+                    sr.setTitle(rs.getString("Title"));
+                    sr.setCategoryId(rs.getString("CategoryId"));
+                    sr.setCategoryName(rs.getString("CategoryName"));
+                    sr.setPriority(rs.getString("Priority"));
+                    sr.setStatus(rs.getString("Status"));
+                    sr.setSupportLocation(rs.getString("SupportLocation"));
+                    sr.setBeneficiaryName(rs.getString("BeneficiaryName"));
+                    sr.setAffectedPeople(rs.getInt("AffectedPeople"));
+                    sr.setEstimatedAmount(rs.getDouble("EstimatedAmount"));
+                    sr.setCreatedBy(rs.getInt("CreatedBy"));
+                    sr.setRejectReason(rs.getString("RejectReason"));
+
+                    Timestamp created = rs.getTimestamp("CreatedAt");
+                    if (created != null) {
+                        sr.setCreatedAt(created.toLocalDateTime());
+                    }
+
+                    list.add(sr);
+                }
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return list;
     }
 }
