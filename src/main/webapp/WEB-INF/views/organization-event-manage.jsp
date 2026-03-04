@@ -67,11 +67,7 @@
                                             <input type="hidden" name="eventId" value="${event.eventId}">
                                             <button type="submit" name="action" value="approve" class="btn-action success" style="padding: 6px 16px;">Approve</button>
                                         </form>
-                                        <form method="post" action="${pageContext.request.contextPath}/organization/manage-registrations">
-                                            <input type="hidden" name="registrationId" value="${v.registrationId}">
-                                            <input type="hidden" name="eventId" value="${event.eventId}">
-                                            <button type="submit" name="action" value="reject" class="btn-action danger" style="padding: 6px 16px;">Reject</button>
-                                        </form>
+                                        <button type="button" onclick="openRejectModal(${v.registrationId}, ${event.eventId})" class="btn-action danger" style="padding: 6px 16px;">Reject</button>
                                     </div>
                                 </c:if>
                             </td>
@@ -82,3 +78,43 @@
         </div>
     </div>
 </div>
+
+<!-- Reject Modal -->
+<div id="rejectModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; align-items: center; justify-content: center;">
+    <div style="background: white; padding: 30px; border-radius: 16px; width: 90%; max-width: 500px; box-shadow: 0 10px 40px rgba(0,0,0,0.2);">
+        <h3 style="margin: 0 0 20px 0; color: #0f172a;">Reject Application</h3>
+        <form id="rejectForm" method="post" action="${pageContext.request.contextPath}/organization/manage-registrations">
+            <input type="hidden" name="registrationId" id="rejectRegistrationId">
+            <input type="hidden" name="eventId" id="rejectEventId">
+            <input type="hidden" name="action" value="reject">
+            <div style="margin-bottom: 20px;">
+                <label style="display: block; margin-bottom: 8px; font-weight: 600; color: #475569;">Reason for rejection: <span style="color: #ef4444;">*</span></label>
+                <textarea name="reviewNote" required style="width: 100%; min-height: 100px; padding: 12px; border: 2px solid #e2e8f0; border-radius: 8px; font-family: inherit; resize: vertical;" placeholder="Please provide a reason for rejecting this application..."></textarea>
+            </div>
+            <div style="display: flex; gap: 10px; justify-content: flex-end;">
+                <button type="button" onclick="closeRejectModal()" style="padding: 10px 20px; border: 2px solid #e2e8f0; background: white; border-radius: 8px; cursor: pointer; font-weight: 600; color: #64748b;">Cancel</button>
+                <button type="submit" style="padding: 10px 20px; border: none; background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%); color: white; border-radius: 8px; cursor: pointer; font-weight: 600;">Reject</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+function openRejectModal(registrationId, eventId) {
+    document.getElementById('rejectRegistrationId').value = registrationId;
+    document.getElementById('rejectEventId').value = eventId;
+    document.getElementById('rejectModal').style.display = 'flex';
+}
+
+function closeRejectModal() {
+    document.getElementById('rejectModal').style.display = 'none';
+    document.getElementById('rejectForm').reset();
+}
+
+window.onclick = function(event) {
+    const modal = document.getElementById('rejectModal');
+    if (event.target === modal) {
+        closeRejectModal();
+    }
+}
+</script>

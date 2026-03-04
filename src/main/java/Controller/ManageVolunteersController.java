@@ -35,12 +35,21 @@ public class ManageVolunteersController extends HttpServlet {
         String action = request.getParameter("action");
         int eventId = Integer.parseInt(request.getParameter("eventId"));
         
+        HttpSession session = request.getSession();
+        Integer reviewerId = (Integer) session.getAttribute("userId");
+        
         EventRegistrationDAO dao = new EventRegistrationDAO();
         
         if ("approve".equals(action)) {
             dao.approveVolunteer(registrationId);
         } else if ("reject".equals(action)) {
-            dao.rejectVolunteer(registrationId);
+            String reviewNote = request.getParameter("reviewNote");
+            if (reviewNote == null || reviewNote.trim().isEmpty()) {
+                request.setAttribute("error", "Review note is required for rejection");
+                doGet(request, response);
+                return;
+            }
+            dao.rejectVolunteer(registrationId, reviewerId, reviewNote);
         }
         
         response.sendRedirect(request.getContextPath() + "/organization/manage-volunteers?eventId=" + eventId);
