@@ -2,252 +2,160 @@
 <%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
 
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
 <meta charset="UTF-8">
-<title>Support Requests Demo</title>
+<title>Support Requests</title>
 
 <style>
 body {
     margin: 0;
     font-family: Arial, sans-serif;
-    background: #f8fafc;
+    background: #f4f6f9;
 }
 
-.page-section {
+.container {
     padding: 40px 60px;
 }
 
-.section-title {
-    font-size: 28px;
-    font-weight: 700;
-    margin-bottom: 30px;
+h2 {
+    margin-bottom: 25px;
 }
 
-.request-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-    gap: 25px;
-}
-
-.request-card {
+table {
+    width: 100%;
+    border-collapse: collapse;
     background: #fff;
-    border-radius: 14px;
-    padding: 22px;
-    box-shadow: 0 8px 20px rgba(0,0,0,0.05);
-    transition: 0.3s ease;
-    display: flex;
-    flex-direction: column;
+    border-radius: 10px;
+    overflow: hidden;
+    box-shadow: 0 6px 18px rgba(0,0,0,0.06);
 }
 
-.request-card:hover {
-    transform: translateY(-6px);
-}
-.request-card {
-    position: relative;
-}
-.request-card h3 {
-    font-size: 20px;
-    margin-bottom: 15px;
-}
-
-.request-meta {
-    font-size: 14px;
-    margin-bottom: 6px;
-    color: #555;
-}
-
-.status {
-    display: inline-block;
-    padding: 6px 14px;
-    border-radius: 20px;
-    font-size: 12px;
-    font-weight: 600;
-    margin-top: 10px;
-}
-
-.status-pending {
-    background: #fff4e5;
-    color: #ff9800;
-}
-
-.status-approved {
-    background: #e8f5e9;
-    color: #4caf50;
-}
-
-.status-rejected {
-    background: #fdecea;
-    color: #f44336;
-}
-
-.view-btn {
-    margin-top: auto;
-    text-align: center;
-    padding: 10px;
-    border-radius: 8px;
+thead {
     background: #2563eb;
-    color: #fff;
-    text-decoration: none;
+    color: white;
+}
+
+th, td {
+    padding: 12px 14px;
+    text-align: left;
+    font-size: 14px;
+}
+
+th {
     font-weight: 600;
+}
+
+tbody tr {
+    border-bottom: 1px solid #eee;
     transition: 0.2s;
 }
 
-.view-btn:hover {
-    background: #1e40af;
-}
-.status-low {
-    background: #e0f2fe;
-    color: #0284c7;
+tbody tr:hover {
+    background: #f1f5f9;
 }
 
-.status-medium {
-    background: #fef9c3;
-    color: #ca8a04;
-}
-
-.status-high {
-    background: #fee2e2;
-    color: #dc2626;
-}
-
-.status-urgent {
-    background: #7f1d1d;
-    color: white;
-}
-.status-badge {
-    position: absolute;
-    top: 15px;
-    right: 15px;
-    padding: 6px 12px;
+/* STATUS */
+.status {
+    padding: 4px 10px;
     border-radius: 20px;
-    font-size: 11px;
-    font-weight: 700;
-    letter-spacing: 0.5px;
+    font-size: 12px;
+    font-weight: 600;
 }
 
-.status-pending {
-    background: #fff4e5;
-    color: #ff9800;
+.pending { background: #fff4e5; color: #ff9800; }
+.approved { background: #e8f5e9; color: #2e7d32; }
+.rejected { background: #fdecea; color: #c62828; }
+.completed { background: #e3f2fd; color: #1565c0; }
+
+/* PRIORITY */
+.priority {
+    font-weight: 600;
 }
 
-.status-approved {
-    background: #e8f5e9;
-    color: #2e7d32;
+.low { color: #0284c7; }
+.medium { color: #ca8a04; }
+.high { color: #dc2626; }
+.urgent { color: #7f1d1d; }
+
+/* BUTTON */
+.detail-btn {
+    padding: 6px 12px;
+    background: #2563eb;
+    color: white;
+    text-decoration: none;
+    border-radius: 6px;
+    font-size: 13px;
+    font-weight: 600;
 }
 
-.status-rejected {
-    background: #fdecea;
-    color: #c62828;
-}
-
-.status-completed {
-    background: #e3f2fd;
-    color: #1565c0;
+.detail-btn:hover {
+    background: #1e40af;
 }
 </style>
 </head>
+
 <body>
 
-<section class="page-section">
-    <h2 class="section-title">Support Requests</h2>
+<div class="container">
+    <h2>Support Requests</h2>
 
-    <div class="request-grid">
+    <c:if test="${empty requestList}">
+        <p>No support requests found.</p>
+    </c:if>
 
-<c:if test="${empty requestList}">
-    <p>No pending support requests.</p>
-</c:if>
+    <c:if test="${not empty requestList}">
+        <table>
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Title</th>
+                    <th>Category</th>
+                    <th>Priority</th>
+                    <th>Status</th>
+                    <th>Location</th>
+                    <th>Estimated</th>
+                    <th>Created At</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
 
-<c:if test="${not empty requestList}">
-    <div class="request-grid">
+            <tbody>
+                <c:forEach var="r" items="${requestList}">
+                    <tr>
+                        <td>${r.requestId}</td>
+                        <td>${r.title}</td>
+                        <td>${r.categoryName}</td>
 
-        <c:forEach var="r" items="${requestList}">
-            <div class="request-card">
-<c:choose>
-    <c:when test="${r.status == 'PENDING'}">
-        <span class="status-badge status-pending">
-            PENDING
-        </span>
-    </c:when>
+                        <!-- PRIORITY -->
+                        <td class="priority ${r.priority.toLowerCase()}">
+                            ${r.priority}
+                        </td>
 
-    <c:when test="${r.status == 'APPROVED'}">
-        <span class="status-badge status-approved">
-            APPROVED
-        </span>
-    </c:when>
+                        <!-- STATUS -->
+                        <td>
+                            <span class="status ${r.status.toLowerCase()}">
+                                ${r.status}
+                            </span>
+                        </td>
 
-    <c:when test="${r.status == 'REJECTED'}">
-        <span class="status-badge status-rejected">
-            REJECTED
-        </span>
-    </c:when>
+                        <td>${r.supportLocation}</td>
+                        <td>$${r.estimatedAmount}</td>
+                        <td>${r.createdAt}</td>
 
-    <c:otherwise>
-        <span class="status-badge status-completed">
-            COMPLETED
-        </span>
-    </c:otherwise>
-</c:choose>
-                <!-- Title -->
-                <h3>${r.title}</h3>
+                        <td>
+                            <a class="detail-btn"
+                               href="${pageContext.request.contextPath}/adminSpRequestDetail?id=${r.requestId}">
+                                Detail
+                            </a>
+                        </td>
+                    </tr>
+                </c:forEach>
+            </tbody>
+        </table>
+    </c:if>
 
-                <!-- Priority badge -->
-                <div class="request-meta">
-                    <strong>Priority:</strong>
-                    <span class="status status-${r.priority.toLowerCase()}">
-                        ${r.priority}
-                    </span>
-                </div>
-
-                <!-- Category -->
-                <div class="request-meta">
-                    <strong>Category:</strong> ${r.categoryId}
-                </div>
-
-                <!-- Beneficiary -->
-                <div class="request-meta">
-                    <strong>Beneficiary:</strong> ${r.beneficiaryName}
-                </div>
-
-                <!-- Location -->
-                <div class="request-meta">
-                    <strong>Location:</strong> ${r.supportLocation}
-                </div>
-
-                <!-- Impact -->
-                <div class="request-meta">
-                    <strong>Affected People:</strong> ${r.affectedPeople}
-                </div>
-
-                <!-- Estimated -->
-                <div class="request-meta">
-                    <strong>Estimated Amount:</strong> $${r.estimatedAmount}
-                </div>
-
-                <!-- Created info -->
-                <div class="request-meta">
-                    <strong>Created By:</strong> ${r.createdBy}
-                </div>
-
-                <div class="request-meta">
-                    <strong>Created At:</strong> ${r.createdAt}
-                </div>
-
-                <br/>
-
-                <a class="view-btn"
-                   href="${pageContext.request.contextPath}/request-detail?id=${r.requestId}">
-                     Detail
-                </a>
-
-            </div>
-        </c:forEach>
-
-    </div>
-</c:if>
-
-    </div>
-</section>
+</div>
 
 </body>
 </html>

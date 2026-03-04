@@ -18,7 +18,7 @@ public class AdminViewSpRequestController extends HttpServlet {
         SupportRequestDAO dao = new SupportRequestDAO();
 
         // Admin xem tất cả
-        List<SupportRequest> list = dao.getPendingSPRForAdmin();
+        List<SupportRequest> list = dao.getALLSPRForAdmin();
 
         request.setAttribute("requestList", list);
 

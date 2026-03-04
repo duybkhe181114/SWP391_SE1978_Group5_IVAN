@@ -17,7 +17,7 @@ public class SupportRequest {
     private String beneficiaryName;       // Người / nhóm cần giúp
     private Integer affectedPeople;       // Số người bị ảnh hưởng
     private Double estimatedAmount;       // Số tiền ước tính cần hỗ trợ
-
+    private String categoryName;
     // ===== CONTACT INFO =====
     private String contactEmail;
     private String contactPhone;
@@ -76,7 +76,13 @@ public class SupportRequest {
     }
 
     // ===== Getter & Setter =====
+    public String getCategoryName() {
+        return categoryName;
+    }
 
+    public void setCategoryName(String categoryName) {
+        this.categoryName = categoryName;
+    }
     public Integer getRequestId() { return requestId; }
     public void setRequestId(Integer requestId) { this.requestId = requestId; }
 
