@@ -1,4 +1,5 @@
 package Entity;
+
 public class SupportCategory {
 
     private Integer categoryId;
@@ -15,6 +16,7 @@ public class SupportCategory {
     public Integer getCategoryId() {
         return categoryId;
     }
+
     public void setCategoryId(Integer categoryId) {
         this.categoryId = categoryId;
     }
@@ -22,6 +24,7 @@ public class SupportCategory {
     public String getName() {
         return name;
     }
+
     public void setName(String name) {
         this.name = name;
     }

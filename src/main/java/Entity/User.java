@@ -8,8 +8,9 @@ public class User {
     private String email;
     private String passwordHash;
     private Boolean isActive;
-    private java.time.LocalDateTime createdAt;
+    private LocalDateTime createdAt;
     private String role;
+
     public User() {
     }
 
@@ -19,14 +20,15 @@ public class User {
         this.passwordHash = passwordHash;
         this.createdAt = createdAt;
     }
-// Getter & Setter
+
     public String getRole() {
-    return role;
+        return role;
     }
 
     public void setRole(String role) {
         this.role = role;
     }
+
     public Integer getUserId() {
         return userId;
     }
@@ -59,12 +61,11 @@ public class User {
         this.isActive = isActive;
     }
 
-    public java.time.LocalDateTime getCreatedAt() {
+    public LocalDateTime getCreatedAt() {
         return createdAt;
     }
 
-    public void setCreatedAt(java.time.LocalDateTime createdAt) {
+    public void setCreatedAt(LocalDateTime createdAt) {
         this.createdAt = createdAt;
     }
 }
-

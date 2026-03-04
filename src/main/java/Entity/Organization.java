@@ -18,9 +18,7 @@ public class Organization {
     public Organization() {
     }
 
-    public Organization(Integer organizationId, String name, String description,
-                        String phone, String email, String address, String website,
-                        Integer createdBy, LocalDateTime createdAt, LocalDateTime updatedAt) {
+    public Organization(Integer organizationId, String name, String description, String phone, String email, String address, String website, Integer createdBy, LocalDateTime createdAt, LocalDateTime updatedAt) {
         this.organizationId = organizationId;
         this.name = name;
         this.description = description;
