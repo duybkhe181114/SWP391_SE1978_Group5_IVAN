@@ -12,16 +12,20 @@ import java.io.IOException;
 public class AdminSPRDetailController extends HttpServlet {
 
     protected void processRequest(HttpServletRequest request,
-                                  HttpServletResponse response)
+            HttpServletResponse response)
             throws ServletException, IOException {
 
-        String idRaw = request.getParameter("id");
+        // Kiểm tra session + role
+        HttpSession session = request.getSession(false);
+        String userRole = null;
+        if (session != null && session.getAttribute("userRole") != null) {
+            userRole = session.getAttribute("userRole").toString();
+        }
 
-        // Không có id → quay lại list
-//        if (idRaw == null || idRaw.isEmpty()) {
-//            response.sendRedirect("viewSpRequestAdmin");
-//            return;
-//        }
+        // Truyền userRole vào request để JSP dùng
+        request.setAttribute("userRole", userRole);
+
+        String idRaw = request.getParameter("id");
 
         int requestId;
 
@@ -35,11 +39,6 @@ public class AdminSPRDetailController extends HttpServlet {
         SupportRequestDAO dao = new SupportRequestDAO();
         SupportRequest spr = dao.getSPRById(requestId);
 
-//        if (spr == null) {
-//            response.sendRedirect("viewSpRequestAdmin");
-//            return;
-//        }
-
         request.setAttribute("requestDetail", spr);
 
         request.getRequestDispatcher("/WEB-INF/views/admin-support-detail.jsp")
@@ -48,14 +47,14 @@ public class AdminSPRDetailController extends HttpServlet {
 
     @Override
     protected void doGet(HttpServletRequest request,
-                         HttpServletResponse response)
+            HttpServletResponse response)
             throws ServletException, IOException {
         processRequest(request, response);
     }
 
     @Override
     protected void doPost(HttpServletRequest request,
-                          HttpServletResponse response)
+            HttpServletResponse response)
             throws ServletException, IOException {
         processRequest(request, response);
     }

@@ -12,22 +12,22 @@ public class EventDAO extends DBContext {
         List<EventView> list = new ArrayList<>();
 
         String sql = """
-
-                SELECT\s
-    e.EventId,
-    e.Title,
-    e.Location,
-    e.StartDate,
-    e.EndDate,
-    e.CoverImageUrl,
-    o.OrganizationId,
-    o.Name AS OrganizationName
-FROM Events e
-JOIN Organizations o\s
-    ON e.OrganizationId = o.OrganizationId
-WHERE e.Status = 'Approved'
-ORDER BY e.StartDate ASC
-    """;
+                
+                                SELECT\s
+                    e.EventId,
+                    e.Title,
+                    e.Location,
+                    e.StartDate,
+                    e.EndDate,
+                    e.CoverImageUrl,
+                    o.OrganizationId,
+                    o.Name AS OrganizationName
+                FROM Events e
+                JOIN Organizations o\s
+                    ON e.OrganizationId = o.OrganizationId
+                WHERE e.Status = 'Approved'
+                ORDER BY e.StartDate ASC
+                """;
 
         try (PreparedStatement ps = connection.prepareStatement(sql);
              ResultSet rs = ps.executeQuery()) {
@@ -216,7 +216,7 @@ ORDER BY e.StartDate ASC
             SELECT e.EventId, e.Title, e.Description, e.Location, e.StartDate, e.EndDate, 
                    e.MaxVolunteers, e.Status, e.CoverImageUrl, e.CreatedAt,
                    o.OrganizationId, o.Name AS OrganizationName,
-                   (SELECT COUNT(*) FROM EventRegistrations er WHERE er.EventId = e.EventId) AS CurrentVolunteers
+                   (SELECT COUNT(*) FROM EventRegistrations er WHERE er.EventId = e.EventId AND er.Status = 'Approved') AS CurrentVolunteers
             FROM Events e
             JOIN Organizations o ON e.OrganizationId = o.OrganizationId
             WHERE e.EventId = ?
@@ -291,7 +291,7 @@ ORDER BY e.StartDate ASC
 
     // xem user này đã đăng ký sự kiện này chưa
     public String getEnrollmentStatus(int eventId, int volunteerId) {
-        String sql = "SELECT Status FROM EventRegistrations WHERE EventId = ? AND VolunteerId = ?";
+        String sql = "SELECT Status FROM EventRegistrations WHERE EventId = ? AND VolunteerId = ? ORDER BY AppliedAt DESC";
         try (PreparedStatement ps = connection.prepareStatement(sql)) {
             ps.setInt(1, eventId);
             ps.setInt(2, volunteerId);
@@ -301,6 +301,20 @@ ORDER BY e.StartDate ASC
             }
         } catch (Exception e) { e.printStackTrace(); }
         return null; // Chưa đăng ký
+    }
+    
+    // Lấy lý do từ chối
+    public String getRejectReason(int eventId, int volunteerId) {
+        String sql = "SELECT ReviewNote FROM EventRegistrations WHERE EventId = ? AND VolunteerId = ? AND Status = 'Rejected' ORDER BY AppliedAt DESC";
+        try (PreparedStatement ps = connection.prepareStatement(sql)) {
+            ps.setInt(1, eventId);
+            ps.setInt(2, volunteerId);
+            ResultSet rs = ps.executeQuery();
+            if (rs.next()) {
+                return rs.getString("ReviewNote");
+            }
+        } catch (Exception e) { e.printStackTrace(); }
+        return null;
     }
     //enroll
     public boolean enrollEvent(int eventId, int volunteerId) {
@@ -336,7 +350,7 @@ ORDER BY e.StartDate ASC
         String sql = "SELECT e.EventId, e.Title, e.Description, e.Location, " +
                 "e.StartDate, e.EndDate, e.MaxVolunteers, e.CoverImageUrl, e.CreatedAt, " +
                 "o.Name AS OrganizationName, " +
-                "(SELECT COUNT(*) FROM EventRegistrations er WHERE er.EventId = e.EventId) AS CurrentVolunteers " +
+                "(SELECT COUNT(*) FROM EventRegistrations er WHERE er.EventId = e.EventId AND er.Status = 'Approved') AS CurrentVolunteers " +
                 "FROM Events e " +
                 "JOIN Organizations o ON e.OrganizationId = o.OrganizationId " +
                 "WHERE e.Status = 'Approved' ";

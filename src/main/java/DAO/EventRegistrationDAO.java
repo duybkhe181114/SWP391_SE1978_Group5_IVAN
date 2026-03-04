@@ -124,11 +124,40 @@ public class EventRegistrationDAO extends DBContext {
         return false;
     }
 
-    public boolean rejectVolunteer(int registrationId) {
-        String sql = "UPDATE EventRegistrations SET Status = 'Rejected' WHERE RegistrationId = ?";
+    public boolean rejectVolunteer(int registrationId, int reviewerId, String reviewNote) {
+        String sql = "UPDATE EventRegistrations SET Status = 'Rejected', ReviewedBy = ?, ReviewedAt = GETDATE(), ReviewNote = ? WHERE RegistrationId = ?";
         try (PreparedStatement ps = connection.prepareStatement(sql)) {
-            ps.setInt(1, registrationId);
+            ps.setInt(1, reviewerId);
+            ps.setString(2, reviewNote);
+            ps.setInt(3, registrationId);
             return ps.executeUpdate() > 0;
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return false;
+    }
+
+    // Volunteer apply to event
+    public boolean applyToEvent(int eventId, int volunteerId) {
+        String sql = "INSERT INTO EventRegistrations (EventId, VolunteerId, Status) VALUES (?, ?, 'Pending')";
+        try (PreparedStatement ps = connection.prepareStatement(sql)) {
+            ps.setInt(1, eventId);
+            ps.setInt(2, volunteerId);
+            return ps.executeUpdate() > 0;
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return false;
+    }
+
+    // Check if volunteer can apply (not already pending/approved)
+    public boolean canApply(int eventId, int volunteerId) {
+        String sql = "SELECT COUNT(*) FROM EventRegistrations WHERE EventId = ? AND VolunteerId = ? AND Status IN ('Pending', 'Approved')";
+        try (PreparedStatement ps = connection.prepareStatement(sql)) {
+            ps.setInt(1, eventId);
+            ps.setInt(2, volunteerId);
+            ResultSet rs = ps.executeQuery();
+            return rs.next() && rs.getInt(1) == 0;
         } catch (SQLException e) {
             e.printStackTrace();
         }

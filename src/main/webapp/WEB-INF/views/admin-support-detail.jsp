@@ -92,6 +92,7 @@
         .PENDING { background: #fff3cd; color: #856404; }
         .APPROVED { background: #d4edda; color: #155724; }
         .REJECTED { background: #f8d7da; color: #721c24; }
+        .ACCEPTED { background: #cce5ff; color: #004085; }
 
         .actions {
             display: flex;
@@ -106,10 +107,17 @@
             border: none;
             font-weight: 600;
             cursor: pointer;
+            font-size: 14px;
+            transition: opacity 0.2s;
+        }
+
+        button:hover {
+            opacity: 0.85;
         }
 
         .approve-btn { background: #28a745; color: white; }
         .reject-btn { background: #dc3545; color: white; }
+        .accept-btn { background: #007bff; color: white; }
         .back-btn { background: #6c757d; color: white; }
 
         textarea {
@@ -217,8 +225,8 @@
             </div>
         </div>
 
-        <!-- ACTIONS -->
-        <c:if test="${requestDetail.status == 'PENDING'}">
+        <%-- ===== ADMIN: Approve / Reject (chỉ khi PENDING) ===== --%>
+        <c:if test="${userRole == 'ADMIN' && requestDetail.status == 'PENDING'}">
             <div class="actions">
 
                 <!-- APPROVE -->
@@ -228,7 +236,7 @@
                            value="${requestDetail.requestId}"/>
                     <input type="hidden" name="status" value="APPROVED"/>
                     <button type="submit" class="approve-btn">
-                        Approve
+                        ✅ Approve
                     </button>
                 </form>
 
@@ -236,7 +244,7 @@
                 <button type="button"
                         class="reject-btn"
                         onclick="showRejectBox()">
-                    Reject
+                    ❌ Reject
                 </button>
             </div>
 
@@ -258,6 +266,21 @@
                             Confirm Reject
                         </button>
                     </div>
+                </form>
+            </div>
+        </c:if>
+
+        <%-- ===== ORGANIZATION: Accept (chỉ khi APPROVED) ===== --%>
+        <c:if test="${userRole == 'Organization' && requestDetail.status == 'APPROVED'}">
+            <div class="actions">
+                <form action="${pageContext.request.contextPath}/updateSupportRequestStatus"
+                      method="post">
+                    <input type="hidden" name="requestId"
+                           value="${requestDetail.requestId}"/>
+                    <input type="hidden" name="status" value="ACCEPTED"/>
+                    <button type="submit" class="accept-btn">
+                        📋 Accept
+                    </button>
                 </form>
             </div>
         </c:if>

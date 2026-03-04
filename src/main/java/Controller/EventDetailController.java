@@ -2,7 +2,9 @@ package Controller;
 
 import DAO.EventDAO;
 import DAO.EventRegistrationDAO;
+import DAO.EventCommentDAO;
 import DTO.EventView;
+import Entity.EventComment;
 
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
@@ -20,12 +22,13 @@ public class EventDetailController extends HttpServlet {
 
     private EventDAO eventDAO = new EventDAO();
     private EventRegistrationDAO regDAO = new EventRegistrationDAO();
+    private EventCommentDAO commentDAO = new EventCommentDAO();
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
 
-        // 1️⃣ Validate id
+        //Validate id
         String idParam = request.getParameter("id");
         if (idParam == null || idParam.isEmpty()) {
             response.sendRedirect(request.getContextPath() + "/home");
@@ -40,7 +43,7 @@ public class EventDetailController extends HttpServlet {
             return;
         }
 
-        // 2️⃣ Lấy event
+        //Lấy event
         EventView event = eventDAO.getEventById(eventId);
         if (event == null) {
             response.sendError(HttpServletResponse.SC_NOT_FOUND, "Event not found");
@@ -49,7 +52,7 @@ public class EventDetailController extends HttpServlet {
 
         request.setAttribute("event", event);
 
-        // 3️⃣ Lấy session
+        //Lấy session
         HttpSession session = request.getSession(false);
         Integer userId = null;
         String userRole = null;
@@ -59,7 +62,7 @@ public class EventDetailController extends HttpServlet {
             userRole = (String) session.getAttribute("userRole");
         }
 
-        // 4️⃣ Nếu là Organization → trang quản lý
+        //Nếu là Organization → trang quản lý
         if ("Organization".equals(userRole)) {
             EventRegistrationDAO regDAO = new EventRegistrationDAO();
             List<Map<String, Object>> volunteers = regDAO.getVolunteersByEvent(eventId);
@@ -67,15 +70,48 @@ public class EventDetailController extends HttpServlet {
 
             request.getRequestDispatcher("/WEB-INF/views/organization-event-manage.jsp").forward(request, response);
         } else {
-            // 5️⃣ Nếu là Volunteer hoặc Guest → trang detail
+            //Nếu là Volunteer hoặc Guest → trang detail
 
             String enrollStatus = null;
+            String rejectReason = null;
 
             if (userId != null && "Volunteer".equals(userRole)) {
                 enrollStatus = eventDAO.getEnrollmentStatus(eventId, userId);
+                
+                // Nếu bị reject, lấy lý do từ chối
+                if ("Rejected".equals(enrollStatus)) {
+                    rejectReason = eventDAO.getRejectReason(eventId, userId);
+                }
             }
 
             request.setAttribute("enrollStatus", enrollStatus);
+            request.setAttribute("rejectReason", rejectReason);
+            
+            // Lấy filter parameters
+            String ratingFilterParam = request.getParameter("ratingFilter");
+            String sortOrder = request.getParameter("sortOrder");
+            
+            Integer ratingFilter = null;
+            if (ratingFilterParam != null && !ratingFilterParam.isEmpty()) {
+                try {
+                    ratingFilter = Integer.parseInt(ratingFilterParam);
+                } catch (NumberFormatException e) {}
+            }
+            
+            if (sortOrder == null || sortOrder.isEmpty()) {
+                sortOrder = "newest";
+            }
+            
+            // Lấy comments và rating
+            List<EventComment> comments = commentDAO.getCommentsByEventId(eventId, ratingFilter, sortOrder);
+            Double avgRating = commentDAO.getAverageRating(eventId);
+            boolean canComment = userId != null && commentDAO.canComment(eventId, userId);
+            
+            request.setAttribute("comments", comments);
+            request.setAttribute("avgRating", avgRating);
+            request.setAttribute("canComment", canComment);
+            request.setAttribute("ratingFilter", ratingFilter);
+            request.setAttribute("sortOrder", sortOrder);
 
             request.getRequestDispatcher(
                     "/WEB-INF/views/event-detail.jsp"
@@ -105,10 +141,27 @@ public class EventDetailController extends HttpServlet {
         int eventId = Integer.parseInt(request.getParameter("eventId"));
         String action = request.getParameter("action");
 
+        if ("comment".equals(action)) {
+            String comment = request.getParameter("comment");
+            int rating = Integer.parseInt(request.getParameter("rating"));
+            
+            if (commentDAO.canComment(eventId, userId)) {
+                commentDAO.addComment(eventId, userId, comment, rating);
+            }
+            response.sendRedirect(request.getContextPath() + "/event/detail?id=" + eventId);
+            return;
+        }
+
         if ("apply".equals(action)) {
-            eventDAO.enrollEvent(eventId, userId);
-            response.sendRedirect(request.getContextPath()
-                    + "/event/detail?id=" + eventId + "&success=applied");
+
+            if (regDAO.canApply(eventId, userId)) {
+                regDAO.applyToEvent(eventId, userId);
+                response.sendRedirect(request.getContextPath()
+                        + "/event/detail?id=" + eventId + "&success=applied");
+            } else {
+                response.sendRedirect(request.getContextPath()
+                        + "/event/detail?id=" + eventId + "&error=already_applied");
+            }
 
         } else if ("cancel".equals(action)) {
             eventDAO.cancelEnrollment(eventId, userId);

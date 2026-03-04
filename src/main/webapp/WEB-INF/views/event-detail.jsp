@@ -60,6 +60,89 @@
 
             <h3 style="margin-top: 30px; font-size: 20px; color: #0f172a;">About this Event</h3>
             <div class="description-content"><c:out value="${event.description}" /></div>
+            
+            <!-- Comments & Ratings Section -->
+            <div style="margin-top: 50px; padding-top: 30px; border-top: 2px solid #f1f5f9;">
+                <h3 style="font-size: 20px; color: #0f172a; margin-bottom: 20px;">💬 Comments & Ratings</h3>
+                
+                <c:if test="${not empty avgRating}">
+                    <div style="background: #fef9c3; padding: 15px; border-radius: 10px; margin-bottom: 20px; display: flex; align-items: center; gap: 10px;">
+                        <span style="font-size: 24px; font-weight: 700; color: #854d0e;"><fmt:formatNumber value="${avgRating}" maxFractionDigits="1"/> ⭐</span>
+                        <span style="color: #854d0e; font-weight: 500;">Average Rating</span>
+                    </div>
+                </c:if>
+                
+                <c:if test="${canComment}">
+                    <form method="post" action="${pageContext.request.contextPath}/event/detail" style="background: #f8fafc; padding: 20px; border-radius: 10px; margin-bottom: 30px;">
+                        <input type="hidden" name="eventId" value="${event.eventId}">
+                        <input type="hidden" name="action" value="comment">
+                        <div style="margin-bottom: 15px;">
+                            <label style="display: block; margin-bottom: 8px; font-weight: 600; color: #475569;">Your Rating:</label>
+                            <div id="starRating" style="display: flex; gap: 5px;">
+                                <input type="radio" name="rating" value="1" id="r1" required style="display: none;">
+                                <label for="r1" onclick="setRating(1)" class="star-label" style="font-size: 28px; cursor: pointer; filter: grayscale(1);">⭐</label>
+                                <input type="radio" name="rating" value="2" id="r2" style="display: none;">
+                                <label for="r2" onclick="setRating(2)" class="star-label" style="font-size: 28px; cursor: pointer; filter: grayscale(1);">⭐</label>
+                                <input type="radio" name="rating" value="3" id="r3" style="display: none;">
+                                <label for="r3" onclick="setRating(3)" class="star-label" style="font-size: 28px; cursor: pointer; filter: grayscale(1);">⭐</label>
+                                <input type="radio" name="rating" value="4" id="r4" style="display: none;">
+                                <label for="r4" onclick="setRating(4)" class="star-label" style="font-size: 28px; cursor: pointer; filter: grayscale(1);">⭐</label>
+                                <input type="radio" name="rating" value="5" id="r5" style="display: none;">
+                                <label for="r5" onclick="setRating(5)" class="star-label" style="font-size: 28px; cursor: pointer; filter: grayscale(1);">⭐</label>
+                            </div>
+                        </div>
+                        <div style="margin-bottom: 15px;">
+                            <label style="display: block; margin-bottom: 8px; font-weight: 600; color: #475569;">Your Comment:</label>
+                            <textarea name="comment" required style="width: 100%; min-height: 80px; padding: 12px; border: 2px solid #e2e8f0; border-radius: 8px; font-family: inherit; resize: vertical;" placeholder="Share your experience..."></textarea>
+                        </div>
+                        <button type="submit" style="padding: 10px 20px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; border-radius: 8px; font-weight: 600; cursor: pointer;">Submit Comment</button>
+                    </form>
+                </c:if>
+                
+                <!-- Filter Section -->
+                <div style="background: #f8fafc; padding: 15px; border-radius: 10px; margin-bottom: 20px; display: flex; gap: 15px; flex-wrap: wrap;">
+                    <div>
+                        <label style="font-size: 13px; color: #64748b; font-weight: 600; display: block; margin-bottom: 5px;">Filter by Rating:</label>
+                        <select onchange="applyFilter()" id="ratingFilter" style="padding: 8px 12px; border: 2px solid #e2e8f0; border-radius: 8px; font-weight: 500; cursor: pointer;">
+                            <option value="">All Ratings</option>
+                            <option value="5" ${ratingFilter == 5 ? 'selected' : ''}>⭐⭐⭐⭐⭐ (5 stars)</option>
+                            <option value="4" ${ratingFilter == 4 ? 'selected' : ''}>⭐⭐⭐⭐ (4 stars)</option>
+                            <option value="3" ${ratingFilter == 3 ? 'selected' : ''}>⭐⭐⭐ (3 stars)</option>
+                            <option value="2" ${ratingFilter == 2 ? 'selected' : ''}>⭐⭐ (2 stars)</option>
+                            <option value="1" ${ratingFilter == 1 ? 'selected' : ''}>⭐ (1 star)</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label style="font-size: 13px; color: #64748b; font-weight: 600; display: block; margin-bottom: 5px;">Sort by:</label>
+                        <select onchange="applyFilter()" id="sortOrder" style="padding: 8px 12px; border: 2px solid #e2e8f0; border-radius: 8px; font-weight: 500; cursor: pointer;">
+                            <option value="newest" ${sortOrder == 'newest' ? 'selected' : ''}>Newest First</option>
+                            <option value="oldest" ${sortOrder == 'oldest' ? 'selected' : ''}>Oldest First</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div>
+                    <c:forEach items="${comments}" var="c">
+                        <div style="background: white; padding: 20px; border: 1px solid #e2e8f0; border-radius: 10px; margin-bottom: 15px;">
+                            <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 10px;">
+                                <div>
+                                    <strong style="color: #0f172a;">${c.userName}</strong>
+                                    <div style="color: #f59e0b; margin-top: 5px;">
+                                        <c:forEach begin="1" end="${c.rating}">⭐</c:forEach>
+                                    </div>
+                                </div>
+                                <span style="font-size: 13px; color: #94a3b8;">
+                                    <fmt:formatDate value="${c.createdAt}" pattern="dd MMM yyyy" />
+                                </span>
+                            </div>
+                            <p style="color: #475569; line-height: 1.6; margin: 0;">${c.comment}</p>
+                        </div>
+                    </c:forEach>
+                    <c:if test="${empty comments}">
+                        <p style="text-align: center; color: #94a3b8; padding: 30px;">No comments yet. Be the first to share your experience!</p>
+                    </c:if>
+                </div>
+            </div>
         </div>
 
         <div class="side-card">
@@ -116,9 +199,18 @@
                             </form>
                         </c:when>
 
-                        <%-- Bị Rejected --%>
+                        <%-- Bị Rejected - Có thể apply lại --%>
                         <c:when test="${enrollStatus == 'Rejected'}">
-                            <button class="btn-full btn-disabled" disabled>Application Rejected</button>
+                            <div class="alert" style="background: #fef2f2; color: #991b1b; border: 1px solid #fecaca; margin-bottom: 15px;">
+                                <strong>❌ Application Rejected</strong>
+                                <c:if test="${not empty rejectReason}">
+                                    <p style="margin: 8px 0 0 0; font-size: 14px;">Reason: ${rejectReason}</p>
+                                </c:if>
+                            </div>
+                            <form method="post" action="${pageContext.request.contextPath}/event/detail">
+                                <input type="hidden" name="eventId" value="${event.eventId}">
+                                <button type="submit" name="action" value="apply" class="btn-full btn-apply">Apply Again</button>
+                            </form>
                         </c:when>
 
                         <%-- Chưa đăng ký --%>
@@ -144,5 +236,29 @@
     </div>
 
     <jsp:include page="/components/footer.jsp"/>
+    
+    <script>
+    function setRating(rating) {
+        document.querySelectorAll('.star-label').forEach((label, index) => {
+            if (index < rating) {
+                label.style.filter = 'grayscale(0)';
+            } else {
+                label.style.filter = 'grayscale(1)';
+            }
+        });
+    }
+    
+    function applyFilter() {
+        const ratingFilter = document.getElementById('ratingFilter').value;
+        const sortOrder = document.getElementById('sortOrder').value;
+        const eventId = ${event.eventId};
+        
+        let url = '${pageContext.request.contextPath}/event/detail?id=' + eventId;
+        if (ratingFilter) url += '&ratingFilter=' + ratingFilter;
+        if (sortOrder) url += '&sortOrder=' + sortOrder;
+        
+        window.location.href = url;
+    }
+    </script>
 </body>
 </html>
