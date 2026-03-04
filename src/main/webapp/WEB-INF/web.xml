@@ -24,11 +24,6 @@
     </servlet>
     
     <servlet>
-        <servlet-name>mockLogin</servlet-name>
-        <servlet-class>Controller.MockLoginController</servlet-class>
-    </servlet>
-    
-    <servlet>
         <servlet-name>loginAsUser</servlet-name>
         <servlet-class>Controller.LoginAsUserController</servlet-class>
     </servlet>
@@ -61,11 +56,6 @@
     <servlet-mapping>
         <servlet-name>manageVolunteers</servlet-name>
         <url-pattern>/organization/manageVolunteers</url-pattern>
-    </servlet-mapping>
-    
-    <servlet-mapping>
-        <servlet-name>mockLogin</servlet-name>
-        <url-pattern>/mock-login</url-pattern>
     </servlet-mapping>
     
     <servlet-mapping>

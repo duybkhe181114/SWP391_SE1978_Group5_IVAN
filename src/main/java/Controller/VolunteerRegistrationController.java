@@ -24,7 +24,13 @@ public class VolunteerRegistrationController extends HttpServlet {
         if ("approve".equals(action)) {
             regDAO.approveVolunteer(regId);
         } else if ("reject".equals(action)) {
-            regDAO.rejectVolunteer(regId);
+            int reviewerId = (Integer) request.getSession().getAttribute("userId");
+            String reviewNote = request.getParameter("reviewNote");
+            if (reviewNote == null || reviewNote.trim().isEmpty()) {
+                response.sendRedirect(request.getContextPath() + "/event/detail?id=" + eventId + "&error=Review+note+required");
+                return;
+            }
+            regDAO.rejectVolunteer(regId, reviewerId, reviewNote);
         }
 
         response.sendRedirect(request.getContextPath() + "/event/detail?id=" + eventId);

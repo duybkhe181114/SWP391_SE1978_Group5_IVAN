@@ -1,11 +1,9 @@
 package Controller;
 
 import DAO.EventDAO;
-import Entity.Event;
 import jakarta.servlet.*;
 import jakarta.servlet.http.*;
 import java.io.IOException;
-import java.text.SimpleDateFormat;
 
 public class CreateEventController extends HttpServlet {
 
