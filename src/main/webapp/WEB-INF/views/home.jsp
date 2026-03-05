@@ -10,9 +10,14 @@
     <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/home.css">
 </head>
 <body>
-<jsp:include page="/components/header.jsp"/>
-<jsp:include page="/components/hero.jsp"/>
-<jsp:include page="/components/event-list.jsp"/>
-<jsp:include page="/components/footer.jsp"/>
+    <jsp:include page="/components/header.jsp"/>
+    <jsp:include page="/components/hero.jsp"/>
+    <jsp:include page="/components/event-list.jsp"/>
+
+    <jsp:include page="/components/how-it-works.jsp"/>
+    <jsp:include page="/components/trusted-orgs.jsp"/>
+    <jsp:include page="/components/impact-stats.jsp"/>
+
+    <jsp:include page="/components/footer.jsp"/>
 </body>
 </html>

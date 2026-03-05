@@ -172,17 +172,17 @@ public class EventDAO extends DBContext {
         }
         return list;
     }
-    
+
     public List<EventView> getEventsByOrganization(int organizationId) {
         List<EventView> list = new ArrayList<>();
         String sql = """
             SELECT EventId, Title, Description, Location, StartDate, EndDate, 
-                   MaxVolunteers, Status, CreatedAt
+                   MaxVolunteers, Status, CreatedAt, CoverImageUrl
             FROM Events
             WHERE OrganizationId = ?
             ORDER BY CreatedAt DESC
         """;
-        
+
         try (PreparedStatement ps = connection.prepareStatement(sql)) {
             ps.setInt(1, organizationId);
             ResultSet rs = ps.executeQuery();
@@ -192,17 +192,19 @@ public class EventDAO extends DBContext {
                 ev.setEventName(rs.getString("Title"));
                 ev.setLocation(rs.getString("Location"));
                 ev.setStatus(rs.getString("Status"));
-                
+
+                ev.setEventImageUrl(rs.getString("CoverImageUrl"));
+
                 java.sql.Date startDate = rs.getDate("StartDate");
                 if (startDate != null) {
                     ev.setStartDate(startDate.toLocalDate().atStartOfDay());
                 }
-                
+
                 java.sql.Date endDate = rs.getDate("EndDate");
                 if (endDate != null) {
                     ev.setEndDate(endDate.toLocalDate().atStartOfDay());
                 }
-                
+
                 list.add(ev);
             }
         } catch (Exception e) {
