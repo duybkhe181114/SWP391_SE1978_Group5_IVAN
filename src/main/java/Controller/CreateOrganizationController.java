@@ -48,7 +48,7 @@ public class CreateOrganizationController extends HttpServlet {
                 String email = request.getParameter("email");
                 String address = request.getParameter("address");
                 String website = request.getParameter("website");
-
+                String logoUrl = request.getParameter("logoUrl");
                 if (name == null || name.trim().isEmpty()) {
                     response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Tên tổ chức không được để trống");
                     return;
@@ -61,7 +61,7 @@ public class CreateOrganizationController extends HttpServlet {
                 org.setEmail(email);
                 org.setAddress(address);
                 org.setWebsite(website);
-
+                org.setLogoUrl(logoUrl);
                 OrganizationDAO dao = new OrganizationDAO();
                 boolean success = dao.createOrganization(org, user.getUserId());
 

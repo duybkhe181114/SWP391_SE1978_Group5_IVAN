@@ -18,8 +18,10 @@ public class HomeController extends HttpServlet {
 
         EventDAO eventDAO = new EventDAO();
         SupportRequestDAO supportDAO = new SupportRequestDAO();
+        DAO.OrganizationDAO orgDAO = new DAO.OrganizationDAO();
 
         request.setAttribute("events", eventDAO.getApprovedEventsForHome());
+        request.setAttribute("topOrgs", orgDAO.getTopOrganizations());
         request.setAttribute("supportRequests", supportDAO.getApprovedSupportRequests());
 
         request.getRequestDispatcher("/WEB-INF/views/home.jsp")
