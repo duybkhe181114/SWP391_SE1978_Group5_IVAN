@@ -30,7 +30,7 @@
     
     <servlet>
         <servlet-name>adminDashboard</servlet-name>
-        <servlet-class>Controller.AdminDashboardController</servlet-class>
+        <servlet-class>Controller.AdminDashboard</servlet-class>
     </servlet>
     
     <servlet>

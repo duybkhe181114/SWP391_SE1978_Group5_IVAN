@@ -290,6 +290,25 @@ public class EventDAO extends DBContext {
         }
         return 0;
     }
+    
+    public int getEventsByStatus(String status) {
+        String sql = "SELECT COUNT(*) FROM Events WHERE Status = ?";
+        try (PreparedStatement ps = connection.prepareStatement(sql)) {
+            ps.setString(1, status);
+            ResultSet rs = ps.executeQuery();
+            if (rs.next()) return rs.getInt(1);
+        } catch (Exception e) { e.printStackTrace(); }
+        return 0;
+    }
+    
+    public int getTotalRegistrations() {
+        String sql = "SELECT COUNT(*) FROM EventRegistrations";
+        try (PreparedStatement ps = connection.prepareStatement(sql);
+             ResultSet rs = ps.executeQuery()) {
+            if (rs.next()) return rs.getInt(1);
+        } catch (Exception e) { e.printStackTrace(); }
+        return 0;
+    }
 
     // xem user này đã đăng ký sự kiện này chưa
     public String getEnrollmentStatus(int eventId, int volunteerId) {
