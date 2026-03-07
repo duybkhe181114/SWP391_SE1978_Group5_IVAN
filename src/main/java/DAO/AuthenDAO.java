@@ -14,7 +14,7 @@ public class AuthenDAO extends DBContext {
             SELECT u.UserId, u.Email, u.IsActive, u.CreatedAt, ur.Role
             FROM Users u
             LEFT JOIN UserRoles ur ON u.UserId = ur.UserId
-            WHERE u.Email = ? AND u.PasswordHash = ? AND u.IsActive = 1
+            WHERE u.Email = ? AND u.PasswordHash = ?
         """;
 
         try {

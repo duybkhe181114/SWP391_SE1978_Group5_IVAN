@@ -26,6 +26,7 @@
                   <a href="${pageContext.request.contextPath}/admin/dashboard">Dashboard</a>
                   <a href="${pageContext.request.contextPath}/admin/manage-events">Manage Events</a>
                   <a href="${pageContext.request.contextPath}/admin/manage-users">Manage Users</a>
+                  <a href="${pageContext.request.contextPath}/admin/review-organizations">Review Organizations</a>
                   <a href="${pageContext.request.contextPath}/admin/review-profiles">Review Profiles</a>
                   <a href="${pageContext.request.contextPath}/viewSpRequestAdmin">Support Requests</a>
                   <% } else { %>

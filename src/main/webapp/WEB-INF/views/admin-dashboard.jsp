@@ -1,5 +1,5 @@
 <%@ page contentType="text/html;charset=UTF-8" %>
-<%@ taglib prefix="c" uri="jakarta.tags.core" %>
+<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <!DOCTYPE html>
 <html>
 <head>
@@ -51,6 +51,7 @@
             <h2>Quick Actions</h2>
             <div class="btn-group">
                 <a href="${pageContext.request.contextPath}/admin/manage-events" class="btn btn-primary">Manage Events</a>
+                <a href="${pageContext.request.contextPath}/admin/review-organizations" class="btn btn-primary">Review Organizations</a>
             </div>
         </div>
     </div>
