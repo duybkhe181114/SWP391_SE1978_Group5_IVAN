@@ -28,7 +28,7 @@ public class EventDetailController extends HttpServlet {
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
 
-        //Validate id
+        // 1. Validate id
         String idParam = request.getParameter("id");
         if (idParam == null || idParam.isEmpty()) {
             response.sendRedirect(request.getContextPath() + "/home");
@@ -43,7 +43,7 @@ public class EventDetailController extends HttpServlet {
             return;
         }
 
-        //Lấy event
+        // 2. Lấy event
         EventView event = eventDAO.getEventById(eventId);
         if (event == null) {
             response.sendError(HttpServletResponse.SC_NOT_FOUND, "Event not found");
@@ -52,71 +52,75 @@ public class EventDetailController extends HttpServlet {
 
         request.setAttribute("event", event);
 
-        //Lấy session
-        HttpSession session = request.getSession(false);
-        Integer userId = null;
-        String userRole = null;
+        // 3. Lấy session an toàn
+        HttpSession session = request.getSession();
+        Integer userId = (Integer) session.getAttribute("userId");
+        String userRole = (String) session.getAttribute("userRole");
 
-        if (session != null) {
-            userId = (Integer) session.getAttribute("userId");
-            userRole = (String) session.getAttribute("userRole");
+        // ==========================================
+        // FLOW 1: DÀNH CHO ORGANIZATION (CHỦ SỰ KIỆN)
+        // ==========================================
+        if ("Organization".equals(userRole) && userId != null) {
+            Integer currentOrgId = eventDAO.getOrganizationIdByUserId(userId);
+
+            if (currentOrgId != null && currentOrgId.equals(event.getOrganizationId())) {
+                List<Map<String, Object>> volunteers = regDAO.getVolunteersByEvent(eventId);
+                request.setAttribute("volunteers", volunteers);
+
+                DAO.EventCoordinatorDAO coordDAO = new DAO.EventCoordinatorDAO();
+                List<Entity.EventCoordinator> activeCoordinators = coordDAO.getActiveCoordinatorsByOrg(currentOrgId);
+                request.setAttribute("activeCoordinators", activeCoordinators);
+
+                request.getRequestDispatcher("/WEB-INF/views/organization-event-manage.jsp").forward(request, response);
+                return;
+            }
         }
 
-        //Nếu là Organization → trang quản lý
-        if ("Organization".equals(userRole)) {
-            EventRegistrationDAO regDAO = new EventRegistrationDAO();
-            List<Map<String, Object>> volunteers = regDAO.getVolunteersByEvent(eventId);
-            request.setAttribute("volunteers", volunteers);
+        // ==========================================
+        // FLOW 2: DÀNH CHO VOLUNTEER, KHÁCH, HOẶC ORG XEM SỰ KIỆN CỦA ORG KHÁC
+        // ==========================================
+        String enrollStatus = null;
+        String rejectReason = null;
 
-            request.getRequestDispatcher("/WEB-INF/views/organization-event-manage.jsp").forward(request, response);
-        } else {
-            //Nếu là Volunteer hoặc Guest → trang detail
+        if (userId != null && "Volunteer".equals(userRole)) {
+            enrollStatus = eventDAO.getEnrollmentStatus(eventId, userId);
 
-            String enrollStatus = null;
-            String rejectReason = null;
-
-            if (userId != null && "Volunteer".equals(userRole)) {
-                enrollStatus = eventDAO.getEnrollmentStatus(eventId, userId);
-                
-                // Nếu bị reject, lấy lý do từ chối
-                if ("Rejected".equals(enrollStatus)) {
-                    rejectReason = eventDAO.getRejectReason(eventId, userId);
-                }
+            // Nếu bị reject, lấy lý do từ chối
+            if ("Rejected".equals(enrollStatus)) {
+                rejectReason = eventDAO.getRejectReason(eventId, userId);
             }
-
-            request.setAttribute("enrollStatus", enrollStatus);
-            request.setAttribute("rejectReason", rejectReason);
-            
-            // Lấy filter parameters
-            String ratingFilterParam = request.getParameter("ratingFilter");
-            String sortOrder = request.getParameter("sortOrder");
-            
-            Integer ratingFilter = null;
-            if (ratingFilterParam != null && !ratingFilterParam.isEmpty()) {
-                try {
-                    ratingFilter = Integer.parseInt(ratingFilterParam);
-                } catch (NumberFormatException e) {}
-            }
-            
-            if (sortOrder == null || sortOrder.isEmpty()) {
-                sortOrder = "newest";
-            }
-            
-            // Lấy comments và rating
-            List<EventComment> comments = commentDAO.getCommentsByEventId(eventId, ratingFilter, sortOrder);
-            Double avgRating = commentDAO.getAverageRating(eventId);
-            boolean canComment = userId != null && commentDAO.canComment(eventId, userId);
-            
-            request.setAttribute("comments", comments);
-            request.setAttribute("avgRating", avgRating);
-            request.setAttribute("canComment", canComment);
-            request.setAttribute("ratingFilter", ratingFilter);
-            request.setAttribute("sortOrder", sortOrder);
-
-            request.getRequestDispatcher(
-                    "/WEB-INF/views/event-detail.jsp"
-            ).forward(request, response);
         }
+
+        request.setAttribute("enrollStatus", enrollStatus);
+        request.setAttribute("rejectReason", rejectReason);
+
+        // 4. Xử lý Lọc & Sắp xếp Comment
+        String ratingFilterParam = request.getParameter("ratingFilter");
+        String sortOrder = request.getParameter("sortOrder");
+
+        Integer ratingFilter = null;
+        if (ratingFilterParam != null && !ratingFilterParam.isEmpty()) {
+            try {
+                ratingFilter = Integer.parseInt(ratingFilterParam);
+            } catch (NumberFormatException e) {}
+        }
+
+        if (sortOrder == null || sortOrder.isEmpty()) {
+            sortOrder = "newest";
+        }
+
+        // 5. Lấy Comments và Đánh giá
+        List<EventComment> comments = commentDAO.getCommentsByEventId(eventId, ratingFilter, sortOrder);
+        Double avgRating = commentDAO.getAverageRating(eventId);
+        boolean canComment = userId != null && commentDAO.canComment(eventId, userId);
+
+        request.setAttribute("comments", comments);
+        request.setAttribute("avgRating", avgRating);
+        request.setAttribute("canComment", canComment);
+        request.setAttribute("ratingFilter", ratingFilter);
+        request.setAttribute("sortOrder", sortOrder);
+
+        request.getRequestDispatcher("/WEB-INF/views/event-detail.jsp").forward(request, response);
     }
 
     @Override
@@ -144,7 +148,7 @@ public class EventDetailController extends HttpServlet {
         if ("comment".equals(action)) {
             String comment = request.getParameter("comment");
             int rating = Integer.parseInt(request.getParameter("rating"));
-            
+
             if (commentDAO.canComment(eventId, userId)) {
                 commentDAO.addComment(eventId, userId, comment, rating);
             }
