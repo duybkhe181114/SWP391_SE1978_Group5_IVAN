@@ -29,11 +29,11 @@
                   <a href="${pageContext.request.contextPath}/viewSpRequestAdmin">Support Requests</a>
                   <% } else { %>
                     <a href="${pageContext.request.contextPath}/volunteer/dashboard">Dashboard</a>
+                    <a href="${pageContext.request.contextPath}/volunteer/dashboard#workspaces">My Workspaces</a>
                     <a href="${pageContext.request.contextPath}/viewSpRequestUser">My Requests</a>
-                    <% } %>
+                  <% } %>
 
                       <a href="${pageContext.request.contextPath}/profile">My Profile</a>
-
                       <hr style="border: 0; border-top: 1px solid #eee; margin: 5px 0;">
                       <a href="${pageContext.request.contextPath}/logout" style="color: #e53e3e;">Logout</a>
             </div>
