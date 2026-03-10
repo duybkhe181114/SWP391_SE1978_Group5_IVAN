@@ -220,6 +220,19 @@ public class EventCoordinatorDAO extends DBContext {
         return list;
     }
 
+    public boolean checkIsCoordinator(int eventId, int userId) {
+        String sql = "SELECT 1 FROM EventCoordinators WHERE EventId = ? AND CoordinatorId = ? AND Status = 'Active'";
+        try (java.sql.PreparedStatement ps = connection.prepareStatement(sql)) {
+            ps.setInt(1, eventId);
+            ps.setInt(2, userId);
+            try (java.sql.ResultSet rs = ps.executeQuery()) {
+                return rs.next();
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return false;
+    }
     /**
      * Get all distinct active coordinators across organization's events (for assign
      * dropdown).

@@ -72,9 +72,9 @@
                 </a>
             </div>
 
-            <h2 class="section-title" style="font-size: 20px; border: none; margin-bottom: 15px;">
-                My Applications
-            </h2>
+<h2 id="workspaces" class="section-title" style="font-size: 20px; border: none; margin-bottom: 15px; scroll-margin-top: 80px;">
+    My Applications & Workspaces
+</h2>
 
             <div class="admin-table-wrapper">
                 <table class="table admin-table">
@@ -110,11 +110,24 @@
                                         </c:otherwise>
                                     </c:choose>
                                 </td>
-                                <td style="text-align: center;">
-                                    <a href="${pageContext.request.contextPath}/event/detail?id=${e.eventId}" class="btn-action info" style="text-decoration: none; display: inline-block;">
-                                        View
-                                    </a>
-                                </td>
+<td style="text-align:center;">
+    <div style="display:flex; gap:8px; justify-content:center;">
+
+        <a href="${pageContext.request.contextPath}/event/detail?id=${e.eventId}"
+           class="btn-action info"
+           style="text-decoration:none; padding:6px 12px; background:#f1f5f9; color:#475569; border-radius:6px;">
+            View
+        </a>
+
+        <c:if test="${e.status == 'Approved'}">
+            <a href="${pageContext.request.contextPath}/volunteer/workspace?eventId=${e.eventId}"
+               style="text-decoration:none; padding:6px 12px; background:#8b5cf6; color:white; border-radius:6px; font-weight:600;">
+                🚀 Workspace
+            </a>
+        </c:if>
+
+    </div>
+</td>
                             </tr>
                         </c:forEach>
 
