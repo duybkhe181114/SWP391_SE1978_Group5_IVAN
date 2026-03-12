@@ -15,6 +15,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -96,27 +97,40 @@ public class EventDetailController extends HttpServlet {
         // FLOW 2: COORDINATOR CỦA EVENT NÀY
         // =====================================================
         if ("Volunteer".equals(userRole) && userId != null) {
+
             DAO.EventCoordinatorDAO coordDAO = new DAO.EventCoordinatorDAO();
             boolean isCoordinator = coordDAO.checkIsCoordinator(eventId, userId);
 
             if (isCoordinator) {
+
                 DAO.EventRegistrationDAO regDAO = new DAO.EventRegistrationDAO();
-                List<Map<String, Object>> volunteers = regDAO.getVolunteersByEvent(eventId);
+                List<Map<String, Object>> allVolunteers = regDAO.getVolunteersByEvent(eventId);
+                request.setAttribute("allVolunteers", allVolunteers);
 
-                // FIX LỖI: Lọc chỉ lấy Approved VÀ KHÔNG PHẢI là chính mình
-                volunteers.removeIf(v -> !"Approved".equals(v.get("status")) || v.get("volunteerId").equals(userId));
-                request.setAttribute("approvedVolunteers", volunteers);
+                List<Map<String, Object>> approvedVolunteers = new ArrayList<>();
 
-                // LOAD DANH SÁCH TASK TỪ DATABASE
+                for (Map<String, Object> v : allVolunteers) {
+
+                    String status = (String) v.get("status");
+                    Integer volunteerId = (Integer) v.get("volunteerId");
+
+                    if ("Approved".equals(status) && !volunteerId.equals(userId)) {
+                        approvedVolunteers.add(v);
+                    }
+                }
+
+                request.setAttribute("approvedVolunteers", approvedVolunteers);
+
                 DAO.TaskDAO taskDAO = new DAO.TaskDAO();
                 List<Map<String, Object>> tasks = taskDAO.getTasksByEvent(eventId);
                 request.setAttribute("eventTasks", tasks);
 
-                request.getRequestDispatcher("/WEB-INF/views/coordinator-event-manage.jsp").forward(request, response);
+                request.getRequestDispatcher("/WEB-INF/views/coordinator-event-manage.jsp")
+                        .forward(request, response);
+
                 return;
             }
         }
-
         // =====================================================
         // FLOW 3: VOLUNTEER THƯỜNG / KHÁCH
         // =====================================================
