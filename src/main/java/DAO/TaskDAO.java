@@ -50,12 +50,16 @@ public class TaskDAO extends DBContext {
             try {
                 // Có lỗi thì Rollback, không lưu nửa vời
                 connection.rollback();
-            } catch (SQLException ex) { ex.printStackTrace(); }
+            } catch (SQLException ex) {
+                ex.printStackTrace();
+            }
             e.printStackTrace();
         } finally {
             try {
                 connection.setAutoCommit(true); // Trả lại trạng thái cũ
-            } catch (SQLException ex) { ex.printStackTrace(); }
+            } catch (SQLException ex) {
+                ex.printStackTrace();
+            }
         }
         return false;
     }
@@ -88,7 +92,9 @@ public class TaskDAO extends DBContext {
                 map.put("volunteerName", rs.getString("VolunteerName"));
                 list.add(map);
             }
-        } catch (Exception e) { e.printStackTrace(); }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
         return list;
     }
 
@@ -117,7 +123,9 @@ public class TaskDAO extends DBContext {
                 map.put("coordinatorName", rs.getString("CoordinatorName"));
                 list.add(map);
             }
-        } catch (Exception e) { e.printStackTrace(); }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
         return list;
     }
 
@@ -133,7 +141,9 @@ public class TaskDAO extends DBContext {
             ps.setInt(3, taskId);
             ps.setInt(4, volunteerId);
             return ps.executeUpdate() > 0;
-        } catch (Exception e) { e.printStackTrace(); }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
         return false;
     }
 
@@ -152,7 +162,9 @@ public class TaskDAO extends DBContext {
             if (rs.next()) {
                 return rs.getInt(1) > 0;
             }
-        } catch (Exception e) { e.printStackTrace(); }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
         return false;
     }
 
@@ -184,7 +196,27 @@ public class TaskDAO extends DBContext {
                 map.put("coordinatorName", rs.getString("CoordinatorName"));
                 list.add(map);
             }
-        } catch (Exception e) { e.printStackTrace(); }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
         return list;
+    }
+
+    public double getTotalImpactHours(int volunteerId) {
+        double totalHours = 0;
+        String sql = "SELECT SUM(DATEDIFF(MINUTE, s.StartTime, s.EndTime)) / 60.0 " +
+                "FROM Tasks t JOIN Schedules s ON t.TaskId = s.TaskId " +
+                "WHERE t.VolunteerId = ? AND t.Status = 'Completed'";
+        try (java.sql.PreparedStatement ps = connection.prepareStatement(sql)) {
+            ps.setInt(1, volunteerId);
+            try (java.sql.ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    totalHours = rs.getDouble(1);
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return Math.round(totalHours * 10.0) / 10.0; // Làm tròn 1 chữ số thập phân
     }
 }

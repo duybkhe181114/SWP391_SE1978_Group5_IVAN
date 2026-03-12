@@ -1,6 +1,8 @@
 package Controller;
 
+import DAO.EventDAO;
 import DAO.EventRegistrationDAO;
+import DAO.TaskDAO;
 import DTO.EventView;
 
 import jakarta.servlet.ServletException;
@@ -33,10 +35,19 @@ public class VolunteerDashboardController extends HttpServlet {
         int[] stats = registrationDAO.getVolunteerStats(userId);
         List<EventView> myEvents = registrationDAO.getMyRegisteredEvents(userId);
 
+        TaskDAO taskDAO = new TaskDAO();
+        double impactHours = taskDAO.getTotalImpactHours(userId);
+
+        EventDAO eventDAO = new EventDAO();
+        List<EventView> recommendedEvents = eventDAO.getRecommendedEvents(userId);
+
         request.setAttribute("registeredEvents", stats[0]);
         request.setAttribute("upcomingEvents", stats[1]);
         request.setAttribute("completedEvents", stats[2]);
         request.setAttribute("myEvents", myEvents);
+
+        request.setAttribute("impactHours", impactHours);
+        request.setAttribute("recommendedEvents", recommendedEvents);
 
         request.getRequestDispatcher("/WEB-INF/views/volunteer-dashboard.jsp").forward(request, response);
     }

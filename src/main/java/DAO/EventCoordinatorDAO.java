@@ -271,4 +271,82 @@ public class EventCoordinatorDAO extends DBContext {
 
         return list;
     }
+
+    public List<Integer> getCoordinatedEventIds(int coordinatorId) {
+        List<Integer> list = new ArrayList<>();
+        String sql = "SELECT EventId FROM EventCoordinators WHERE CoordinatorId = ? AND Status = 'Active'";
+        try (java.sql.PreparedStatement ps = connection.prepareStatement(sql)) {
+            ps.setInt(1, coordinatorId);
+            try (java.sql.ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    list.add(rs.getInt(1));
+                }
+            }
+        } catch (Exception e) { e.printStackTrace(); }
+        return list;
+    }
+
+    // 2. Lấy thông tin chi tiết các sự kiện đang quản lý để hiển thị ra Portal
+    public List<DTO.EventView> getCoordinatedEvents(int coordinatorId) {
+        List<DTO.EventView> list = new ArrayList<>();
+        String sql = "SELECT e.EventId, e.Title, e.Location, e.StartDate, e.CoverImageUrl, e.Status " +
+                "FROM Events e " +
+                "JOIN EventCoordinators ec ON e.EventId = ec.EventId " +
+                "WHERE ec.CoordinatorId = ? AND ec.Status = 'Active'";
+        try (java.sql.PreparedStatement ps = connection.prepareStatement(sql)) {
+            ps.setInt(1, coordinatorId);
+            try (java.sql.ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    DTO.EventView ev = new DTO.EventView();
+                    ev.setEventId(rs.getInt("EventId"));
+                    ev.setEventName(rs.getString("Title"));
+                    ev.setLocation(rs.getString("Location"));
+                    ev.setEventImageUrl(rs.getString("CoverImageUrl"));
+                    java.sql.Date sd = rs.getDate("StartDate");
+                    if (sd != null) ev.setStartDate(sd.toLocalDate().atStartOfDay());
+                    ev.setStatus(rs.getString("Status"));
+                    list.add(ev);
+                }
+            }
+        } catch (Exception e) { e.printStackTrace(); }
+        return list;
+    }
+
+    // Summary Stats cho Coordinator Portal
+    public java.util.Map<String, Integer> getCoordinatorStats(int coordinatorId) {
+        java.util.Map<String, Integer> stats = new java.util.HashMap<>();
+        stats.put("totalEvents", 0);
+        stats.put("totalVolunteers", 0);
+        stats.put("totalTasks", 0);
+
+        // Đếm số sự kiện đang quản lý
+        String sql1 = "SELECT COUNT(*) FROM EventCoordinators WHERE CoordinatorId = ? AND Status = 'Active'";
+
+        // Đếm tổng số lượng Tình nguyện viên (đã Approved) trong các sự kiện mà người này làm sếp
+        String sql2 = "SELECT COUNT(DISTINCT er.VolunteerId) FROM EventRegistrations er " +
+                "JOIN EventCoordinators ec ON er.EventId = ec.EventId " +
+                "WHERE ec.CoordinatorId = ? AND ec.Status = 'Active' AND er.Status = 'Approved'";
+
+        // Đếm tổng số việc đã giao
+        String sql3 = "SELECT COUNT(*) FROM Tasks WHERE CoordinatorId = ?";
+
+        try {
+            try(java.sql.PreparedStatement ps = connection.prepareStatement(sql1)) {
+                ps.setInt(1, coordinatorId);
+                java.sql.ResultSet rs = ps.executeQuery();
+                if(rs.next()) stats.put("totalEvents", rs.getInt(1));
+            }
+            try(java.sql.PreparedStatement ps = connection.prepareStatement(sql2)) {
+                ps.setInt(1, coordinatorId);
+                java.sql.ResultSet rs = ps.executeQuery();
+                if(rs.next()) stats.put("totalVolunteers", rs.getInt(1));
+            }
+            try(java.sql.PreparedStatement ps = connection.prepareStatement(sql3)) {
+                ps.setInt(1, coordinatorId);
+                java.sql.ResultSet rs = ps.executeQuery();
+                if(rs.next()) stats.put("totalTasks", rs.getInt(1));
+            }
+        } catch (Exception e) { e.printStackTrace(); }
+        return stats;
+    }
 }
