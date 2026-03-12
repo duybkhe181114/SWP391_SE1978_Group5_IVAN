@@ -64,11 +64,11 @@
             </div>
 
             <div style="margin-bottom: 30px; display: flex; gap: 15px;">
-                <a href="${pageContext.request.contextPath}/home" class="btn-primary" style="text-decoration: none; padding: 10px 20px;">
+                <a href="${pageContext.request.contextPath}/events" class="btn-primary" style="text-decoration: none; padding: 10px 20px;">
                     Find New Events
                 </a>
                 <a href="${pageContext.request.contextPath}/profile" class="btn-clear" style="text-decoration: none; padding: 10px 20px;">
-                    Update Skills
+                    Update Profile
                 </a>
             </div>
 

@@ -9,13 +9,11 @@ import java.util.Map;
 
 public class TaskDAO extends DBContext {
 
-    // 1. Lưu Task và Schedule cùng lúc (Dùng Transaction)
     public boolean assignTaskWithSchedule(int eventId, int coordinatorId, int volunteerId, String description, String workDate, String startTime, String endTime) {
         String insertTaskSql = "INSERT INTO Tasks (EventId, CoordinatorId, VolunteerId, TaskDescription, Status, AssignedAt) VALUES (?, ?, ?, ?, 'Pending', GETDATE())";
         String insertScheduleSql = "INSERT INTO Schedules (TaskId, WorkDate, StartTime, EndTime, CreatedAt) VALUES (?, ?, ?, ?, GETDATE())";
 
         try {
-            // Tắt AutoCommit để chạy Transaction
             connection.setAutoCommit(false);
 
             // 1. Insert Task
@@ -135,6 +133,25 @@ public class TaskDAO extends DBContext {
             ps.setInt(3, taskId);
             ps.setInt(4, volunteerId);
             return ps.executeUpdate() > 0;
+        } catch (Exception e) { e.printStackTrace(); }
+        return false;
+    }
+
+    public boolean isVolunteerBusy(int volunteerId, String workDate, String startTime, String endTime) {
+        String sql = "SELECT COUNT(*) FROM Tasks t " +
+                "JOIN Schedules s ON t.TaskId = s.TaskId " +
+                "WHERE t.VolunteerId = ? AND s.WorkDate = ? " +
+                "AND t.Status IN ('Pending', 'In Progress') " +
+                "AND (s.StartTime < ? AND s.EndTime > ?)";
+        try (PreparedStatement ps = connection.prepareStatement(sql)) {
+            ps.setInt(1, volunteerId);
+            ps.setDate(2, Date.valueOf(workDate));
+            ps.setTime(3, Time.valueOf(endTime + ":00"));
+            ps.setTime(4, Time.valueOf(startTime + ":00"));
+            ResultSet rs = ps.executeQuery();
+            if (rs.next()) {
+                return rs.getInt(1) > 0;
+            }
         } catch (Exception e) { e.printStackTrace(); }
         return false;
     }
