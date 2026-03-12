@@ -6,7 +6,19 @@
     <nav class="nav">
       <a href="${pageContext.request.contextPath}/home">Home</a>
       <a href="${pageContext.request.contextPath}/events">Events</a>
-      <a href="#">About</a>
+
+      <%
+      String role = (String) session.getAttribute("userRole");
+      if ("Volunteer".equalsIgnoreCase(role)) {
+      %>
+          <a href="${pageContext.request.contextPath}/volunteer/my-schedule">My Schedule</a>
+      <%
+      } else {
+      %>
+          <a href="#">About</a>
+      <%
+      }
+      %>
 
       <% String userRole=(String) session.getAttribute("userRole"); if (userRole !=null) { %>
         <div class="user-menu">
