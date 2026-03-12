@@ -172,17 +172,17 @@ public class EventDAO extends DBContext {
         }
         return list;
     }
-    
+
     public List<EventView> getEventsByOrganization(int organizationId) {
         List<EventView> list = new ArrayList<>();
         String sql = """
             SELECT EventId, Title, Description, Location, StartDate, EndDate, 
-                   MaxVolunteers, Status, CreatedAt
+                   MaxVolunteers, Status, CreatedAt, CoverImageUrl
             FROM Events
             WHERE OrganizationId = ?
             ORDER BY CreatedAt DESC
         """;
-        
+
         try (PreparedStatement ps = connection.prepareStatement(sql)) {
             ps.setInt(1, organizationId);
             ResultSet rs = ps.executeQuery();
@@ -192,17 +192,19 @@ public class EventDAO extends DBContext {
                 ev.setEventName(rs.getString("Title"));
                 ev.setLocation(rs.getString("Location"));
                 ev.setStatus(rs.getString("Status"));
-                
+
+                ev.setEventImageUrl(rs.getString("CoverImageUrl"));
+
                 java.sql.Date startDate = rs.getDate("StartDate");
                 if (startDate != null) {
                     ev.setStartDate(startDate.toLocalDate().atStartOfDay());
                 }
-                
+
                 java.sql.Date endDate = rs.getDate("EndDate");
                 if (endDate != null) {
                     ev.setEndDate(endDate.toLocalDate().atStartOfDay());
                 }
-                
+
                 list.add(ev);
             }
         } catch (Exception e) {
@@ -286,6 +288,25 @@ public class EventDAO extends DBContext {
         } catch (Exception e) {
             e.printStackTrace();
         }
+        return 0;
+    }
+    
+    public int getEventsByStatus(String status) {
+        String sql = "SELECT COUNT(*) FROM Events WHERE Status = ?";
+        try (PreparedStatement ps = connection.prepareStatement(sql)) {
+            ps.setString(1, status);
+            ResultSet rs = ps.executeQuery();
+            if (rs.next()) return rs.getInt(1);
+        } catch (Exception e) { e.printStackTrace(); }
+        return 0;
+    }
+    
+    public int getTotalRegistrations() {
+        String sql = "SELECT COUNT(*) FROM EventRegistrations";
+        try (PreparedStatement ps = connection.prepareStatement(sql);
+             ResultSet rs = ps.executeQuery()) {
+            if (rs.next()) return rs.getInt(1);
+        } catch (Exception e) { e.printStackTrace(); }
         return 0;
     }
 
@@ -415,6 +436,31 @@ public class EventDAO extends DBContext {
             e.printStackTrace();
         }
 
+        return list;
+    }
+
+    public List<DTO.EventView> getRecommendedEvents(int volunteerId) {
+        List<DTO.EventView> list = new ArrayList<>();
+        String sql = "SELECT TOP 4 e.EventId, e.Title, e.Location, e.StartDate, e.CoverImageUrl " +
+                "FROM Events e " +
+                "WHERE e.Status = 'Approved' AND e.EndDate >= CAST(GETDATE() AS DATE) " +
+                "AND e.EventId NOT IN (SELECT EventId FROM EventRegistrations WHERE VolunteerId = ?) " +
+                "ORDER BY e.StartDate ASC";
+        try (java.sql.PreparedStatement ps = connection.prepareStatement(sql)) {
+            ps.setInt(1, volunteerId);
+            try (java.sql.ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    DTO.EventView ev = new DTO.EventView();
+                    ev.setEventId(rs.getInt("EventId"));
+                    ev.setEventName(rs.getString("Title"));
+                    ev.setLocation(rs.getString("Location"));
+                    ev.setEventImageUrl(rs.getString("CoverImageUrl"));
+                    java.sql.Date sd = rs.getDate("StartDate");
+                    if (sd != null) ev.setStartDate(sd.toLocalDate().atStartOfDay());
+                    list.add(ev);
+                }
+            }
+        } catch (Exception e) { e.printStackTrace(); }
         return list;
     }
 }

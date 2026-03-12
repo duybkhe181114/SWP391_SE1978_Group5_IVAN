@@ -26,8 +26,20 @@
         <h1>Welcome Back</h1>
         <p>Login to IVAN</p>
         
+        <% if (request.getAttribute("success") != null) { %>
+            <div style="background: #dcfce7; color: #166534; padding: 12px; border-radius: 8px; margin-bottom: 20px; text-align: center; font-weight: 500;">
+                ✅ ${success}
+            </div>
+        <% } %>
+        
+        <% if (request.getAttribute("info") != null) { %>
+            <div style="background: #fef9c3; color: #854d0e; padding: 12px; border-radius: 8px; margin-bottom: 20px; text-align: center; font-weight: 500;">
+                ⏳ ${info}
+            </div>
+        <% } %>
+        
         <% if (request.getAttribute("error") != null) { %>
-            <div class="error">${error}</div>
+            <div class="error">❌ ${error}</div>
         <% } %>
         
         <form method="post" action="${pageContext.request.contextPath}/login">
@@ -48,6 +60,8 @@
     <a href="${pageContext.request.contextPath}/WEB-INF/Authen/ForgotPassword.jsp">
         Forgot Password?
     </a>
+    <br><br>
+    Don't have an account? <a href="${pageContext.request.contextPath}/register">Register here</a>
     <br><br>
     <a href="${pageContext.request.contextPath}/home">
         Back to Home

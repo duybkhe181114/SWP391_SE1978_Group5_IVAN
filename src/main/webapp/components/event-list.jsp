@@ -36,11 +36,20 @@
           </p>
 
           <div style="margin-top: auto;">
-              <a href="${pageContext.request.contextPath}/event/detail?id=${e.eventId}"
-                 class="btn-primary"
-                 style="text-decoration: none; display: block; text-align: center; padding: 12px; border-radius: 8px; background: #667eea; color: white; font-weight: 600; transition: 0.2s;">
+            <c:choose>
+                <c:when test="${not empty coordinatedEventIds and coordinatedEventIds.contains(e.eventId)}">
+                    <a href="${pageContext.request.contextPath}/event/detail?id=${e.eventId}"
+                    style="display: block; width: 100%; text-align: center; background: #8b5cf6; color: white; padding: 10px; border-radius: 8px; font-weight: 700; text-decoration: none;">
+                    👑 Manage Event
+                    </a>
+                </c:when>
+                <c:otherwise>
+                    <a href="${pageContext.request.contextPath}/event/detail?id=${e.eventId}"
+               style="display: block; width: 100%; text-align: center; background: #667eea; color: white; padding: 10px; border-radius: 8px; font-weight: 600; text-decoration: none;">
                 View Details
-              </a>
+                    </a>
+                </c:otherwise>
+            </c:choose>
           </div>
 
         </div>

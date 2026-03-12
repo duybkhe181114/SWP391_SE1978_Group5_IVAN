@@ -14,13 +14,11 @@ public class Organization {
     private Integer createdBy;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
-
+    private String logoUrl;
     public Organization() {
     }
 
-    public Organization(Integer organizationId, String name, String description,
-                        String phone, String email, String address, String website,
-                        Integer createdBy, LocalDateTime createdAt, LocalDateTime updatedAt) {
+    public Organization(Integer organizationId, String name, String description, String phone, String email, String address, String website, Integer createdBy, LocalDateTime createdAt, LocalDateTime updatedAt, String logoUrl) {
         this.organizationId = organizationId;
         this.name = name;
         this.description = description;
@@ -31,6 +29,7 @@ public class Organization {
         this.createdBy = createdBy;
         this.createdAt = createdAt;
         this.updatedAt = updatedAt;
+        this.logoUrl = logoUrl;
     }
 
     public Integer getOrganizationId() {
@@ -112,4 +111,10 @@ public class Organization {
     public void setUpdatedAt(LocalDateTime updatedAt) {
         this.updatedAt = updatedAt;
     }
-}
+    public String getLogoUrl() {
+        return logoUrl;
+    }
+
+    public void setLogoUrl(String logoUrl) {
+        this.logoUrl = logoUrl;
+    }}

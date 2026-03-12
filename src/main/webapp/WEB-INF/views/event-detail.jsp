@@ -47,6 +47,7 @@
     <div class="hero-banner"></div>
 
     <div class="detail-wrapper">
+
         <div class="main-card">
             <h1 class="event-title">${event.eventName}</h1>
             <div class="org-name">🏢 Organized by <strong>${event.organizationName}</strong></div>
@@ -60,18 +61,30 @@
 
             <h3 style="margin-top: 30px; font-size: 20px; color: #0f172a;">About this Event</h3>
             <div class="description-content"><c:out value="${event.description}" /></div>
-            
-            <!-- Comments & Ratings Section -->
+
+            <c:if test="${enrollStatus == 'Approved'}">
+                <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 25px 30px; border-radius: 16px; color: white; display: flex; justify-content: space-between; align-items: center; margin-top: 40px; box-shadow: 0 10px 30px rgba(102, 126, 234, 0.3);">
+                    <div>
+                        <h3 style="margin: 0 0 8px 0; font-size: 22px; font-weight: 800;">🎉 Welcome to the Team!</h3>
+                        <p style="margin: 0; font-size: 15px; opacity: 0.9;">You have assigned tasks waiting in your workspace.</p>
+                    </div>
+                    <a href="${pageContext.request.contextPath}/volunteer/workspace?eventId=${event.eventId}"
+                       style="background: white; color: #667eea; padding: 12px 24px; border-radius: 10px; font-weight: 700; text-decoration: none; transition: 0.2s; box-shadow: 0 4px 15px rgba(0,0,0,0.1); white-space: nowrap;">
+                        ➡️ Enter Workspace
+                    </a>
+                </div>
+            </c:if>
+
             <div style="margin-top: 50px; padding-top: 30px; border-top: 2px solid #f1f5f9;">
                 <h3 style="font-size: 20px; color: #0f172a; margin-bottom: 20px;">💬 Comments & Ratings</h3>
-                
+
                 <c:if test="${not empty avgRating}">
                     <div style="background: #fef9c3; padding: 15px; border-radius: 10px; margin-bottom: 20px; display: flex; align-items: center; gap: 10px;">
                         <span style="font-size: 24px; font-weight: 700; color: #854d0e;"><fmt:formatNumber value="${avgRating}" maxFractionDigits="1"/> ⭐</span>
                         <span style="color: #854d0e; font-weight: 500;">Average Rating</span>
                     </div>
                 </c:if>
-                
+
                 <c:if test="${canComment}">
                     <form method="post" action="${pageContext.request.contextPath}/event/detail" style="background: #f8fafc; padding: 20px; border-radius: 10px; margin-bottom: 30px;">
                         <input type="hidden" name="eventId" value="${event.eventId}">
@@ -98,8 +111,7 @@
                         <button type="submit" style="padding: 10px 20px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; border-radius: 8px; font-weight: 600; cursor: pointer;">Submit Comment</button>
                     </form>
                 </c:if>
-                
-                <!-- Filter Section -->
+
                 <div style="background: #f8fafc; padding: 15px; border-radius: 10px; margin-bottom: 20px; display: flex; gap: 15px; flex-wrap: wrap;">
                     <div>
                         <label style="font-size: 13px; color: #64748b; font-weight: 600; display: block; margin-bottom: 5px;">Filter by Rating:</label>
@@ -120,7 +132,7 @@
                         </select>
                     </div>
                 </div>
-                
+
                 <div>
                     <c:forEach items="${comments}" var="c">
                         <div style="background: white; padding: 20px; border: 1px solid #e2e8f0; border-radius: 10px; margin-bottom: 15px;">
@@ -143,9 +155,8 @@
                     </c:if>
                 </div>
             </div>
-        </div>
 
-        <div class="side-card">
+        </div> <div class="side-card">
             <ul class="info-list">
                 <li>
                     <span class="info-label">Location</span>
@@ -168,20 +179,16 @@
             </ul>
 
             <c:choose>
-                <%-- Chưa đăng nhập --%>
                 <c:when test="${empty sessionScope.userId}">
                     <a href="${pageContext.request.contextPath}/login" class="btn-full btn-apply">Log in to Apply</a>
                 </c:when>
 
-                <%-- Đã đăng nhập nhưng không phải Volunteer (Admin/Org không đc apply) --%>
                 <c:when test="${sessionScope.userRole != 'Volunteer'}">
                     <button class="btn-full btn-disabled" disabled>Only Volunteers can apply</button>
                 </c:when>
 
-                <%-- Là Volunteer, bắt đầu check trạng thái Enroll --%>
                 <c:otherwise>
                     <c:choose>
-                        <%-- Đã đăng ký và đang Pending --%>
                         <c:when test="${enrollStatus == 'Pending'}">
                             <div class="status-badge status-pending">⏳ Waiting for Approval</div>
                             <form method="post" action="${pageContext.request.contextPath}/event/detail">
@@ -190,7 +197,6 @@
                             </form>
                         </c:when>
 
-                        <%-- Đã đăng ký và được Approved --%>
                         <c:when test="${enrollStatus == 'Approved'}">
                             <div class="status-badge status-approved">✅ Application Approved</div>
                             <form method="post" action="${pageContext.request.contextPath}/event/detail">
@@ -199,7 +205,6 @@
                             </form>
                         </c:when>
 
-                        <%-- Bị Rejected - Có thể apply lại --%>
                         <c:when test="${enrollStatus == 'Rejected'}">
                             <div class="alert" style="background: #fef2f2; color: #991b1b; border: 1px solid #fecaca; margin-bottom: 15px;">
                                 <strong>❌ Application Rejected</strong>
@@ -213,9 +218,7 @@
                             </form>
                         </c:when>
 
-                        <%-- Chưa đăng ký --%>
                         <c:otherwise>
-                            <%-- Check xem còn slot không --%>
                             <c:choose>
                                 <c:when test="${event.currentVolunteers >= event.maxVolunteers}">
                                     <button class="btn-full btn-disabled" disabled>Event is Full</button>
@@ -233,9 +236,7 @@
             </c:choose>
 
         </div>
-    </div>
-
-    <jsp:include page="/components/footer.jsp"/>
+    </div> <jsp:include page="/components/footer.jsp"/>
     
     <script>
     function setRating(rating) {
