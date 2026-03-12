@@ -155,4 +155,36 @@ public class TaskDAO extends DBContext {
         } catch (Exception e) { e.printStackTrace(); }
         return false;
     }
+
+    public List<Map<String, Object>> getAllTasksForVolunteer(int volunteerId) {
+        List<Map<String, Object>> list = new ArrayList<>();
+        String sql = "SELECT t.TaskId, t.TaskDescription, t.Status, " +
+                "s.WorkDate, s.StartTime, s.EndTime, " +
+                "e.EventId, e.Title AS EventName, up.FullName AS CoordinatorName " +
+                "FROM Tasks t " +
+                "JOIN Schedules s ON t.TaskId = s.TaskId " +
+                "JOIN Events e ON t.EventId = e.EventId " +
+                "JOIN UserProfiles up ON t.CoordinatorId = up.UserId " +
+                "WHERE t.VolunteerId = ? " +
+                "ORDER BY s.WorkDate ASC, s.StartTime ASC";
+
+        try (PreparedStatement ps = connection.prepareStatement(sql)) {
+            ps.setInt(1, volunteerId);
+            ResultSet rs = ps.executeQuery();
+            while (rs.next()) {
+                Map<String, Object> map = new HashMap<>();
+                map.put("taskId", rs.getInt("TaskId"));
+                map.put("description", rs.getString("TaskDescription"));
+                map.put("status", rs.getString("Status"));
+                map.put("workDate", rs.getDate("WorkDate"));
+                map.put("startTime", rs.getTime("StartTime"));
+                map.put("endTime", rs.getTime("EndTime"));
+                map.put("eventId", rs.getInt("EventId"));
+                map.put("eventName", rs.getString("EventName"));
+                map.put("coordinatorName", rs.getString("CoordinatorName"));
+                list.add(map);
+            }
+        } catch (Exception e) { e.printStackTrace(); }
+        return list;
+    }
 }
