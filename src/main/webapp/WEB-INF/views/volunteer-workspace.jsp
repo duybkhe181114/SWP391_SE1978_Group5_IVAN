@@ -72,7 +72,7 @@
                 <c:forEach items="${myTasks}" var="t">
                     <c:if test="${t.status == 'Completed'}">
                         <div class="task-card">
-                            <p style="margin: 0 0 15px 0; color: #475569; font-weight: 600; font-size: 15px; text-decoration: line-through;">${t.description}</p>
+                            <p style="margin: 0 0 15px 0; color: #475569; font-weight: 600; font-size: 15px;">${t.description}</p>
                             <div style="font-size: 12px; color: #94a3b8; margin-bottom: 10px;">
                                 Completed on schedule.
                             </div>
