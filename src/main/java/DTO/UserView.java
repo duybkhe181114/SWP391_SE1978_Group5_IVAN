@@ -16,7 +16,8 @@ public class UserView {
     private String firstName;
     private String lastName;
     private String address;
-    private String skillIds;    // ===== GETTERS & SETTERS =====
+    private String skillIds;
+    private String approvalStatus;
 
     public int getUserId() {
         return userId;
@@ -112,5 +113,13 @@ public class UserView {
 
     public void setSkillIds(String skillIds) {
         this.skillIds = skillIds;
+    }
+
+    public String getApprovalStatus() {
+        return approvalStatus;
+    }
+
+    public void setApprovalStatus(String approvalStatus) {
+        this.approvalStatus = approvalStatus;
     }
 }

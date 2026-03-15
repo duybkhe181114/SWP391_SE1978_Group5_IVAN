@@ -62,33 +62,35 @@ public class EventDAO extends DBContext {
         return list;
     }
     
-    public boolean createEvent(String title, String description, String location, 
-                               String startDate, String endDate, int requiredVolunteers, int orgId) {
+    public boolean createEvent(String title, String description, String location,
+                               String coverImageUrl, String startDate, String endDate,
+                               int requiredVolunteers, int orgId) {
         String sql = """
-            INSERT INTO Events (Title, Description, Location, StartDate, EndDate, 
+            INSERT INTO Events (Title, Description, Location, CoverImageUrl, StartDate, EndDate,
                                MaxVolunteers, OrganizationId, Status, CreatedAt, UpdatedAt)
-            VALUES (?, ?, ?, ?, ?, ?, ?, 'Pending', GETDATE(), GETDATE())
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'Pending', GETDATE(), GETDATE())
         """;
         
         try (PreparedStatement ps = connection.prepareStatement(sql)) {
             ps.setString(1, title);
             ps.setString(2, description);
             ps.setString(3, location);
+            ps.setString(4, coverImageUrl);
             
             if (startDate != null && !startDate.isEmpty()) {
-                ps.setDate(4, java.sql.Date.valueOf(startDate));
-            } else {
-                ps.setNull(4, java.sql.Types.DATE);
-            }
-            
-            if (endDate != null && !endDate.isEmpty()) {
-                ps.setDate(5, java.sql.Date.valueOf(endDate));
+                ps.setDate(5, java.sql.Date.valueOf(startDate));
             } else {
                 ps.setNull(5, java.sql.Types.DATE);
             }
             
-            ps.setInt(6, requiredVolunteers);
-            ps.setInt(7, orgId);
+            if (endDate != null && !endDate.isEmpty()) {
+                ps.setDate(6, java.sql.Date.valueOf(endDate));
+            } else {
+                ps.setNull(6, java.sql.Types.DATE);
+            }
+            
+            ps.setInt(7, requiredVolunteers);
+            ps.setInt(8, orgId);
             
             return ps.executeUpdate() > 0;
         } catch (Exception e) {
@@ -192,6 +194,8 @@ public class EventDAO extends DBContext {
                 ev.setEventName(rs.getString("Title"));
                 ev.setLocation(rs.getString("Location"));
                 ev.setStatus(rs.getString("Status"));
+                ev.setDescription(rs.getString("Description"));
+                ev.setMaxVolunteers(rs.getInt("MaxVolunteers"));
 
                 ev.setEventImageUrl(rs.getString("CoverImageUrl"));
 
@@ -211,6 +215,70 @@ public class EventDAO extends DBContext {
             e.printStackTrace();
         }
         return list;
+    }
+
+    public boolean isEventOwnedByUser(int eventId, int userId) {
+        String sql = """
+            SELECT 1
+            FROM Events e
+            JOIN Organizations o ON e.OrganizationId = o.OrganizationId
+            WHERE e.EventId = ? AND o.CreatedBy = ?
+        """;
+
+        try (PreparedStatement ps = connection.prepareStatement(sql)) {
+            ps.setInt(1, eventId);
+            ps.setInt(2, userId);
+            ResultSet rs = ps.executeQuery();
+            return rs.next();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return false;
+    }
+
+    public boolean updateEventByOrganization(int eventId, int organizationId, String title,
+                                             String description, String location,
+                                             String coverImageUrl, String startDate,
+                                             String endDate, int maxVolunteers) {
+        String sql = """
+            UPDATE Events
+            SET Title = ?,
+                Description = ?,
+                Location = ?,
+                CoverImageUrl = ?,
+                StartDate = ?,
+                EndDate = ?,
+                MaxVolunteers = ?,
+                UpdatedAt = GETDATE()
+            WHERE EventId = ? AND OrganizationId = ?
+        """;
+
+        try (PreparedStatement ps = connection.prepareStatement(sql)) {
+            ps.setString(1, title);
+            ps.setString(2, description);
+            ps.setString(3, location);
+            ps.setString(4, coverImageUrl);
+
+            if (startDate != null && !startDate.isBlank()) {
+                ps.setDate(5, Date.valueOf(startDate));
+            } else {
+                ps.setNull(5, Types.DATE);
+            }
+
+            if (endDate != null && !endDate.isBlank()) {
+                ps.setDate(6, Date.valueOf(endDate));
+            } else {
+                ps.setNull(6, Types.DATE);
+            }
+
+            ps.setInt(7, maxVolunteers);
+            ps.setInt(8, eventId);
+            ps.setInt(9, organizationId);
+            return ps.executeUpdate() > 0;
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return false;
     }
 
     public EventView getEventById(int eventId) {

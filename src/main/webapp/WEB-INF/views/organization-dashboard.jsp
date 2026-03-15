@@ -92,6 +92,7 @@
                             <th>Location</th>
                             <th>Start Date</th>
                             <th>End Date</th>
+                            <th>Volunteer Limit</th>
                             <th>Status</th>
                             <th>Actions</th>
                         </tr>
@@ -103,6 +104,7 @@
                                 <td>${event.location}</td>
                                 <td>${event.startDate.toLocalDate()}</td>
                                 <td>${event.endDate.toLocalDate()}</td>
+                                <td>${event.maxVolunteers == 0 ? 'Unlimited' : event.maxVolunteers}</td>
                                 <td>
                                     <c:choose>
                                         <c:when test="${event.status == 'Approved'}">
@@ -117,7 +119,7 @@
                                     </c:choose>
                                 </td>
                                 <td>
-                                    <a href="${pageContext.request.contextPath}/event/detail?id=${event.eventId}" class="btn-view">View Details</a>
+                                    <a href="${pageContext.request.contextPath}/event/detail?id=${event.eventId}" class="btn-view">Manage Event</a>
                                 </td>
                             </tr>
                         </c:forEach>

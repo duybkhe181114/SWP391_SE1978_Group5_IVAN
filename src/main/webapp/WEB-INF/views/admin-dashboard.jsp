@@ -96,7 +96,7 @@
             <h2>Quick Actions</h2>
             <div class="btn-group">
                 <a href="${pageContext.request.contextPath}/admin/manage-events" class="btn btn-primary">Manage Events</a>
-                <a href="${pageContext.request.contextPath}/admin/review-organizations" class="btn btn-secondary">Review Organizations</a>
+                <a href="${pageContext.request.contextPath}/admin/manage-organizations" class="btn btn-secondary">Manage Organizations</a>
             </div>
         </div>
     </div>
