@@ -42,7 +42,7 @@ public class SupportRequest {
     }
 
     public SupportRequest(Integer requestId, String title, String description,
-                                 String supportType, String priority,
+                                 String categoryId, String priority,
                                  String supportLocation, String beneficiaryName,
                                  Integer affectedPeople, Double estimatedAmount,
                                  String contactEmail, String contactPhone,
