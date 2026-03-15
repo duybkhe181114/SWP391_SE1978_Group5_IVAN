@@ -67,7 +67,7 @@
         </div>
 
         <c:if test="${param.error == 'User not found'}">
-            <div class="message message-error">No volunteer account matched that email address.</div>
+            <div class="message message-error">No approved event member matched that email address.</div>
         </c:if>
         <section class="panel">
             <div class="panel-header">
@@ -187,7 +187,7 @@
         <div class="modal-body">
             <div style="background: #f8fafc; padding: 18px; border-radius: 14px; border: 1px solid #e2e8f0;">
                 <h4 style="margin: 0 0 14px; color: #0f172a;">Promote Volunteer By Email</h4>
-                <div class="sub" style="margin-bottom: 12px;">Use this when you already know the volunteer account and want to promote them without searching the member list first.</div>
+                        <div class="sub" style="margin-bottom: 12px;">Use this when you already know the email of an approved event member and want to promote them quickly.</div>
                 <form method="post" action="${pageContext.request.contextPath}/organization/manage-registrations" style="display: grid; gap: 12px;">
                     <input type="hidden" name="returnTo" value="active-team">
                     <input type="hidden" name="eventId" value="${event.eventId}">

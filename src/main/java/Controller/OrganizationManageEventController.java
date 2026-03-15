@@ -51,8 +51,8 @@ public class OrganizationManageEventController extends HttpServlet {
             return;
         }
 
-        if ("add_volunteer".equals(action)) {
-            handleAddVolunteer(request, response, userId, eventId, returnTo);
+        if ("invite_volunteer".equals(action)) {
+            handleInviteVolunteer(request, response, userId, eventId, returnTo);
             return;
         }
 
@@ -134,10 +134,11 @@ public class OrganizationManageEventController extends HttpServlet {
                 updated ? "success=event_updated" : "error=event_update_failed");
     }
 
-    private void handleAddVolunteer(HttpServletRequest request, HttpServletResponse response,
-                                    int userId, int eventId, String returnTo) throws IOException {
+    private void handleInviteVolunteer(HttpServletRequest request, HttpServletResponse response,
+                                       int userId, int eventId, String returnTo) throws IOException {
 
         String volunteerIdRaw = trimToNull(request.getParameter("volunteerId"));
+        String invitationMessage = trimToNull(request.getParameter("invitationMessage"));
         if (volunteerIdRaw == null) {
             redirectWithMessage(response, request, eventId, returnTo, "error=missing_volunteer");
             return;
@@ -165,15 +166,17 @@ public class OrganizationManageEventController extends HttpServlet {
             return;
         }
 
-        boolean added = registrationDAO.addVolunteerToEvent(
+        boolean invited = registrationDAO.inviteVolunteerToEvent(
                 eventId,
                 volunteerId,
                 userId,
-                "Manually added by organization"
+                invitationMessage == null
+                        ? "You are invited to join this event. Please review the details and confirm if you can participate."
+                        : invitationMessage
         );
 
         redirectWithMessage(response, request, eventId, returnTo,
-                added ? "success=volunteer_added" : "error=volunteer_add_failed");
+                invited ? "success=volunteer_invited" : "error=volunteer_invite_failed");
     }
 
     private void redirectWithMessage(HttpServletResponse response, HttpServletRequest request,

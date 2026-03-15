@@ -197,15 +197,24 @@ BEGIN
         RegistrationId INT IDENTITY(1,1) NOT NULL,
         EventId INT NOT NULL,
         VolunteerId INT NOT NULL,
+        RegistrationType NVARCHAR(20) NOT NULL CONSTRAINT DF_EventRegistrations_RegistrationType DEFAULT ('Application'),
         Status NVARCHAR(50) NOT NULL,
         AppliedAt DATETIME NULL CONSTRAINT DF_EventRegistrations_AppliedAt DEFAULT (GETDATE()),
+        ApplicationReason NVARCHAR(MAX) NULL,
+        RelevantExperience NVARCHAR(MAX) NULL,
+        CommitmentLevel NVARCHAR(100) NULL,
+        AvailabilityNote NVARCHAR(1000) NULL,
+        InvitationMessage NVARCHAR(1000) NULL,
+        InvitedBy INT NULL,
         ReviewedAt DATETIME NULL,
         ReviewedBy INT NULL,
         ReviewNote NVARCHAR(500) NULL,
         CONSTRAINT PK_EventRegistrations PRIMARY KEY CLUSTERED (RegistrationId ASC),
         CONSTRAINT FK_EventRegistrations_Events FOREIGN KEY (EventId) REFERENCES dbo.Events (EventId),
         CONSTRAINT FK_EventRegistrations_Users FOREIGN KEY (VolunteerId) REFERENCES dbo.Users (UserId),
-        CONSTRAINT FK_EventRegistrations_Reviewer FOREIGN KEY (ReviewedBy) REFERENCES dbo.Users (UserId)
+        CONSTRAINT FK_EventRegistrations_Reviewer FOREIGN KEY (ReviewedBy) REFERENCES dbo.Users (UserId),
+        CONSTRAINT FK_EventRegistrations_InvitedBy FOREIGN KEY (InvitedBy) REFERENCES dbo.Users (UserId),
+        CONSTRAINT CHK_EventRegistrations_Type CHECK (RegistrationType IN ('Application', 'Invitation'))
     );
 END
 GO
@@ -453,6 +462,18 @@ IF NOT EXISTS (
 )
 BEGIN
     CREATE INDEX IX_EventRegistrations_VolunteerId_Status ON dbo.EventRegistrations (VolunteerId, Status);
+END
+GO
+
+IF NOT EXISTS (
+    SELECT 1
+    FROM sys.indexes
+    WHERE name = N'IX_EventRegistrations_EventVolunteer_AppliedAt'
+      AND object_id = OBJECT_ID(N'dbo.EventRegistrations')
+)
+BEGIN
+    CREATE INDEX IX_EventRegistrations_EventVolunteer_AppliedAt
+        ON dbo.EventRegistrations (EventId, VolunteerId, AppliedAt DESC, RegistrationId DESC);
 END
 GO
 

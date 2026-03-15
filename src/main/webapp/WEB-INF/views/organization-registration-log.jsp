@@ -29,10 +29,18 @@
     .table th { color: #64748b; font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; }
     .name { font-weight: 700; color: #0f172a; }
     .sub { margin-top: 6px; color: #94a3b8; font-size: 12px; }
+    .detail-grid { display: grid; gap: 12px; }
+    .detail-item { display: grid; gap: 6px; }
+    .detail-label { color: #64748b; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; }
+    .detail-value { color: #475569; line-height: 1.65; white-space: pre-wrap; }
     .link-btn { background: none; border: none; padding: 0; margin-top: 6px; color: #7c3aed; font-weight: 700; cursor: pointer; font-size: 12px; }
-    .badge { display: inline-flex; align-items: center; padding: 6px 12px; border-radius: 999px; font-size: 12px; font-weight: 700; border: 1px solid transparent; }
+    .badge { display: inline-flex; align-items: center; padding: 6px 12px; border-radius: 999px; font-size: 12px; font-weight: 700; border: 1px solid transparent; margin-right: 6px; }
     .badge-pending { background: #fef9c3; border-color: #fde68a; color: #854d0e; }
     .badge-rejected { background: #fee2e2; border-color: #fecaca; color: #991b1b; }
+    .badge-invited { background: #ede9fe; border-color: #c4b5fd; color: #6d28d9; }
+    .badge-declined { background: #e0f2fe; border-color: #bae6fd; color: #0369a1; }
+    .badge-application { background: #ecfccb; border-color: #d9f99d; color: #3f6212; }
+    .badge-invitation { background: #f5f3ff; border-color: #ddd6fe; color: #6d28d9; }
     .actions { display: flex; gap: 8px; flex-wrap: wrap; justify-content: center; }
     .empty { padding: 30px 24px; text-align: center; color: #94a3b8; }
     .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(15, 23, 42, 0.58); z-index: 1000; align-items: center; justify-content: center; padding: 20px; }
@@ -51,7 +59,7 @@
         <div class="header-row">
             <div>
                 <h1>Registration Log</h1>
-                <p>Review pending and rejected applications for this event in a dedicated screening view.</p>
+                <p>Review volunteer applications, invitations, and response history for this event.</p>
             </div>
             <a class="nav-link" href="${pageContext.request.contextPath}/event/detail?id=${event.eventId}">Back to Event</a>
         </div>
@@ -67,16 +75,18 @@
             <div class="panel-header">
                 <div>
                     <h2 class="panel-title">${event.eventName}</h2>
-                    <p class="panel-note">Filter applications by status, inspect volunteer profiles, and approve or reject from one place.</p>
+                    <p class="panel-note">Filter by state, inspect what the volunteer submitted, and approve or reject pending applications.</p>
                 </div>
 
                 <form method="get" action="${pageContext.request.contextPath}/organization/registration-log" class="toolbar">
                     <input type="hidden" name="eventId" value="${event.eventId}">
                     <input type="text" name="q" value="${logQuery}" placeholder="Search applicants">
                     <select name="status">
-                        <option value="">All Review States</option>
+                        <option value="">All states</option>
                         <option value="Pending" ${statusFilter == 'Pending' ? 'selected' : ''}>Pending</option>
+                        <option value="Invited" ${statusFilter == 'Invited' ? 'selected' : ''}>Invited</option>
                         <option value="Rejected" ${statusFilter == 'Rejected' ? 'selected' : ''}>Rejected</option>
+                        <option value="Declined" ${statusFilter == 'Declined' ? 'selected' : ''}>Declined</option>
                     </select>
                     <button type="submit" class="btn btn-primary">Apply</button>
                 </form>
@@ -86,8 +96,8 @@
                 <table class="table">
                     <thead>
                     <tr>
-                        <th>Applicant</th>
-                        <th>Contact</th>
+                        <th>Volunteer</th>
+                        <th>Submission Details</th>
                         <th>Status</th>
                         <th style="text-align: center;">Actions</th>
                     </tr>
@@ -104,16 +114,61 @@
                                 <tr>
                                     <td>
                                         <div class="name">${v.fullName}</div>
+                                        <div class="sub">${v.email}</div>
+                                        <div class="sub">${empty v.phone ? 'No phone' : v.phone}</div>
                                         <button type="button" class="link-btn" onclick="openProfileModal(${v.volunteerId})">View Profile</button>
                                     </td>
                                     <td>
-                                        <div>${v.email}</div>
-                                        <div class="sub">${empty v.phone ? 'No phone' : v.phone}</div>
+                                        <div style="margin-bottom: 10px;">
+                                            <span class="badge ${v.registrationType == 'Invitation' ? 'badge-invitation' : 'badge-application'}">
+                                                ${v.registrationType == 'Invitation' ? 'Invitation' : 'Application'}
+                                            </span>
+                                        </div>
+                                        <div class="detail-grid">
+                                            <c:choose>
+                                                <c:when test="${v.registrationType == 'Invitation'}">
+                                                    <div class="detail-item">
+                                                        <div class="detail-label">Invitation Message</div>
+                                                        <div class="detail-value">${empty v.invitationMessage ? 'No invitation message.' : v.invitationMessage}</div>
+                                                    </div>
+                                                </c:when>
+                                                <c:otherwise>
+                                                    <div class="detail-item">
+                                                        <div class="detail-label">Why they want to join</div>
+                                                        <div class="detail-value">${empty v.applicationReason ? 'No motivation provided.' : v.applicationReason}</div>
+                                                    </div>
+                                                    <div class="detail-item">
+                                                        <div class="detail-label">Relevant experience</div>
+                                                        <div class="detail-value">${empty v.relevantExperience ? 'No experience provided.' : v.relevantExperience}</div>
+                                                    </div>
+                                                    <div class="detail-item">
+                                                        <div class="detail-label">Commitment level</div>
+                                                        <div class="detail-value">${empty v.commitmentLevel ? 'Not provided' : v.commitmentLevel}</div>
+                                                    </div>
+                                                    <div class="detail-item">
+                                                        <div class="detail-label">Availability note</div>
+                                                        <div class="detail-value">${empty v.availabilityNote ? 'No availability note.' : v.availabilityNote}</div>
+                                                    </div>
+                                                </c:otherwise>
+                                            </c:choose>
+                                            <c:if test="${not empty v.reviewNote}">
+                                                <div class="detail-item">
+                                                    <div class="detail-label">Review note</div>
+                                                    <div class="detail-value">${v.reviewNote}</div>
+                                                </div>
+                                            </c:if>
+                                        </div>
                                     </td>
                                     <td>
                                         <c:choose>
                                             <c:when test="${v.status == 'Pending'}">
                                                 <span class="badge badge-pending">Pending</span>
+                                            </c:when>
+                                            <c:when test="${v.status == 'Invited'}">
+                                                <span class="badge badge-invited">Invited</span>
+                                            </c:when>
+                                            <c:when test="${v.status == 'Declined'}">
+                                                <span class="badge badge-declined">Declined</span>
                                             </c:when>
                                             <c:otherwise>
                                                 <span class="badge badge-rejected">Rejected</span>
@@ -134,7 +189,7 @@
                                                 </div>
                                             </c:when>
                                             <c:otherwise>
-                                                <span class="sub">No further actions</span>
+                                                <span class="sub">No action required</span>
                                             </c:otherwise>
                                         </c:choose>
                                     </td>
@@ -218,7 +273,6 @@ function openRejectModal(registrationId, eventId) {
 window.addEventListener("click", function (event) {
     const profileModal = document.getElementById("profileModal");
     const rejectModal = document.getElementById("rejectModal");
-
     if (event.target === profileModal) {
         closeProfileModal();
     }

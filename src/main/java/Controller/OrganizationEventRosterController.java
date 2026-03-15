@@ -19,6 +19,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.sql.Timestamp;
 
 @WebServlet(urlPatterns = {
         "/organization/volunteer-pool",
@@ -117,7 +118,10 @@ public class OrganizationEventRosterController extends HttpServlet {
         List<Map<String, Object>> registrationLog = new ArrayList<>();
         for (Map<String, Object> volunteer : volunteers) {
             String status = String.valueOf(volunteer.get("status"));
-            if (!"Pending".equals(status) && !"Rejected".equals(status)) {
+            if (!"Pending".equals(status)
+                    && !"Rejected".equals(status)
+                    && !"Invited".equals(status)
+                    && !"Declined".equals(status)) {
                 continue;
             }
 
@@ -131,6 +135,11 @@ public class OrganizationEventRosterController extends HttpServlet {
 
             registrationLog.add(volunteer);
         }
+
+        registrationLog.sort(Comparator
+                .comparing((Map<String, Object> row) -> (Timestamp) row.get("appliedAt"),
+                        Comparator.nullsLast(Comparator.reverseOrder()))
+                .thenComparing(row -> safeString(row.get("fullName")).toLowerCase(Locale.ROOT)));
 
         request.setAttribute("logQuery", query);
         request.setAttribute("statusFilter", statusFilter);

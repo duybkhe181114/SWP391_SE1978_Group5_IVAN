@@ -26,6 +26,7 @@
     .btn-primary { background: #0f172a; color: #fff; }
     .btn-success { background: #16a34a; color: #fff; }
     .btn-disabled { background: #f8fafc; color: #94a3b8; border-color: #e2e8f0; cursor: not-allowed; }
+    .btn-secondary { background: #fff; color: #475569; border-color: #cbd5e1; }
     .table-wrap { overflow-x: auto; }
     .table { width: 100%; border-collapse: collapse; }
     .table thead { background: #f8fafc; }
@@ -41,6 +42,8 @@
     .modal-header h3 { margin: 0; color: #0f172a; font-size: 20px; }
     .modal-close { border: none; background: none; color: #94a3b8; font-size: 28px; cursor: pointer; }
     .modal-body { padding: 24px; }
+    .modal-body textarea { width: 100%; min-height: 130px; padding: 12px 14px; border-radius: 10px; border: 1px solid #cbd5e1; box-sizing: border-box; font: inherit; resize: vertical; }
+    .modal-actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 18px; flex-wrap: wrap; }
     @media (max-width: 760px) { .screen-shell { padding: 24px 14px 0; } }
 </style>
 
@@ -49,7 +52,7 @@
         <div class="header-row">
             <div>
                 <h1>Volunteer Pool</h1>
-                <p>Browse active volunteers outside this event, inspect their profiles, and add them directly when needed.</p>
+                <p>Browse volunteers who are currently outside this event, inspect their profiles, and send invitations that they must accept before joining.</p>
             </div>
             <a class="nav-link" href="${pageContext.request.contextPath}/event/detail?id=${event.eventId}">Back to Event</a>
         </div>
@@ -61,24 +64,24 @@
             <a class="nav-link" href="${pageContext.request.contextPath}/organization/registration-log?eventId=${event.eventId}">Registration Log</a>
         </div>
 
-        <c:if test="${param.success == 'volunteer_added'}">
-            <div class="message message-success">Volunteer added to the event successfully.</div>
+        <c:if test="${param.success == 'volunteer_invited'}">
+            <div class="message message-success">Invitation sent. The volunteer will need to accept it from the event page.</div>
         </c:if>
         <c:if test="${param.error == 'missing_volunteer'}">
-            <div class="message message-error">Please choose a volunteer to add.</div>
+            <div class="message message-error">Please choose a volunteer first.</div>
         </c:if>
         <c:if test="${param.error == 'event_full'}">
-            <div class="message message-error">This event is already full. Increase the volunteer limit before adding more people.</div>
+            <div class="message message-error">This event is already full. Increase the volunteer limit before sending more invitations.</div>
         </c:if>
-        <c:if test="${param.error == 'volunteer_add_failed'}">
-            <div class="message message-error">Volunteer could not be added. They may already belong to this event.</div>
+        <c:if test="${param.error == 'volunteer_invite_failed'}">
+            <div class="message message-error">Invitation could not be created. The volunteer may already have an active registration or invitation for this event.</div>
         </c:if>
 
         <section class="panel">
             <div class="panel-header">
                 <div>
                     <h2 class="panel-title">${event.eventName}</h2>
-                    <p class="panel-note">Search by name, email, phone, or skill to find the right volunteer for this event.</p>
+                    <p class="panel-note">Search by name, email, phone, or skill to find volunteers who are not currently attached to this event.</p>
                 </div>
 
                 <form method="get" action="${pageContext.request.contextPath}/organization/volunteer-pool" class="search-form">
@@ -124,13 +127,13 @@
                                                 <button type="button" class="btn btn-disabled" disabled>Event Full</button>
                                             </c:when>
                                             <c:otherwise>
-                                                <form method="post" action="${pageContext.request.contextPath}/organization/manage-event">
-                                                    <input type="hidden" name="action" value="add_volunteer">
-                                                    <input type="hidden" name="returnTo" value="volunteer-pool">
-                                                    <input type="hidden" name="eventId" value="${event.eventId}">
-                                                    <input type="hidden" name="volunteerId" value="${v.volunteerId}">
-                                                    <button type="submit" class="btn btn-success" onclick="return confirm('Add this volunteer directly to the event?');">Add To Event</button>
-                                                </form>
+                                                <button type="button"
+                                                        class="btn btn-success"
+                                                        onclick="openInviteModal(${v.volunteerId}, this.dataset.name, this.dataset.email)"
+                                                        data-name="<c:out value='${v.fullName}'/>"
+                                                        data-email="<c:out value='${v.email}'/>">
+                                                    Invite Volunteer
+                                                </button>
                                             </c:otherwise>
                                         </c:choose>
                                     </td>
@@ -153,6 +156,35 @@
         </div>
         <div id="profileModalBody" class="modal-body">
             <div class="empty">Loading volunteer profile...</div>
+        </div>
+    </div>
+</div>
+
+<div id="inviteModal" class="modal-overlay">
+    <div class="modal-card">
+        <div class="modal-header">
+            <h3>Invite Volunteer</h3>
+            <button type="button" class="modal-close" onclick="closeInviteModal()">&times;</button>
+        </div>
+        <div class="modal-body">
+            <div style="color: #475569; line-height: 1.7; margin-bottom: 14px;">
+                Send a short invitation message so the volunteer understands why you want them on this event.
+            </div>
+            <div style="margin-bottom: 16px; color: #0f172a;">
+                <strong id="inviteVolunteerName"></strong><br>
+                <span id="inviteVolunteerEmail" style="color: #64748b;"></span>
+            </div>
+            <form method="post" action="${pageContext.request.contextPath}/organization/manage-event">
+                <input type="hidden" name="action" value="invite_volunteer">
+                <input type="hidden" name="returnTo" value="volunteer-pool">
+                <input type="hidden" name="eventId" value="${event.eventId}">
+                <input type="hidden" name="volunteerId" id="inviteVolunteerId">
+                <textarea name="invitationMessage" placeholder="Example: We would like you to support logistics and attendee guidance for this event. Please review the event details and accept if you are available."></textarea>
+                <div class="modal-actions">
+                    <button type="button" class="btn btn-secondary" style="width: auto;" onclick="closeInviteModal()">Cancel</button>
+                    <button type="submit" class="btn btn-success" style="width: auto;">Send Invitation</button>
+                </div>
+            </form>
         </div>
     </div>
 </div>
@@ -183,10 +215,25 @@ function closeProfileModal() {
     document.getElementById("profileModal").style.display = "none";
 }
 
+function openInviteModal(volunteerId, fullName, email) {
+    document.getElementById("inviteVolunteerId").value = volunteerId;
+    document.getElementById("inviteVolunteerName").textContent = fullName;
+    document.getElementById("inviteVolunteerEmail").textContent = email;
+    document.getElementById("inviteModal").style.display = "flex";
+}
+
+function closeInviteModal() {
+    document.getElementById("inviteModal").style.display = "none";
+}
+
 window.addEventListener("click", function (event) {
     const profileModal = document.getElementById("profileModal");
+    const inviteModal = document.getElementById("inviteModal");
     if (event.target === profileModal) {
         closeProfileModal();
+    }
+    if (event.target === inviteModal) {
+        closeInviteModal();
     }
 });
 </script>
