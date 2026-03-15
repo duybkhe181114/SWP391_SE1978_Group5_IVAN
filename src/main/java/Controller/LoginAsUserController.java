@@ -23,12 +23,18 @@ public class LoginAsUserController extends HttpServlet {
         if (email == null || password == null) {
             String success = request.getParameter("success");
             String pending = request.getParameter("pending");
+            String error = request.getParameter("error");
             
             if ("registered".equals(success)) {
                 request.setAttribute("success", "Registration successful! Please login.");
             }
             if ("true".equals(pending)) {
                 request.setAttribute("info", "Registration submitted! Your account is pending admin approval.");
+            }
+            if ("account_blocked".equals(error)) {
+                request.setAttribute("error", "Your account has been blocked by an admin. Please contact support.");
+            } else if ("organization_pending".equals(error)) {
+                request.setAttribute("error", "Your organization account is pending admin approval.");
             }
             
             request.getRequestDispatcher("/WEB-INF/Authen/LoginAsUser.jsp")
@@ -43,6 +49,10 @@ public class LoginAsUserController extends HttpServlet {
             request.setAttribute("error", "Invalid email or password");
             request.getRequestDispatcher("/WEB-INF/Authen/LoginAsUser.jsp").forward(request, response);
             return;
+        }
+
+        if (!dao.isUserActive(user.getUserId())) {
+            user.setIsActive(false);
         }
         
         if (!user.getIsActive()) {
@@ -66,7 +76,7 @@ public class LoginAsUserController extends HttpServlet {
                 }
             }
 
-            request.setAttribute("error", "Your account has been blocked by an admin. Please contact support.");
+            request.setAttribute("error", "Your account has been blocked by an admin.");
             request.getRequestDispatcher("/WEB-INF/Authen/LoginAsUser.jsp").forward(request, response);
             return;
         }

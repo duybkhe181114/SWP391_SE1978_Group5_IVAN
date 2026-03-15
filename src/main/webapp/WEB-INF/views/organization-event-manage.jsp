@@ -256,6 +256,9 @@
         <c:if test="${param.success == 'event_updated'}">
             <div class="message message-success">Event information updated successfully.</div>
         </c:if>
+        <c:if test="${param.success == 'event_resubmitted'}">
+            <div class="message message-success">Event changes saved. Because this event was previously rejected, it has been resubmitted for admin review.</div>
+        </c:if>
         <c:if test="${param.error == 'missing_event_fields'}">
             <div class="message message-error">Please fill in all required event fields before saving.</div>
         </c:if>
@@ -270,6 +273,9 @@
         </c:if>
         <c:if test="${param.error == 'event_update_failed'}">
             <div class="message message-error">Event update failed. Please try again.</div>
+        </c:if>
+        <c:if test="${event.status == 'Rejected' and not empty event.reviewNote}">
+            <div class="message message-error">Admin feedback: ${event.reviewNote}. Update the event below to send it back for review.</div>
         </c:if>
 
         <section class="hero">
@@ -308,13 +314,19 @@
                         ${empty event.endDate ? '' : event.endDate.toLocalDate()}
                     </div>
                 </div>
+                <div class="hero-stat">
+                    <div class="hero-label">Primary Contact</div>
+                    <div class="hero-value" style="font-size: 18px;">
+                        ${empty event.contactName ? 'Not set' : event.contactName}
+                    </div>
+                </div>
             </div>
         </section>
 
         <section class="panel">
             <div class="panel-header">
                 <h2>Edit Event</h2>
-                <p>Change event title, description, cover image URL, location, dates, and volunteer capacity.</p>
+                <p>Change event logistics, volunteer expectations, and contact information. Rejected events will automatically move back to pending review after you save.</p>
             </div>
 
             <div class="panel-body">
@@ -344,18 +356,43 @@
                         </div>
 
                         <div class="form-group">
+                            <label>Primary Contact Name</label>
+                            <input type="text" name="contactName" value="${event.contactName}" placeholder="Coordinator or representative">
+                        </div>
+
+                        <div class="form-group">
+                            <label>Contact Phone</label>
+                            <input type="text" name="contactPhone" value="${event.contactPhone}" placeholder="Phone for urgent coordination">
+                        </div>
+
+                        <div class="form-group form-group-wide">
+                            <label>Contact Email</label>
+                            <input type="email" name="contactEmail" value="${event.contactEmail}" placeholder="event-contact@organization.org">
+                        </div>
+
+                        <div class="form-group">
                             <label>Start Date</label>
-                            <input type="date" name="startDate" value="${empty event.startDate ? '' : event.startDate.toLocalDate()}" required>
+                            <input type="date" id="eventStartDate" name="startDate" value="${empty event.startDate ? '' : event.startDate.toLocalDate()}" required>
                         </div>
 
                         <div class="form-group">
                             <label>End Date</label>
-                            <input type="date" name="endDate" value="${empty event.endDate ? '' : event.endDate.toLocalDate()}" required>
+                            <input type="date" id="eventEndDate" name="endDate" value="${empty event.endDate ? '' : event.endDate.toLocalDate()}" required>
                         </div>
 
                         <div class="form-group form-group-wide">
                             <label>Description</label>
                             <textarea name="description" required>${event.description}</textarea>
+                        </div>
+
+                        <div class="form-group form-group-wide">
+                            <label>Volunteer Requirements</label>
+                            <textarea name="requirements" placeholder="Skills, attendance expectations, dress code, or participation requirements.">${event.requirements}</textarea>
+                        </div>
+
+                        <div class="form-group form-group-wide">
+                            <label>What Volunteers Receive</label>
+                            <textarea name="benefits" placeholder="Meals, training, transport support, certificate, or other event support.">${event.benefits}</textarea>
                         </div>
                     </div>
 
@@ -399,5 +436,22 @@
         </section>
     </div>
 </div>
+
+<script>
+const eventStartDateInput = document.getElementById("eventStartDate");
+const eventEndDateInput = document.getElementById("eventEndDate");
+
+function syncManageEventDates() {
+    if (!eventStartDateInput || !eventEndDateInput) {
+        return;
+    }
+    eventEndDateInput.min = eventStartDateInput.value || "";
+}
+
+if (eventStartDateInput && eventEndDateInput) {
+    eventStartDateInput.addEventListener("change", syncManageEventDates);
+    syncManageEventDates();
+}
+</script>
 
 <jsp:include page="/components/footer.jsp"/>

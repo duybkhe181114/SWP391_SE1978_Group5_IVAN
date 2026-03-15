@@ -9,6 +9,8 @@ import java.util.List;
 
 public class ManageEventsController extends HttpServlet {
 
+    private final EventDAO dao = new EventDAO();
+
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
@@ -26,7 +28,6 @@ public class ManageEventsController extends HttpServlet {
             return;
         }
         
-        EventDAO dao = new EventDAO();
         List<EventView> pendingEvents = dao.getPendingEvents();
         
         request.setAttribute("pendingEvents", pendingEvents);
@@ -37,18 +38,53 @@ public class ManageEventsController extends HttpServlet {
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        
+        HttpSession session = request.getSession(false);
+
+        if (session == null || session.getAttribute("USER") == null) {
+            response.sendRedirect(request.getContextPath() + "/login");
+            return;
+        }
+
+        String userRole = (String) session.getAttribute("userRole");
+        if (!"Admin".equals(userRole)) {
+            response.sendRedirect(request.getContextPath() + "/home");
+            return;
+        }
+
         String action = request.getParameter("action");
-        int eventId = Integer.parseInt(request.getParameter("eventId"));
-        
-        EventDAO dao = new EventDAO();
-        
+        Integer adminId = (Integer) session.getAttribute("userId");
+        int eventId;
+        try {
+            eventId = Integer.parseInt(request.getParameter("eventId"));
+        } catch (Exception ex) {
+            response.sendRedirect(request.getContextPath() + "/admin/manage-events?error=invalid_event");
+            return;
+        }
+
+        String reviewNote = trimToNull(request.getParameter("reviewNote"));
+
         if ("approve".equals(action)) {
-            dao.approveEvent(eventId);
+            dao.approveEvent(eventId, adminId, reviewNote);
         } else if ("reject".equals(action)) {
-            dao.rejectEvent(eventId);
+            if (reviewNote == null) {
+                response.sendRedirect(request.getContextPath()
+                        + "/admin/manage-events?error=note_required&eventId=" + eventId + "#event-" + eventId);
+                return;
+            }
+            dao.rejectEvent(eventId, adminId, reviewNote);
+        } else {
+            response.sendRedirect(request.getContextPath() + "/admin/manage-events?error=invalid_action");
+            return;
         }
         
-        response.sendRedirect(request.getContextPath() + "/admin/manage-events");
+        response.sendRedirect(request.getContextPath() + "/admin/manage-events?success=reviewed");
+    }
+
+    private String trimToNull(String value) {
+        if (value == null) {
+            return null;
+        }
+        String trimmed = value.trim();
+        return trimmed.isEmpty() ? null : trimmed;
     }
 }
