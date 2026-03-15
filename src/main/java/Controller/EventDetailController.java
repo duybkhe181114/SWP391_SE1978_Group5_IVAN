@@ -14,6 +14,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 import java.io.IOException;
 import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -22,6 +23,9 @@ import java.util.Set;
 
 @WebServlet(name = "EventDetailController", urlPatterns = {"/event/detail"})
 public class EventDetailController extends HttpServlet {
+
+    private static final DateTimeFormatter REGISTRATION_TIME_FORMAT =
+            DateTimeFormatter.ofPattern("dd MMM yyyy, HH:mm");
 
     private final EventDAO eventDAO = new EventDAO();
     private final EventRegistrationDAO regDAO = new EventRegistrationDAO();
@@ -118,6 +122,12 @@ public class EventDetailController extends HttpServlet {
         }
 
         request.setAttribute("latestRegistration", latestRegistration);
+        request.setAttribute(
+                "latestRegistrationAppliedLabel",
+                latestRegistration != null && latestRegistration.getAppliedAt() != null
+                        ? latestRegistration.getAppliedAt().format(REGISTRATION_TIME_FORMAT)
+                        : null
+        );
         request.setAttribute("enrollStatus", enrollStatus);
         request.setAttribute("rejectReason", rejectReason);
         request.setAttribute("eventOpenForApplication", isEventOpenForApplications(event));

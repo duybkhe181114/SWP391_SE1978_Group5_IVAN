@@ -9,6 +9,9 @@
     - OrganizationProfileUpdateRequests
 */
 
+USE [master];
+GO
+
 SET NOCOUNT ON;
 GO
 
