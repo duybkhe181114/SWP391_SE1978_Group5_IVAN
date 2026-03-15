@@ -170,6 +170,31 @@ public class EventCoordinatorDAO extends DBContext {
         return null;
     }
 
+    public int[] findApprovedVolunteerByEmail(int eventId, String email) {
+        String sql = """
+                    SELECT TOP 1 u.UserId, u.Email
+                    FROM EventRegistrations er
+                    JOIN Users u ON u.UserId = er.VolunteerId
+                    WHERE er.EventId = ?
+                      AND er.Status = 'Approved'
+                      AND u.Email = ?
+                      AND u.IsActive = 1
+                    ORDER BY er.AppliedAt DESC, er.RegistrationId DESC
+                """;
+
+        try (PreparedStatement ps = connection.prepareStatement(sql)) {
+            ps.setInt(1, eventId);
+            ps.setString(2, email.trim());
+            ResultSet rs = ps.executeQuery();
+            if (rs.next()) {
+                return new int[]{rs.getInt("UserId")};
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
     /**
      * Get approved volunteers for a specific event (to choose from when promoting).
      */

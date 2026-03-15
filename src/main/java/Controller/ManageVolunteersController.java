@@ -33,7 +33,7 @@ public class ManageVolunteersController extends HttpServlet {
         EventRegistrationDAO dao = new EventRegistrationDAO();
         
         if ("approve".equals(action)) {
-            dao.approveVolunteer(registrationId);
+            dao.approveVolunteer(registrationId, reviewerId);
         } else if ("reject".equals(action)) {
             String reviewNote = request.getParameter("reviewNote");
             if (reviewNote == null || reviewNote.trim().isEmpty()) {

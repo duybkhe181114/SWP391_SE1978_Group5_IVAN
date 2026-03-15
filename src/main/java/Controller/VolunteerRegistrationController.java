@@ -40,7 +40,7 @@ public class VolunteerRegistrationController extends HttpServlet {
         try {
             if ("approve".equals(action)) {
                 int regId = Integer.parseInt(request.getParameter("registrationId"));
-                regDAO.approveVolunteer(regId);
+                regDAO.approveVolunteer(regId, userId);
 
             } else if ("reject".equals(action)) {
                 int regId = Integer.parseInt(request.getParameter("registrationId"));
@@ -68,7 +68,7 @@ public class VolunteerRegistrationController extends HttpServlet {
                 }
             } else if ("promote_by_email".equals(action)) {
                 String email = request.getParameter("email");
-                int[] volunteer = coordDAO.findVolunteerByEmail(email);
+                int[] volunteer = coordDAO.findApprovedVolunteerByEmail(eventId, email);
 
                 if (volunteer == null) {
                     redirectWithMessage(response, request, eventId, returnTo, "error=User+not+found");

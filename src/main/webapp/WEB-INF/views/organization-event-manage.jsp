@@ -377,7 +377,7 @@
                     <div class="feature-card">
                         <div class="feature-count">${availableVolunteerCount}</div>
                         <h3>Volunteer Pool</h3>
-                        <p>Browse active volunteers outside this event, inspect profiles, and add them manually.</p>
+                        <p>Browse volunteers outside this event, inspect profiles, and send invitations they must accept.</p>
                         <a class="nav-btn" href="${pageContext.request.contextPath}/organization/volunteer-pool?eventId=${event.eventId}">Open Volunteer Pool</a>
                     </div>
 
@@ -389,9 +389,9 @@
                     </div>
 
                     <div class="feature-card">
-                        <div class="feature-count">${pendingRegistrationCount + rejectedRegistrationCount}</div>
+                        <div class="feature-count">${pendingRegistrationCount + invitedRegistrationCount + rejectedRegistrationCount + declinedRegistrationCount}</div>
                         <h3>Registration Log</h3>
-                        <p>Handle pending and rejected applications with dedicated review actions and volunteer detail views.</p>
+                        <p>Track pending applications, sent invitations, rejection reasons, and volunteer responses in one place.</p>
                         <a class="nav-btn" href="${pageContext.request.contextPath}/organization/registration-log?eventId=${event.eventId}">Open Registration Log</a>
                     </div>
                 </div>

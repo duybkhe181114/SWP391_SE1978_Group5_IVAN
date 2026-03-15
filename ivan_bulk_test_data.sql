@@ -662,9 +662,17 @@ BEGIN TRY
             WHEN 3 THEN 45
             ELSE 25
         END,
-        CASE WHEN seed.EventSlot = 4 THEN N'Pending' ELSE N'Approved' END,
-        DATEADD(DAY, seed.EventRow * 4, CAST('2026-04-01' AS DATE)),
+        CASE
+            WHEN seed.EventSlot = 1 THEN N'Closed'
+            WHEN seed.EventSlot = 4 THEN N'Pending'
+            ELSE N'Approved'
+        END,
+        CASE
+            WHEN seed.EventSlot = 1 THEN DATEADD(DAY, seed.OrganizationRow - 1, CAST('2026-01-10' AS DATE))
+            ELSE DATEADD(DAY, seed.EventRow * 4, CAST('2026-04-01' AS DATE))
+        END,
         CASE seed.EventSlot
+            WHEN 1 THEN DATEADD(DAY, 1, DATEADD(DAY, seed.OrganizationRow - 1, CAST('2026-01-10' AS DATE)))
             WHEN 2 THEN DATEADD(DAY, 1, DATEADD(DAY, seed.EventRow * 4, CAST('2026-04-01' AS DATE)))
             WHEN 3 THEN DATEADD(DAY, 2, DATEADD(DAY, seed.EventRow * 4, CAST('2026-04-01' AS DATE)))
             ELSE DATEADD(DAY, seed.EventRow * 4, CAST('2026-04-01' AS DATE))
@@ -674,19 +682,20 @@ BEGIN TRY
         CONCAT(N'https://images.ivan.test/events/bulk-event-', RIGHT(CONCAT(N'000', CAST(seed.EventRow AS VARCHAR(3))), 3), N'.jpg')
     FROM #BulkEventSeed seed;
 
-    DROP TABLE IF EXISTS #ApprovedBulkEvents;
+    DROP TABLE IF EXISTS #OperationalBulkEvents;
     SELECT
         e.EventId,
         e.OrganizationId,
+        e.Status,
         e.StartDate,
         e.EndDate,
         e.MaxVolunteers,
         ROW_NUMBER() OVER (ORDER BY e.EventId) AS GroupRow
-    INTO #ApprovedBulkEvents
+    INTO #OperationalBulkEvents
     FROM dbo.Events e
     JOIN #BulkOrganizationRecords bor
       ON bor.OrganizationId = e.OrganizationId
-    WHERE e.Status = N'Approved'
+    WHERE e.Status IN (N'Approved', N'Closed')
       AND e.Title LIKE N'Bulk %';
 
     DROP TABLE IF EXISTS #ActiveBulkVolunteers;
@@ -713,8 +722,15 @@ BEGIN TRY
     INSERT INTO dbo.EventRegistrations (
         EventId,
         VolunteerId,
+        RegistrationType,
         Status,
         AppliedAt,
+        ApplicationReason,
+        RelevantExperience,
+        CommitmentLevel,
+        AvailabilityNote,
+        InvitationMessage,
+        InvitedBy,
         ReviewedAt,
         ReviewedBy,
         ReviewNote
@@ -723,27 +739,87 @@ BEGIN TRY
         abe.EventId,
         v.UserId,
         CASE
-            WHEN slot.SlotRow <= 7 THEN N'Approved'
-            WHEN slot.SlotRow <= 10 THEN N'Pending'
-            ELSE N'Rejected'
+            WHEN abe.Status = N'Closed' THEN N'Application'
+            WHEN slot.SlotRow = 12 THEN N'Invitation'
+            ELSE N'Application'
+        END,
+        CASE
+            WHEN abe.Status = N'Closed' AND slot.SlotRow <= 8 THEN N'Approved'
+            WHEN abe.Status = N'Closed' THEN N'Rejected'
+            WHEN slot.SlotRow <= 6 THEN N'Approved'
+            WHEN slot.SlotRow <= 9 THEN N'Pending'
+            WHEN slot.SlotRow <= 11 THEN N'Rejected'
+            ELSE N'Invited'
         END,
         DATEADD(HOUR, slot.SlotRow, DATEADD(DAY, -24, CAST(abe.StartDate AS DATETIME))),
         CASE
-            WHEN slot.SlotRow <= 7 THEN DATEADD(HOUR, 9 + slot.SlotRow, DATEADD(DAY, -20, CAST(abe.StartDate AS DATETIME)))
-            WHEN slot.SlotRow <= 10 THEN NULL
-            ELSE DATEADD(HOUR, 14 + slot.SlotRow, DATEADD(DAY, -19, CAST(abe.StartDate AS DATETIME)))
+            WHEN slot.SlotRow = 12 AND abe.Status <> N'Closed' THEN NULL
+            ELSE CONCAT(
+                N'I want to join ',
+                CASE
+                    WHEN abe.Status = N'Closed' THEN N'this completed event follow-up program'
+                    ELSE N'this event'
+                END,
+                N' because I can support operations, follow instructions, and help attendees effectively.'
+            )
         END,
         CASE
-            WHEN slot.SlotRow <= 7 THEN @AdminReviewerId
-            WHEN slot.SlotRow <= 10 THEN NULL
-            ELSE @AdminReviewerId
+            WHEN slot.SlotRow = 12 AND abe.Status <> N'Closed' THEN NULL
+            ELSE CONCAT(
+                N'I have experience with community activities, volunteer coordination, and on-site support for medium to large events. Seed row ',
+                CAST(slot.SlotRow AS NVARCHAR(10)),
+                N'.'
+            )
         END,
         CASE
-            WHEN slot.SlotRow <= 7 THEN N'Bulk approval for active event roster testing.'
-            WHEN slot.SlotRow <= 10 THEN NULL
-            ELSE N'Bulk rejection to provide review-history test data.'
+            WHEN slot.SlotRow IN (1, 2, 3) THEN N'Full event commitment'
+            WHEN slot.SlotRow IN (4, 5, 6, 7, 8) THEN N'Most of the event'
+            ELSE N'Assigned shifts only'
+        END,
+        CASE
+            WHEN slot.SlotRow = 12 AND abe.Status <> N'Closed' THEN NULL
+            ELSE CONCAT(
+                N'Available for orientation before the event and for assigned shifts on ',
+                CONVERT(NVARCHAR(10), abe.StartDate, 23),
+                N'.'
+            )
+        END,
+        CASE
+            WHEN slot.SlotRow = 12 AND abe.Status <> N'Closed'
+                THEN N'Organization invitation: we think your profile matches this event and would like you to confirm participation.'
+            ELSE NULL
+        END,
+        CASE
+            WHEN slot.SlotRow = 12 AND abe.Status <> N'Closed' THEN org.CreatedBy
+            ELSE NULL
+        END,
+        CASE
+            WHEN abe.Status = N'Closed' AND slot.SlotRow <= 8 THEN DATEADD(HOUR, 9 + slot.SlotRow, DATEADD(DAY, -20, CAST(abe.StartDate AS DATETIME)))
+            WHEN abe.Status = N'Closed' THEN DATEADD(HOUR, 14 + slot.SlotRow, DATEADD(DAY, -19, CAST(abe.StartDate AS DATETIME)))
+            WHEN slot.SlotRow <= 6 THEN DATEADD(HOUR, 9 + slot.SlotRow, DATEADD(DAY, -20, CAST(abe.StartDate AS DATETIME)))
+            WHEN slot.SlotRow <= 9 THEN NULL
+            WHEN slot.SlotRow <= 11 THEN DATEADD(HOUR, 14 + slot.SlotRow, DATEADD(DAY, -19, CAST(abe.StartDate AS DATETIME)))
+            ELSE NULL
+        END,
+        CASE
+            WHEN abe.Status = N'Closed' AND slot.SlotRow <= 8 THEN @AdminReviewerId
+            WHEN abe.Status = N'Closed' THEN @AdminReviewerId
+            WHEN slot.SlotRow <= 6 THEN @AdminReviewerId
+            WHEN slot.SlotRow <= 9 THEN NULL
+            WHEN slot.SlotRow <= 11 THEN @AdminReviewerId
+            ELSE NULL
+        END,
+        CASE
+            WHEN abe.Status = N'Closed' AND slot.SlotRow <= 8 THEN N'Bulk approval for completed event participation.'
+            WHEN abe.Status = N'Closed' THEN N'Bulk rejection for historical review testing.'
+            WHEN slot.SlotRow <= 6 THEN N'Bulk approval for active event roster testing.'
+            WHEN slot.SlotRow <= 9 THEN NULL
+            WHEN slot.SlotRow <= 11 THEN N'Bulk rejection to provide review-history test data.'
+            ELSE NULL
         END
-    FROM #ApprovedBulkEvents abe
+    FROM #OperationalBulkEvents abe
+    JOIN dbo.Organizations org
+      ON org.OrganizationId = abe.OrganizationId
     CROSS JOIN (VALUES
         (1), (2), (3), (4), (5), (6),
         (7), (8), (9), (10), (11), (12)
@@ -759,7 +835,7 @@ BEGIN TRY
         ROW_NUMBER() OVER (PARTITION BY er.EventId ORDER BY er.RegistrationId) AS MemberRow
     INTO #ApprovedBulkMembers
     FROM dbo.EventRegistrations er
-    JOIN #ApprovedBulkEvents abe
+    JOIN #OperationalBulkEvents abe
       ON abe.EventId = er.EventId
     WHERE er.Status = N'Approved';
 
@@ -769,7 +845,7 @@ BEGIN TRY
         abe.GroupRow,
         c.UserId AS CoordinatorId
     INTO #PrimaryCoordinatorAssignments
-    FROM #ApprovedBulkEvents abe
+    FROM #OperationalBulkEvents abe
     JOIN #BulkCoordinators c
       ON c.GroupRow = ((abe.GroupRow - 1) % @CoordinatorCount) + 1;
 
@@ -809,7 +885,7 @@ BEGIN TRY
         DATEADD(DAY, -12, CAST(e.StartDate AS DATETIME)),
         org.CreatedBy,
         N'Active'
-    FROM #ApprovedBulkEvents abe
+    FROM #OperationalBulkEvents abe
     JOIN #ApprovedBulkMembers abm
       ON abm.EventId = abe.EventId
      AND abm.MemberRow = 1
@@ -851,7 +927,7 @@ BEGIN TRY
             WHEN 4 THEN N'Assist the outreach booth and information desk.'
             ELSE N'Prepare closing summary and handover notes.'
         END
-    FROM #ApprovedBulkEvents abe
+    FROM #OperationalBulkEvents abe
     JOIN #PrimaryCoordinatorAssignments pca
       ON pca.EventId = abe.EventId
     JOIN #ApprovedBulkMembers abm
@@ -887,7 +963,7 @@ BEGIN TRY
         CONCAT(N'Bulk schedule for ', e.Title),
         DATEADD(MINUTE, 30, ISNULL(t.AssignedAt, GETDATE()))
     FROM dbo.Tasks t
-    JOIN #ApprovedBulkEvents abe
+    JOIN #OperationalBulkEvents abe
       ON abe.EventId = t.EventId
     JOIN dbo.Events e
       ON e.EventId = t.EventId
@@ -1000,10 +1076,11 @@ BEGIN TRY
         DATEADD(DAY, 1, CAST(abe.EndDate AS DATETIME)),
         DATEADD(DAY, 1, CAST(abe.EndDate AS DATETIME)),
         0
-    FROM #ApprovedBulkEvents abe
+    FROM #OperationalBulkEvents abe
     JOIN #ApprovedBulkMembers abm
       ON abm.EventId = abe.EventId
-     AND abm.MemberRow <= 2;
+     AND abm.MemberRow <= 2
+    WHERE abe.Status = N'Closed';
 
     INSERT INTO dbo.Notifications (
         UserId,
@@ -1018,6 +1095,7 @@ BEGIN TRY
         CASE er.Status
             WHEN N'Approved' THEN CONCAT(N'Your application for ', e.Title, N' was approved.')
             WHEN N'Pending' THEN CONCAT(N'Your application for ', e.Title, N' is pending review.')
+            WHEN N'Invited' THEN CONCAT(N'You were invited to join ', e.Title, N'.')
             ELSE CONCAT(N'Your application for ', e.Title, N' was rejected.')
         END,
         N'EventRegistration',
@@ -1025,7 +1103,7 @@ BEGIN TRY
         CASE WHEN er.Status = N'Approved' THEN 1 ELSE 0 END,
         DATEADD(MINUTE, 10, er.AppliedAt)
     FROM dbo.EventRegistrations er
-    JOIN #ApprovedBulkEvents abe
+    JOIN #OperationalBulkEvents abe
       ON abe.EventId = er.EventId
     JOIN dbo.Events e
       ON e.EventId = er.EventId;
