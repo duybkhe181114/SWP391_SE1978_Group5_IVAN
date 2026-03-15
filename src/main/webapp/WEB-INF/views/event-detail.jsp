@@ -126,6 +126,48 @@
             grid-template-columns: repeat(2, minmax(0, 1fr));
             gap: 16px;
         }
+        .detail-grid-rich {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 16px;
+            margin-top: 18px;
+        }
+        .detail-box {
+            padding: 16px 18px;
+            border-radius: 14px;
+            border: 1px solid #e2e8f0;
+            background: #fff;
+        }
+        .detail-box-wide { grid-column: 1 / -1; }
+        .detail-label {
+            color: #64748b;
+            font-size: 12px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+        }
+        .detail-value {
+            margin-top: 8px;
+            color: #0f172a;
+            line-height: 1.7;
+            white-space: normal;
+            overflow-wrap: anywhere;
+        }
+        .detail-value-long {
+            white-space: pre-wrap;
+        }
+        .section-card {
+            margin-top: 22px;
+            padding: 22px;
+            border-radius: 16px;
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+        }
+        .section-card h3 {
+            margin: 0 0 14px;
+            color: #0f172a;
+            font-size: 18px;
+        }
         .submission-item {
             display: grid;
             gap: 6px;
@@ -247,6 +289,7 @@
             .page-shell { grid-template-columns: 1fr; }
             .side-card { position: static; }
             .submission-grid { grid-template-columns: 1fr; }
+            .detail-grid-rich { grid-template-columns: 1fr; }
         }
     </style>
 </head>
@@ -292,22 +335,99 @@
         <h2 class="section-title">About This Event</h2>
         <div class="desc"><c:out value="${event.description}" /></div>
 
+        <div class="section-card">
+            <h3>Event Submission Details</h3>
+            <div class="detail-grid-rich">
+                <div class="detail-box">
+                    <div class="detail-label">Location</div>
+                    <div class="detail-value">${empty event.location ? 'Not provided' : event.location}</div>
+                </div>
+                <div class="detail-box">
+                    <div class="detail-label">Event Status</div>
+                    <div class="detail-value">${empty event.status ? 'Not provided' : event.status}</div>
+                </div>
+                <div class="detail-box">
+                    <div class="detail-label">Start Date</div>
+                    <div class="detail-value">
+                        <c:choose>
+                            <c:when test="${not empty event.startDateAsDate}">
+                                <fmt:formatDate value="${event.startDateAsDate}" pattern="dd MMM yyyy" />
+                            </c:when>
+                            <c:otherwise>Not provided</c:otherwise>
+                        </c:choose>
+                    </div>
+                </div>
+                <div class="detail-box">
+                    <div class="detail-label">End Date</div>
+                    <div class="detail-value">
+                        <c:choose>
+                            <c:when test="${not empty event.endDateAsDate}">
+                                <fmt:formatDate value="${event.endDateAsDate}" pattern="dd MMM yyyy" />
+                            </c:when>
+                            <c:otherwise>Not provided</c:otherwise>
+                        </c:choose>
+                    </div>
+                </div>
+                <div class="detail-box">
+                    <div class="detail-label">Volunteer Capacity</div>
+                    <div class="detail-value">
+                        <c:choose>
+                            <c:when test="${event.maxVolunteers > 0}">
+                                ${event.currentVolunteers} confirmed out of ${event.maxVolunteers} slots
+                            </c:when>
+                            <c:otherwise>${event.currentVolunteers} confirmed, unlimited capacity</c:otherwise>
+                        </c:choose>
+                    </div>
+                </div>
+                <div class="detail-box">
+                    <div class="detail-label">Organizer</div>
+                    <div class="detail-value">${empty event.organizationName ? 'Not provided' : event.organizationName}</div>
+                </div>
+                <c:if test="${not empty event.contactName}">
+                    <div class="detail-box">
+                        <div class="detail-label">Primary Contact</div>
+                        <div class="detail-value">${event.contactName}</div>
+                    </div>
+                </c:if>
+                <c:if test="${not empty event.contactEmail}">
+                    <div class="detail-box">
+                        <div class="detail-label">Contact Email</div>
+                        <div class="detail-value">${event.contactEmail}</div>
+                    </div>
+                </c:if>
+                <c:if test="${not empty event.contactPhone}">
+                    <div class="detail-box">
+                        <div class="detail-label">Contact Phone</div>
+                        <div class="detail-value">${event.contactPhone}</div>
+                    </div>
+                </c:if>
+            </div>
+        </div>
+
         <c:if test="${not empty event.requirements or not empty event.benefits}">
-            <div class="submission-card" style="margin-top: 22px;">
-                <div class="submission-grid">
+            <div class="section-card">
+                <h3>Volunteer Expectations And Support</h3>
+                <div class="detail-grid-rich">
                     <c:if test="${not empty event.requirements}">
-                        <div class="submission-item submission-item-wide">
-                            <div class="submission-label">Volunteer Requirements</div>
-                            <div class="submission-value"><c:out value="${event.requirements}" /></div>
+                        <div class="detail-box detail-box-wide">
+                            <div class="detail-label">Volunteer Requirements</div>
+                            <div class="detail-value detail-value-long"><c:out value="${event.requirements}" /></div>
                         </div>
                     </c:if>
                     <c:if test="${not empty event.benefits}">
-                        <div class="submission-item submission-item-wide">
-                            <div class="submission-label">What Volunteers Receive</div>
-                            <div class="submission-value"><c:out value="${event.benefits}" /></div>
+                        <div class="detail-box detail-box-wide">
+                            <div class="detail-label">What Volunteers Receive</div>
+                            <div class="detail-value detail-value-long"><c:out value="${event.benefits}" /></div>
                         </div>
                     </c:if>
                 </div>
+            </div>
+        </c:if>
+
+        <c:if test="${not empty event.reviewNote and (sessionScope.userRole eq 'Organization' or sessionScope.userRole eq 'Admin')}">
+            <div class="section-card" style="background: #fff7ed; border-color: #fed7aa;">
+                <h3>Admin Review Note</h3>
+                <div class="detail-value detail-value-long"><c:out value="${event.reviewNote}" /></div>
             </div>
         </c:if>
 

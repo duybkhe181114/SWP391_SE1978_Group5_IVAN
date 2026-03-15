@@ -175,7 +175,7 @@
                       </c:when>
 
                       <c:when test="${u.role == 'Organization' and not empty u.approvalStatus and u.approvalStatus != 'Approved'}">
-                        <a href="${pageContext.request.contextPath}/admin/manage-organizations?status=pending#review-queue" class="btn-action warning-link">Review Org</a>
+                        <a href="${pageContext.request.contextPath}/admin/review-organizations" class="btn-action warning-link">Review Org</a>
                       </c:when>
 
                       <c:otherwise>
