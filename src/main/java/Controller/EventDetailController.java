@@ -3,7 +3,6 @@ package Controller;
 import DAO.EventDAO;
 import DAO.EventRegistrationDAO;
 import DAO.EventCommentDAO;
-import DAO.EventCoordinatorDAO;
 import DTO.EventView;
 import Entity.EventComment;
 
@@ -16,8 +15,10 @@ import jakarta.servlet.http.HttpSession;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 @WebServlet(name = "EventDetailController", urlPatterns = {"/event/detail"})
 public class EventDetailController extends HttpServlet {
@@ -25,8 +26,6 @@ public class EventDetailController extends HttpServlet {
     private EventDAO eventDAO = new EventDAO();
     private EventRegistrationDAO regDAO = new EventRegistrationDAO();
     private EventCommentDAO commentDAO = new EventCommentDAO();
-    private EventCoordinatorDAO coordDAO = new EventCoordinatorDAO();
-
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
@@ -79,12 +78,19 @@ public class EventDetailController extends HttpServlet {
             if (currentOrgId != null && currentOrgId.equals(event.getOrganizationId())) {
 
                 List<Map<String, Object>> volunteers = regDAO.getVolunteersByEvent(eventId);
-                request.setAttribute("volunteers", volunteers);
+                long activeTeamCount = countActiveMembers(eventId, volunteers);
+                long pendingRegistrationCount = volunteers.stream()
+                        .filter(v -> "Pending".equals(v.get("status")))
+                        .count();
+                long rejectedRegistrationCount = volunteers.stream()
+                        .filter(v -> "Rejected".equals(v.get("status")))
+                        .count();
+                int availableVolunteerCount = regDAO.countAvailableVolunteersForEvent(eventId);
 
-                List<Entity.EventCoordinator> activeCoordinators =
-                        coordDAO.getActiveCoordinatorsByOrg(currentOrgId);
-
-                request.setAttribute("activeCoordinators", activeCoordinators);
+                request.setAttribute("activeTeamCount", activeTeamCount);
+                request.setAttribute("pendingRegistrationCount", pendingRegistrationCount);
+                request.setAttribute("rejectedRegistrationCount", rejectedRegistrationCount);
+                request.setAttribute("availableVolunteerCount", availableVolunteerCount);
 
                 request.getRequestDispatcher("/WEB-INF/views/organization-event-manage.jsp")
                         .forward(request, response);
@@ -96,7 +102,7 @@ public class EventDetailController extends HttpServlet {
         // =====================================================
         // FLOW 2: COORDINATOR CỦA EVENT NÀY
         // =====================================================
-        if ("Volunteer".equals(userRole) && userId != null) {
+        if (("Volunteer".equals(userRole) || "Coordinator".equals(userRole)) && userId != null) {
 
             DAO.EventCoordinatorDAO coordDAO = new DAO.EventCoordinatorDAO();
             boolean isCoordinator = coordDAO.checkIsCoordinator(eventId, userId);
@@ -271,5 +277,29 @@ public class EventDetailController extends HttpServlet {
                             + "&success=cancelled"
             );
         }
+    }
+
+    private long countActiveMembers(int eventId, List<Map<String, Object>> volunteers) {
+        Set<Integer> memberIds = new HashSet<>();
+
+        for (Map<String, Object> volunteer : volunteers) {
+            if (!"Approved".equals(volunteer.get("status"))) {
+                continue;
+            }
+
+            Integer volunteerId = (Integer) volunteer.get("volunteerId");
+            if (volunteerId != null) {
+                memberIds.add(volunteerId);
+            }
+        }
+
+        DAO.EventCoordinatorDAO coordDAO = new DAO.EventCoordinatorDAO();
+        for (Entity.EventCoordinator coordinator : coordDAO.getActiveCoordinatorsByEvent(eventId)) {
+            if (coordinator.getCoordinatorId() != null) {
+                memberIds.add(coordinator.getCoordinatorId());
+            }
+        }
+
+        return memberIds.size();
     }
 }

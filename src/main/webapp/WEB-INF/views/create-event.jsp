@@ -43,6 +43,11 @@
                 <label>Location *</label>
                 <input type="text" name="location" required>
             </div>
+
+            <div class="form-group">
+                <label>Cover Image URL</label>
+                <input type="url" name="coverImageUrl" placeholder="https://example.com/event-cover.jpg">
+            </div>
             
             <div class="form-group">
                 <label>Start Date *</label>

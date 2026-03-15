@@ -46,42 +46,51 @@ public class LoginAsUserController extends HttpServlet {
         }
         
         if (!user.getIsActive()) {
-                String role = dao.getUserRole(user.getUserId());
-                
-                if ("Organization".equals(role)) {
-                    OrganizationProfileDAO orgDAO = new OrganizationProfileDAO();
-                    Map<String, Object> profile = orgDAO.getOrganizationProfile(user.getUserId());
-                    
-                    if (profile != null) {
-                        String status = (String) profile.get("approvalStatus");
-                        
-                        if ("Pending".equals(status)) {
-                            request.setAttribute("error", "Your account is pending admin approval. Please wait.");
-                            request.getRequestDispatcher("/WEB-INF/Authen/LoginAsUser.jsp").forward(request, response);
-                            return;
-                        } else if ("Rejected".equals(status)) {
-                            response.sendRedirect(request.getContextPath() + "/register/organization/resubmit?userId=" + user.getUserId());
-                            return;
-                        }
-                    }
-                }
-                
-                request.setAttribute("error", "Your account is not active. Please contact support.");
-                request.getRequestDispatcher("/WEB-INF/Authen/LoginAsUser.jsp").forward(request, response);
-                return;
-            }
-            
             String role = dao.getUserRole(user.getUserId());
 
-            HttpSession session = request.getSession();
-            session.setAttribute("USER", user);
-            session.setAttribute("userId", user.getUserId());
-            session.setAttribute("userRole", role);
+            if ("Organization".equals(role)) {
+                OrganizationProfileDAO orgDAO = new OrganizationProfileDAO();
+                Map<String, Object> profile = orgDAO.getOrganizationProfile(user.getUserId());
 
+                if (profile != null) {
+                    String status = (String) profile.get("approvalStatus");
+
+                    if ("Pending".equals(status)) {
+                        request.setAttribute("error", "Your account is pending admin approval. Please wait.");
+                        request.getRequestDispatcher("/WEB-INF/Authen/LoginAsUser.jsp").forward(request, response);
+                        return;
+                    } else if ("Rejected".equals(status)) {
+                        response.sendRedirect(request.getContextPath() + "/register/organization/resubmit?userId=" + user.getUserId());
+                        return;
+                    }
+                }
+            }
+
+            request.setAttribute("error", "Your account has been blocked by an admin. Please contact support.");
+            request.getRequestDispatcher("/WEB-INF/Authen/LoginAsUser.jsp").forward(request, response);
+            return;
+        }
+
+        String role = dao.getUserRole(user.getUserId());
+
+        HttpSession session = request.getSession();
+        session.setAttribute("USER", user);
+        session.setAttribute("userId", user.getUserId());
+        session.setAttribute("userRole", role);
+
+        String displayName = "User";
+        if ("Organization".equalsIgnoreCase(role)) {
+            OrganizationProfileDAO orgDAO = new OrganizationProfileDAO();
+            Map<String, Object> orgProfile = orgDAO.getOrganizationProfile(user.getUserId());
+            if (orgProfile != null && orgProfile.get("organizationName") != null) {
+                displayName = String.valueOf(orgProfile.get("organizationName"));
+            } else if (orgProfile != null && orgProfile.get("representativeName") != null) {
+                displayName = String.valueOf(orgProfile.get("representativeName"));
+            }
+        } else {
             UserProfileDAO profileDAO = new UserProfileDAO();
             UserProfile profile = profileDAO.getByUserId(user.getUserId());
 
-            String displayName = "User";
             if (profile != null && profile.getFirstName() != null) {
                 displayName = profile.getFirstName();
                 if (profile.getLastName() != null) {
@@ -90,9 +99,10 @@ public class LoginAsUserController extends HttpServlet {
             } else {
                 displayName = email.substring(0, email.indexOf("@"));
             }
-            session.setAttribute("userName", displayName);
+        }
+        session.setAttribute("userName", displayName);
 
-            response.sendRedirect(request.getContextPath() + "/home");
+        response.sendRedirect(request.getContextPath() + "/home");
     }
 
     @Override

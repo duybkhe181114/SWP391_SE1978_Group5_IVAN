@@ -162,4 +162,165 @@ public class EventRegistrationDAO extends DBContext {
         }
         return false;
     }
+
+    public List<Map<String, Object>> getAvailableVolunteersForEvent(int eventId, String keyword) {
+        List<Map<String, Object>> volunteers = new ArrayList<>();
+        StringBuilder sql = new StringBuilder("""
+            SELECT TOP 30
+                   u.UserId AS VolunteerId,
+                   u.Email,
+                   up.FullName,
+                   up.Phone,
+                   up.Province,
+                   STRING_AGG(s.SkillName, ', ') WITHIN GROUP (ORDER BY s.SkillName) AS Skills
+            FROM Users u
+            JOIN UserRoles ur
+                ON ur.UserId = u.UserId
+               AND ur.Role = 'Volunteer'
+            JOIN UserProfiles up
+                ON up.UserId = u.UserId
+            LEFT JOIN VolunteerSkills vs
+                ON vs.VolunteerId = u.UserId
+            LEFT JOIN Skills s
+                ON s.SkillId = vs.SkillId
+            WHERE u.IsActive = 1
+              AND NOT EXISTS (
+                    SELECT 1
+                    FROM EventRegistrations er
+                    WHERE er.EventId = ?
+                      AND er.VolunteerId = u.UserId
+              )
+              AND NOT EXISTS (
+                    SELECT 1
+                    FROM EventCoordinators ec
+                    WHERE ec.EventId = ?
+                      AND ec.CoordinatorId = u.UserId
+                      AND ec.Status = 'Active'
+              )
+        """);
+
+        List<Object> params = new ArrayList<>();
+        params.add(eventId);
+        params.add(eventId);
+
+        if (keyword != null && !keyword.isBlank()) {
+            sql.append("""
+                 AND (
+                    up.FullName LIKE ?
+                    OR u.Email LIKE ?
+                    OR up.Phone LIKE ?
+                    OR EXISTS (
+                        SELECT 1
+                        FROM VolunteerSkills vs2
+                        JOIN Skills s2 ON s2.SkillId = vs2.SkillId
+                        WHERE vs2.VolunteerId = u.UserId
+                          AND s2.SkillName LIKE ?
+                    )
+                 )
+            """);
+            String likeKeyword = "%" + keyword.trim() + "%";
+            params.add(likeKeyword);
+            params.add(likeKeyword);
+            params.add(likeKeyword);
+            params.add(likeKeyword);
+        }
+
+        sql.append("""
+            GROUP BY u.UserId, u.Email, up.FullName, up.Phone, up.Province
+            ORDER BY up.FullName ASC, u.Email ASC
+        """);
+
+        try (PreparedStatement ps = connection.prepareStatement(sql.toString())) {
+            for (int i = 0; i < params.size(); i++) {
+                ps.setObject(i + 1, params.get(i));
+            }
+
+            ResultSet rs = ps.executeQuery();
+            while (rs.next()) {
+                Map<String, Object> volunteer = new HashMap<>();
+                volunteer.put("volunteerId", rs.getInt("VolunteerId"));
+                volunteer.put("email", rs.getString("Email"));
+                volunteer.put("fullName", rs.getString("FullName"));
+                volunteer.put("phone", rs.getString("Phone"));
+                volunteer.put("province", rs.getString("Province"));
+                volunteer.put("skills", rs.getString("Skills"));
+                volunteers.add(volunteer);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        return volunteers;
+    }
+
+    public int countAvailableVolunteersForEvent(int eventId) {
+        String sql = """
+            SELECT COUNT(*)
+            FROM Users u
+            JOIN UserRoles ur
+                ON ur.UserId = u.UserId
+               AND ur.Role = 'Volunteer'
+            WHERE u.IsActive = 1
+              AND NOT EXISTS (
+                    SELECT 1
+                    FROM EventRegistrations er
+                    WHERE er.EventId = ?
+                      AND er.VolunteerId = u.UserId
+              )
+              AND NOT EXISTS (
+                    SELECT 1
+                    FROM EventCoordinators ec
+                    WHERE ec.EventId = ?
+                      AND ec.CoordinatorId = u.UserId
+                      AND ec.Status = 'Active'
+              )
+        """;
+
+        try (PreparedStatement ps = connection.prepareStatement(sql)) {
+            ps.setInt(1, eventId);
+            ps.setInt(2, eventId);
+            ResultSet rs = ps.executeQuery();
+            if (rs.next()) {
+                return rs.getInt(1);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        return 0;
+    }
+
+    public boolean addVolunteerToEvent(int eventId, int volunteerId, int reviewerId, String reviewNote) {
+        String sql = """
+            INSERT INTO EventRegistrations (
+                EventId,
+                VolunteerId,
+                Status,
+                AppliedAt,
+                ReviewedAt,
+                ReviewedBy,
+                ReviewNote
+            )
+            SELECT ?, ?, 'Approved', GETDATE(), GETDATE(), ?, ?
+            WHERE NOT EXISTS (
+                SELECT 1
+                FROM EventRegistrations
+                WHERE EventId = ?
+                  AND VolunteerId = ?
+            )
+        """;
+
+        try (PreparedStatement ps = connection.prepareStatement(sql)) {
+            ps.setInt(1, eventId);
+            ps.setInt(2, volunteerId);
+            ps.setInt(3, reviewerId);
+            ps.setString(4, reviewNote);
+            ps.setInt(5, eventId);
+            ps.setInt(6, volunteerId);
+            return ps.executeUpdate() > 0;
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return false;
+    }
 }

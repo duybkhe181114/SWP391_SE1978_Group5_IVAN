@@ -83,4 +83,9 @@
         <url-pattern>/admin/review-organizations</url-pattern>
     </servlet-mapping>
 
+    <servlet-mapping>
+        <servlet-name>adminReviewOrganizations</servlet-name>
+        <url-pattern>/admin/manage-organizations</url-pattern>
+    </servlet-mapping>
+
 </web-app>

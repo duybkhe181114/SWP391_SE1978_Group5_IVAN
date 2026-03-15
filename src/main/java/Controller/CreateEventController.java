@@ -21,6 +21,7 @@ public class CreateEventController extends HttpServlet {
             String title = request.getParameter("title");
             String description = request.getParameter("description");
             String location = request.getParameter("location");
+            String coverImageUrl = request.getParameter("coverImageUrl");
             String startDate = request.getParameter("startDate");
             String endDate = request.getParameter("endDate");
             int requiredVolunteers = Integer.parseInt(request.getParameter("requiredVolunteers"));
@@ -49,7 +50,7 @@ public class CreateEventController extends HttpServlet {
                 return;
             }
             
-            boolean success = dao.createEvent(title, description, location, startDate, endDate, 
+            boolean success = dao.createEvent(title, description, location, coverImageUrl, startDate, endDate,
                                              requiredVolunteers, organizationId);
             
             if (success) {
