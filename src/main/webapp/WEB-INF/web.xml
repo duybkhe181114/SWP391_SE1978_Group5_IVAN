@@ -77,6 +77,11 @@
         <servlet-name>manageEvents</servlet-name>
         <url-pattern>/admin/manage-events</url-pattern>
     </servlet-mapping>
+
+    <servlet-mapping>
+        <servlet-name>manageEvents</servlet-name>
+        <url-pattern>/admin/review-events</url-pattern>
+    </servlet-mapping>
     
     <servlet-mapping>
         <servlet-name>adminReviewOrganizations</servlet-name>

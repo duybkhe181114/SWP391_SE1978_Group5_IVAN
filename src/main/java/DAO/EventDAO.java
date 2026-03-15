@@ -217,6 +217,85 @@ public class EventDAO extends DBContext {
         return list;
     }
 
+    public List<EventView> getEventsForAdmin(String keyword, String status) {
+        List<EventView> list = new ArrayList<>();
+        StringBuilder sql = new StringBuilder("""
+            SELECT e.EventId, e.Title, e.Description, e.Location, e.StartDate, e.EndDate,
+                   e.MaxVolunteers, e.Status, e.CreatedAt, e.CoverImageUrl,
+                   e.ContactName, e.ContactEmail, e.ContactPhone, e.Requirements, e.Benefits,
+                   e.ReviewNote, e.ReviewedAt,
+                   o.OrganizationId, o.Name AS OrganizationName,
+                   (SELECT COUNT(*) FROM EventRegistrations er WHERE er.EventId = e.EventId AND er.Status = 'Approved') AS CurrentVolunteers
+            FROM Events e
+            JOIN Organizations o ON e.OrganizationId = o.OrganizationId
+            WHERE 1 = 1
+        """);
+
+        List<Object> params = new ArrayList<>();
+
+        if (keyword != null && !keyword.isBlank()) {
+            sql.append("""
+                 AND (
+                    e.Title LIKE ?
+                    OR o.Name LIKE ?
+                    OR e.Location LIKE ?
+                    OR e.ContactName LIKE ?
+                 )
+            """);
+            String likeKeyword = "%" + keyword.trim() + "%";
+            params.add(likeKeyword);
+            params.add(likeKeyword);
+            params.add(likeKeyword);
+            params.add(likeKeyword);
+        }
+
+        if (status != null && !status.isBlank()) {
+            sql.append(" AND e.Status = ? ");
+            params.add(status.trim());
+        }
+
+        sql.append(" ORDER BY e.CreatedAt DESC, e.EventId DESC ");
+
+        try (PreparedStatement ps = connection.prepareStatement(sql.toString())) {
+            for (int i = 0; i < params.size(); i++) {
+                ps.setObject(i + 1, params.get(i));
+            }
+
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    EventView ev = new EventView();
+                    ev.setEventId(rs.getInt("EventId"));
+                    ev.setEventName(rs.getString("Title"));
+                    ev.setDescription(rs.getString("Description"));
+                    ev.setLocation(rs.getString("Location"));
+                    ev.setMaxVolunteers(rs.getInt("MaxVolunteers"));
+                    ev.setCurrentVolunteers(rs.getInt("CurrentVolunteers"));
+                    ev.setStatus(rs.getString("Status"));
+                    ev.setEventImageUrl(rs.getString("CoverImageUrl"));
+                    ev.setOrganizationId(rs.getInt("OrganizationId"));
+                    ev.setOrganizationName(rs.getString("OrganizationName"));
+                    mapAdditionalEventFields(rs, ev);
+
+                    Date startDate = rs.getDate("StartDate");
+                    if (startDate != null) {
+                        ev.setStartDate(startDate.toLocalDate().atStartOfDay());
+                    }
+
+                    Date endDate = rs.getDate("EndDate");
+                    if (endDate != null) {
+                        ev.setEndDate(endDate.toLocalDate().atStartOfDay());
+                    }
+
+                    list.add(ev);
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return list;
+    }
+
     public List<EventView> getEventsByOrganization(int organizationId) {
         List<EventView> list = new ArrayList<>();
         String sql = """

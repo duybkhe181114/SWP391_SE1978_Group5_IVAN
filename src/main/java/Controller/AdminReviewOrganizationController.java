@@ -14,6 +14,9 @@ import java.util.Map;
 
 public class AdminReviewOrganizationController extends HttpServlet {
 
+    private static final String DIRECTORY_ROUTE = "/admin/manage-organizations";
+    private static final String REVIEW_ROUTE = "/admin/review-organizations";
+
     private final OrganizationReviewDAO dao = new OrganizationReviewDAO();
     private final OrganizationProfileDAO organizationProfileDAO = new OrganizationProfileDAO();
     private final OrganizationProfileUpdateRequestDAO updateRequestDAO = new OrganizationProfileUpdateRequestDAO();
@@ -27,6 +30,10 @@ public class AdminReviewOrganizationController extends HttpServlet {
             return;
         }
 
+        String servletPath = request.getServletPath();
+        boolean reviewQueueMode = REVIEW_ROUTE.equals(servletPath);
+        String currentSection = reviewQueueMode ? "review" : "directory";
+
         String keyword = request.getParameter("q");
         String status = request.getParameter("status");
 
@@ -34,9 +41,13 @@ public class AdminReviewOrganizationController extends HttpServlet {
         List<Map<String, Object>> pendingOrgs = dao.getPendingOrganizations();
         List<Map<String, Object>> pendingProfileUpdates = updateRequestDAO.getPendingRequests();
 
-        request.setAttribute("organizations", organizations);
-        request.setAttribute("pendingOrganizations", pendingOrgs);
-        request.setAttribute("pendingProfileUpdates", pendingProfileUpdates);
+        request.setAttribute("currentSection", currentSection);
+        request.setAttribute("organizations", reviewQueueMode ? List.of() : organizations);
+        request.setAttribute("pendingOrganizations", reviewQueueMode ? pendingOrgs : List.of());
+        request.setAttribute("pendingProfileUpdates", reviewQueueMode ? pendingProfileUpdates : List.of());
+        request.setAttribute("organizationDirectoryCount", organizations.size());
+        request.setAttribute("pendingOrganizationCount", pendingOrgs.size());
+        request.setAttribute("pendingProfileUpdateCount", pendingProfileUpdates.size());
 
         request.getRequestDispatcher("/WEB-INF/views/admin-review-organizations.jsp").forward(request, response);
     }
@@ -68,7 +79,7 @@ public class AdminReviewOrganizationController extends HttpServlet {
         if ("profile_update".equals(requestType)) {
             int requestId = parsePositiveInt(request.getParameter("requestId"), -1);
             if (requestId <= 0) {
-                response.sendRedirect(request.getContextPath() + "/admin/manage-organizations?error=invalid_request#review-queue");
+                response.sendRedirect(request.getContextPath() + REVIEW_ROUTE + "?error=invalid_request");
                 return;
             }
 
@@ -77,20 +88,20 @@ public class AdminReviewOrganizationController extends HttpServlet {
             } else if ("reject".equals(action)) {
                 if (reviewNote == null || reviewNote.trim().isEmpty()) {
                     response.sendRedirect(request.getContextPath()
-                            + "/admin/manage-organizations?error=note_required&requestType=profile_update&requestId="
-                            + requestId + "#review-queue");
+                            + REVIEW_ROUTE + "?error=note_required&requestType=profile_update&requestId="
+                            + requestId);
                     return;
                 }
                 updateRequestDAO.rejectRequest(requestId, adminId, reviewNote);
             }
 
-            response.sendRedirect(request.getContextPath() + "/admin/manage-organizations?success=reviewed#review-queue");
+            response.sendRedirect(request.getContextPath() + REVIEW_ROUTE + "?success=reviewed");
             return;
         }
 
         int userId = parsePositiveInt(request.getParameter("userId"), -1);
         if (userId <= 0) {
-            response.sendRedirect(request.getContextPath() + "/admin/manage-organizations?error=invalid_request#review-queue");
+            response.sendRedirect(request.getContextPath() + REVIEW_ROUTE + "?error=invalid_request");
             return;
         }
 
@@ -99,38 +110,38 @@ public class AdminReviewOrganizationController extends HttpServlet {
         } else if ("reject".equals(action)) {
             if (reviewNote == null || reviewNote.trim().isEmpty()) {
                 response.sendRedirect(request.getContextPath()
-                        + "/admin/manage-organizations?error=note_required&requestType=registration&userId="
-                        + userId + "#review-queue");
+                        + REVIEW_ROUTE + "?error=note_required&requestType=registration&userId="
+                        + userId);
                 return;
             }
             dao.rejectOrganization(userId, adminId, reviewNote);
         }
 
-        response.sendRedirect(request.getContextPath() + "/admin/manage-organizations?success=reviewed#review-queue");
+        response.sendRedirect(request.getContextPath() + REVIEW_ROUTE + "?success=reviewed");
     }
 
     private void handleAdminProfileUpdate(HttpServletRequest request, HttpServletResponse response, int adminId)
             throws IOException {
         int userId = parsePositiveInt(request.getParameter("userId"), -1);
         if (userId <= 0) {
-            response.sendRedirect(request.getContextPath() + "/admin/manage-organizations?error=invalid_request");
+            response.sendRedirect(request.getContextPath() + DIRECTORY_ROUTE + "?error=invalid_request");
             return;
         }
 
         Map<String, Object> currentProfile = organizationProfileDAO.getOrganizationProfile(userId);
         if (currentProfile == null) {
-            response.sendRedirect(request.getContextPath() + "/admin/manage-organizations?error=organization_not_found");
+            response.sendRedirect(request.getContextPath() + DIRECTORY_ROUTE + "?error=organization_not_found");
             return;
         }
 
         String approvalStatus = String.valueOf(currentProfile.get("approvalStatus"));
         if (!"Approved".equalsIgnoreCase(approvalStatus)) {
-            response.sendRedirect(request.getContextPath() + "/admin/manage-organizations?error=organization_not_editable#review-queue");
+            response.sendRedirect(request.getContextPath() + DIRECTORY_ROUTE + "?error=organization_not_editable");
             return;
         }
 
         if (updateRequestDAO.hasPendingRequest(userId)) {
-            response.sendRedirect(request.getContextPath() + "/admin/manage-organizations?error=pending_update_exists#review-queue");
+            response.sendRedirect(request.getContextPath() + DIRECTORY_ROUTE + "?error=pending_update_exists");
             return;
         }
 
@@ -155,11 +166,11 @@ public class AdminReviewOrganizationController extends HttpServlet {
         );
 
         if (!updated) {
-            response.sendRedirect(request.getContextPath() + "/admin/manage-organizations?error=update_failed");
+            response.sendRedirect(request.getContextPath() + DIRECTORY_ROUTE + "?error=update_failed");
             return;
         }
 
-        response.sendRedirect(request.getContextPath() + "/admin/manage-organizations?success=updated");
+        response.sendRedirect(request.getContextPath() + DIRECTORY_ROUTE + "?success=updated");
     }
 
     private boolean isAdmin(HttpServletRequest request) {
