@@ -7,6 +7,7 @@
     - Events.CoverImageUrl
     - EventCoordinators
     - OrganizationProfileUpdateRequests
+    - Event review note and richer event briefing fields
 */
 
 USE [master];
@@ -171,9 +172,57 @@ BEGIN
         CreatedAt DATETIME NULL CONSTRAINT DF_Events_CreatedAt DEFAULT (GETDATE()),
         UpdatedAt DATETIME NULL,
         CoverImageUrl NVARCHAR(500) NULL,
+        ContactName NVARCHAR(100) NULL,
+        ContactEmail NVARCHAR(255) NULL,
+        ContactPhone NVARCHAR(20) NULL,
+        Requirements NVARCHAR(MAX) NULL,
+        Benefits NVARCHAR(MAX) NULL,
+        ReviewNote NVARCHAR(500) NULL,
+        ReviewedBy INT NULL,
+        ReviewedAt DATETIME NULL,
         CONSTRAINT PK_Events PRIMARY KEY CLUSTERED (EventId ASC),
-        CONSTRAINT FK_Events_Organizations FOREIGN KEY (OrganizationId) REFERENCES dbo.Organizations (OrganizationId)
+        CONSTRAINT FK_Events_Organizations FOREIGN KEY (OrganizationId) REFERENCES dbo.Organizations (OrganizationId),
+        CONSTRAINT FK_Events_ReviewedBy FOREIGN KEY (ReviewedBy) REFERENCES dbo.Users (UserId)
     );
+END
+GO
+
+IF OBJECT_ID(N'dbo.Events', N'U') IS NOT NULL
+BEGIN
+    IF COL_LENGTH(N'dbo.Events', N'ContactName') IS NULL
+        ALTER TABLE dbo.Events ADD ContactName NVARCHAR(100) NULL;
+
+    IF COL_LENGTH(N'dbo.Events', N'ContactEmail') IS NULL
+        ALTER TABLE dbo.Events ADD ContactEmail NVARCHAR(255) NULL;
+
+    IF COL_LENGTH(N'dbo.Events', N'ContactPhone') IS NULL
+        ALTER TABLE dbo.Events ADD ContactPhone NVARCHAR(20) NULL;
+
+    IF COL_LENGTH(N'dbo.Events', N'Requirements') IS NULL
+        ALTER TABLE dbo.Events ADD Requirements NVARCHAR(MAX) NULL;
+
+    IF COL_LENGTH(N'dbo.Events', N'Benefits') IS NULL
+        ALTER TABLE dbo.Events ADD Benefits NVARCHAR(MAX) NULL;
+
+    IF COL_LENGTH(N'dbo.Events', N'ReviewNote') IS NULL
+        ALTER TABLE dbo.Events ADD ReviewNote NVARCHAR(500) NULL;
+
+    IF COL_LENGTH(N'dbo.Events', N'ReviewedBy') IS NULL
+        ALTER TABLE dbo.Events ADD ReviewedBy INT NULL;
+
+    IF COL_LENGTH(N'dbo.Events', N'ReviewedAt') IS NULL
+        ALTER TABLE dbo.Events ADD ReviewedAt DATETIME NULL;
+
+    IF NOT EXISTS (
+        SELECT 1
+        FROM sys.foreign_keys
+        WHERE name = N'FK_Events_ReviewedBy'
+          AND parent_object_id = OBJECT_ID(N'dbo.Events')
+    )
+    BEGIN
+        ALTER TABLE dbo.Events
+            ADD CONSTRAINT FK_Events_ReviewedBy FOREIGN KEY (ReviewedBy) REFERENCES dbo.Users (UserId);
+    END
 END
 GO
 

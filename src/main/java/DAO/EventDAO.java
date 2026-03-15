@@ -64,11 +64,14 @@ public class EventDAO extends DBContext {
     
     public boolean createEvent(String title, String description, String location,
                                String coverImageUrl, String startDate, String endDate,
-                               int requiredVolunteers, int orgId) {
+                               int requiredVolunteers, int orgId, String contactName,
+                               String contactEmail, String contactPhone,
+                               String requirements, String benefits) {
         String sql = """
             INSERT INTO Events (Title, Description, Location, CoverImageUrl, StartDate, EndDate,
-                               MaxVolunteers, OrganizationId, Status, CreatedAt, UpdatedAt)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'Pending', GETDATE(), GETDATE())
+                               MaxVolunteers, OrganizationId, Status, CreatedAt, UpdatedAt,
+                               ContactName, ContactEmail, ContactPhone, Requirements, Benefits)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'Pending', GETDATE(), GETDATE(), ?, ?, ?, ?, ?)
         """;
         
         try (PreparedStatement ps = connection.prepareStatement(sql)) {
@@ -91,6 +94,11 @@ public class EventDAO extends DBContext {
             
             ps.setInt(7, requiredVolunteers);
             ps.setInt(8, orgId);
+            ps.setString(9, contactName);
+            ps.setString(10, contactEmail);
+            ps.setString(11, contactPhone);
+            ps.setString(12, requirements);
+            ps.setString(13, benefits);
             
             return ps.executeUpdate() > 0;
         } catch (Exception e) {
@@ -99,10 +107,24 @@ public class EventDAO extends DBContext {
         return false;
     }
     
-    public boolean approveEvent(int eventId) {
-        String sql = "UPDATE Events SET Status = 'Approved' WHERE EventId = ?";
+    public boolean approveEvent(int eventId, Integer adminId, String reviewNote) {
+        String sql = """
+            UPDATE Events
+            SET Status = 'Approved',
+                ReviewNote = ?,
+                ReviewedAt = GETDATE(),
+                ReviewedBy = ?,
+                UpdatedAt = GETDATE()
+            WHERE EventId = ?
+        """;
         try (PreparedStatement ps = connection.prepareStatement(sql)) {
-            ps.setInt(1, eventId);
+            ps.setString(1, reviewNote);
+            if (adminId == null) {
+                ps.setNull(2, Types.INTEGER);
+            } else {
+                ps.setInt(2, adminId);
+            }
+            ps.setInt(3, eventId);
             return ps.executeUpdate() > 0;
         } catch (Exception e) {
             e.printStackTrace();
@@ -110,10 +132,24 @@ public class EventDAO extends DBContext {
         return false;
     }
     
-    public boolean rejectEvent(int eventId) {
-        String sql = "UPDATE Events SET Status = 'Rejected' WHERE EventId = ?";
+    public boolean rejectEvent(int eventId, Integer adminId, String reviewNote) {
+        String sql = """
+            UPDATE Events
+            SET Status = 'Rejected',
+                ReviewNote = ?,
+                ReviewedAt = GETDATE(),
+                ReviewedBy = ?,
+                UpdatedAt = GETDATE()
+            WHERE EventId = ?
+        """;
         try (PreparedStatement ps = connection.prepareStatement(sql)) {
-            ps.setInt(1, eventId);
+            ps.setString(1, reviewNote);
+            if (adminId == null) {
+                ps.setNull(2, Types.INTEGER);
+            } else {
+                ps.setInt(2, adminId);
+            }
+            ps.setInt(3, eventId);
             return ps.executeUpdate() > 0;
         } catch (Exception e) {
             e.printStackTrace();
@@ -138,8 +174,10 @@ public class EventDAO extends DBContext {
     public List<EventView> getPendingEvents() {
         List<EventView> list = new ArrayList<>();
         String sql = """
-            SELECT e.EventId, e.Title, e.Description, e.Location, e.StartDate, e.EndDate, 
-                   e.MaxVolunteers, e.Status, e.CreatedAt,
+            SELECT e.EventId, e.Title, e.Description, e.Location, e.StartDate, e.EndDate,
+                   e.MaxVolunteers, e.Status, e.CreatedAt, e.CoverImageUrl,
+                   e.ContactName, e.ContactEmail, e.ContactPhone, e.Requirements, e.Benefits,
+                   e.ReviewNote, e.ReviewedAt,
                    o.OrganizationId, o.Name AS OrganizationName
             FROM Events e
             JOIN Organizations o ON e.OrganizationId = o.OrganizationId
@@ -167,6 +205,10 @@ public class EventDAO extends DBContext {
                 
                 ev.setOrganizationId(rs.getInt("OrganizationId"));
                 ev.setOrganizationName(rs.getString("OrganizationName"));
+                ev.setEventImageUrl(rs.getString("CoverImageUrl"));
+                ev.setDescription(rs.getString("Description"));
+                ev.setMaxVolunteers(rs.getInt("MaxVolunteers"));
+                mapAdditionalEventFields(rs, ev);
                 list.add(ev);
             }
         } catch (Exception e) {
@@ -178,8 +220,10 @@ public class EventDAO extends DBContext {
     public List<EventView> getEventsByOrganization(int organizationId) {
         List<EventView> list = new ArrayList<>();
         String sql = """
-            SELECT EventId, Title, Description, Location, StartDate, EndDate, 
-                   MaxVolunteers, Status, CreatedAt, CoverImageUrl
+            SELECT EventId, Title, Description, Location, StartDate, EndDate,
+                   MaxVolunteers, Status, CreatedAt, CoverImageUrl,
+                   ContactName, ContactEmail, ContactPhone, Requirements, Benefits,
+                   ReviewNote, ReviewedAt
             FROM Events
             WHERE OrganizationId = ?
             ORDER BY CreatedAt DESC
@@ -198,6 +242,7 @@ public class EventDAO extends DBContext {
                 ev.setMaxVolunteers(rs.getInt("MaxVolunteers"));
 
                 ev.setEventImageUrl(rs.getString("CoverImageUrl"));
+                mapAdditionalEventFields(rs, ev);
 
                 java.sql.Date startDate = rs.getDate("StartDate");
                 if (startDate != null) {
@@ -239,7 +284,10 @@ public class EventDAO extends DBContext {
     public boolean updateEventByOrganization(int eventId, int organizationId, String title,
                                              String description, String location,
                                              String coverImageUrl, String startDate,
-                                             String endDate, int maxVolunteers) {
+                                             String endDate, int maxVolunteers,
+                                             String contactName, String contactEmail,
+                                             String contactPhone, String requirements,
+                                             String benefits) {
         String sql = """
             UPDATE Events
             SET Title = ?,
@@ -249,6 +297,15 @@ public class EventDAO extends DBContext {
                 StartDate = ?,
                 EndDate = ?,
                 MaxVolunteers = ?,
+                ContactName = ?,
+                ContactEmail = ?,
+                ContactPhone = ?,
+                Requirements = ?,
+                Benefits = ?,
+                Status = CASE WHEN Status = 'Rejected' THEN 'Pending' ELSE Status END,
+                ReviewNote = CASE WHEN Status = 'Rejected' THEN NULL ELSE ReviewNote END,
+                ReviewedAt = CASE WHEN Status = 'Rejected' THEN NULL ELSE ReviewedAt END,
+                ReviewedBy = CASE WHEN Status = 'Rejected' THEN NULL ELSE ReviewedBy END,
                 UpdatedAt = GETDATE()
             WHERE EventId = ? AND OrganizationId = ?
         """;
@@ -272,8 +329,13 @@ public class EventDAO extends DBContext {
             }
 
             ps.setInt(7, maxVolunteers);
-            ps.setInt(8, eventId);
-            ps.setInt(9, organizationId);
+            ps.setString(8, contactName);
+            ps.setString(9, contactEmail);
+            ps.setString(10, contactPhone);
+            ps.setString(11, requirements);
+            ps.setString(12, benefits);
+            ps.setInt(13, eventId);
+            ps.setInt(14, organizationId);
             return ps.executeUpdate() > 0;
         } catch (Exception e) {
             e.printStackTrace();
@@ -283,8 +345,10 @@ public class EventDAO extends DBContext {
 
     public EventView getEventById(int eventId) {
         String sql = """
-            SELECT e.EventId, e.Title, e.Description, e.Location, e.StartDate, e.EndDate, 
+            SELECT e.EventId, e.Title, e.Description, e.Location, e.StartDate, e.EndDate,
                    e.MaxVolunteers, e.Status, e.CoverImageUrl, e.CreatedAt,
+                   e.ContactName, e.ContactEmail, e.ContactPhone, e.Requirements, e.Benefits,
+                   e.ReviewNote, e.ReviewedAt,
                    o.OrganizationId, o.Name AS OrganizationName,
                    (SELECT COUNT(*) FROM EventRegistrations er WHERE er.EventId = e.EventId AND er.Status = 'Approved') AS CurrentVolunteers
             FROM Events e
@@ -307,6 +371,7 @@ public class EventDAO extends DBContext {
                 ev.setEventImageUrl(rs.getString("CoverImageUrl"));
                 ev.setOrganizationId(rs.getInt("OrganizationId"));
                 ev.setOrganizationName(rs.getString("OrganizationName"));
+                mapAdditionalEventFields(rs, ev);
 
                 java.sql.Date startDate = rs.getDate("StartDate");
                 if (startDate != null) ev.setStartDate(startDate.toLocalDate().atStartOfDay());
@@ -318,6 +383,20 @@ public class EventDAO extends DBContext {
             }
         } catch (Exception e) { e.printStackTrace(); }
         return null;
+    }
+
+    private void mapAdditionalEventFields(ResultSet rs, EventView event) throws SQLException {
+        event.setContactName(rs.getString("ContactName"));
+        event.setContactEmail(rs.getString("ContactEmail"));
+        event.setContactPhone(rs.getString("ContactPhone"));
+        event.setRequirements(rs.getString("Requirements"));
+        event.setBenefits(rs.getString("Benefits"));
+        event.setReviewNote(rs.getString("ReviewNote"));
+
+        Timestamp reviewedAt = rs.getTimestamp("ReviewedAt");
+        if (reviewedAt != null) {
+            event.setReviewedAt(reviewedAt.toLocalDateTime());
+        }
     }
     
     public int getTotalUsers() {

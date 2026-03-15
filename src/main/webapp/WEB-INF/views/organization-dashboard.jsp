@@ -117,6 +117,11 @@
                                             <span class="badge badge-danger">Rejected</span>
                                         </c:otherwise>
                                     </c:choose>
+                                    <c:if test="${event.status == 'Rejected' and not empty event.reviewNote}">
+                                        <div style="margin-top: 8px; font-size: 12px; line-height: 1.5; color: #991b1b;">
+                                            Admin note: ${event.reviewNote}
+                                        </div>
+                                    </c:if>
                                 </td>
                                 <td>
                                     <a href="${pageContext.request.contextPath}/event/detail?id=${event.eventId}" class="btn-view">Manage Event</a>

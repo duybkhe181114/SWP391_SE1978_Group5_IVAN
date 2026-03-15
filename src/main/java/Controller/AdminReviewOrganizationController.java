@@ -76,7 +76,9 @@ public class AdminReviewOrganizationController extends HttpServlet {
                 updateRequestDAO.approveRequest(requestId, adminId, reviewNote);
             } else if ("reject".equals(action)) {
                 if (reviewNote == null || reviewNote.trim().isEmpty()) {
-                    response.sendRedirect(request.getContextPath() + "/admin/manage-organizations?error=note_required#review-queue");
+                    response.sendRedirect(request.getContextPath()
+                            + "/admin/manage-organizations?error=note_required&requestType=profile_update&requestId="
+                            + requestId + "#review-queue");
                     return;
                 }
                 updateRequestDAO.rejectRequest(requestId, adminId, reviewNote);
@@ -96,7 +98,9 @@ public class AdminReviewOrganizationController extends HttpServlet {
             dao.approveOrganization(userId, adminId, reviewNote);
         } else if ("reject".equals(action)) {
             if (reviewNote == null || reviewNote.trim().isEmpty()) {
-                response.sendRedirect(request.getContextPath() + "/admin/manage-organizations?error=note_required#review-queue");
+                response.sendRedirect(request.getContextPath()
+                        + "/admin/manage-organizations?error=note_required&requestType=registration&userId="
+                        + userId + "#review-queue");
                 return;
             }
             dao.rejectOrganization(userId, adminId, reviewNote);

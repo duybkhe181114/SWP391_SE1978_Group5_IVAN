@@ -19,7 +19,7 @@ public class SupportRequestDAO extends DBContext {
                            Status,
                            CreatedAt
                     FROM SupportRequests
-                    WHERE Status = 'Approved'
+                    WHERE UPPER(Status) = 'APPROVED'
                     ORDER BY CreatedAt DESC
                 """;
 

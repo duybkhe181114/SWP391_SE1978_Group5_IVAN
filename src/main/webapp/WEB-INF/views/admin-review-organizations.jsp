@@ -29,6 +29,8 @@
         .field label { color: #475569; font-size: 13px; font-weight: 700; }
         .field input, .field select, .field textarea, .modal-form input, .modal-form textarea, .modal-form select { width: 100%; box-sizing: border-box; padding: 12px 14px; border: 1px solid #cbd5e1; border-radius: 12px; font: inherit; background: #fff; color: #0f172a; }
         .field textarea, .modal-form textarea { resize: vertical; min-height: 84px; }
+        .field textarea.has-error { border-color: #f87171; background: #fff5f5; }
+        .field-error { display: none; color: #b91c1c; font-size: 13px; font-weight: 600; }
         .filter-actions, .card-actions, .modal-actions { display: flex; flex-wrap: wrap; gap: 10px; }
         .btn, .btn-link { display: inline-flex; align-items: center; justify-content: center; padding: 12px 18px; border-radius: 12px; border: 1px solid transparent; text-decoration: none; font-size: 14px; font-weight: 700; cursor: pointer; transition: transform .2s ease; }
         .btn:hover, .btn-link:hover { transform: translateY(-1px); }
@@ -97,7 +99,6 @@
 
     <c:if test="${param.success == 'reviewed'}"><div class="alert alert-success">Organization review completed successfully.</div></c:if>
     <c:if test="${param.success == 'updated'}"><div class="alert alert-success">Organization profile updated successfully.</div></c:if>
-    <c:if test="${param.error == 'note_required'}"><div class="alert alert-error">Review note is required when rejecting a request.</div></c:if>
     <c:if test="${param.error == 'organization_not_found'}"><div class="alert alert-error">The selected organization could not be found.</div></c:if>
     <c:if test="${param.error == 'organization_not_editable'}"><div class="alert alert-error">Only approved organizations can be edited directly here. Pending or rejected ones must stay in the review queue.</div></c:if>
     <c:if test="${param.error == 'pending_update_exists'}"><div class="alert alert-error">This organization already has a pending profile update request. Review that request before editing the live profile.</div></c:if>
@@ -308,10 +309,17 @@
                             <input type="hidden" name="requestType" value="registration">
                             <input type="hidden" name="userId" value="${org.userId}">
                             <label>Review Note</label>
-                            <textarea name="reviewNote" placeholder="Optional for approval, required for rejection"></textarea>
+                            <textarea
+                                    name="reviewNote"
+                                    class="${param.error == 'note_required' and param.requestType == 'registration' and param.userId == org.userId ? 'has-error' : ''}"
+                                    placeholder="Optional for approval, required for rejection"></textarea>
+                            <c:if test="${param.error == 'note_required' and param.requestType == 'registration' and param.userId == org.userId}">
+                                <div class="field-error" style="display: block;">Please enter a rejection note for this organization before rejecting.</div>
+                            </c:if>
+                            <div class="field-error inline-error">Please enter a rejection note for this organization before rejecting.</div>
                             <div class="card-actions">
                                 <button type="submit" name="action" value="approve" class="btn btn-success" onclick="return confirm('Approve this organization registration?')">Approve Registration</button>
-                                <button type="submit" name="action" value="reject" class="btn btn-danger" onclick="return confirm('Reject this organization registration?')">Reject Registration</button>
+                                <button type="submit" name="action" value="reject" class="btn btn-danger" onclick="return validateReviewReject(this, 'Reject this organization registration?')">Reject Registration</button>
                             </div>
                         </form>
                     </div>
@@ -354,10 +362,17 @@
                             <input type="hidden" name="requestType" value="profile_update">
                             <input type="hidden" name="requestId" value="${org.requestId}">
                             <label>Review Note</label>
-                            <textarea name="reviewNote" placeholder="Optional for approval, required for rejection"></textarea>
+                            <textarea
+                                    name="reviewNote"
+                                    class="${param.error == 'note_required' and param.requestType == 'profile_update' and param.requestId == org.requestId ? 'has-error' : ''}"
+                                    placeholder="Optional for approval, required for rejection"></textarea>
+                            <c:if test="${param.error == 'note_required' and param.requestType == 'profile_update' and param.requestId == org.requestId}">
+                                <div class="field-error" style="display: block;">Please enter a rejection note for this profile update before rejecting.</div>
+                            </c:if>
+                            <div class="field-error inline-error">Please enter a rejection note for this profile update before rejecting.</div>
                             <div class="card-actions">
                                 <button type="submit" name="action" value="approve" class="btn btn-success" onclick="return confirm('Approve this organization profile update?')">Approve Update</button>
-                                <button type="submit" name="action" value="reject" class="btn btn-danger" onclick="return confirm('Reject this organization profile update?')">Reject Update</button>
+                                <button type="submit" name="action" value="reject" class="btn btn-danger" onclick="return validateReviewReject(this, 'Reject this organization profile update?')">Reject Update</button>
                             </div>
                         </form>
                     </div>
@@ -470,6 +485,27 @@ function openOrganizationEditModal(button) {
 
 function closeOrganizationEditModal() {
     document.getElementById("organizationEditModal").style.display = "none";
+}
+
+function validateReviewReject(button, confirmMessage) {
+    const form = button.form;
+    const noteField = form.querySelector('textarea[name="reviewNote"]');
+    const inlineError = form.querySelector('.inline-error');
+
+    if (!noteField || noteField.value.trim() !== "") {
+        if (inlineError) {
+            inlineError.style.display = "none";
+        }
+        if (noteField) {
+            noteField.classList.remove("has-error");
+        }
+        return confirm(confirmMessage);
+    }
+
+    noteField.classList.add("has-error");
+    inlineError.style.display = "block";
+    noteField.focus();
+    return false;
 }
 
 window.addEventListener("click", function (event) {

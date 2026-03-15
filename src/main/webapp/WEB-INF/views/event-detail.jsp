@@ -292,6 +292,25 @@
         <h2 class="section-title">About This Event</h2>
         <div class="desc"><c:out value="${event.description}" /></div>
 
+        <c:if test="${not empty event.requirements or not empty event.benefits}">
+            <div class="submission-card" style="margin-top: 22px;">
+                <div class="submission-grid">
+                    <c:if test="${not empty event.requirements}">
+                        <div class="submission-item submission-item-wide">
+                            <div class="submission-label">Volunteer Requirements</div>
+                            <div class="submission-value"><c:out value="${event.requirements}" /></div>
+                        </div>
+                    </c:if>
+                    <c:if test="${not empty event.benefits}">
+                        <div class="submission-item submission-item-wide">
+                            <div class="submission-label">What Volunteers Receive</div>
+                            <div class="submission-value"><c:out value="${event.benefits}" /></div>
+                        </div>
+                    </c:if>
+                </div>
+            </div>
+        </c:if>
+
         <c:if test="${not empty latestRegistration and latestRegistration.registrationType == 'Application'}">
             <div class="submission-card">
                 <h3 style="margin: 0 0 14px; color: #0f172a;">Your Latest Application</h3>
@@ -415,7 +434,7 @@
                     </select>
                 </div>
                 <div>
-                    <button type="button" class="btn btn-secondary" style="width: auto;" onclick="applyFilter()">Refresh</button>
+                    <button type="button" class="btn btn-secondary" style="width: auto;" onclick="applyFilter()">Filter</button>
                 </div>
             </div>
 
@@ -477,6 +496,24 @@
                 <div class="info-label">Event Status</div>
                 <div class="info-value">${event.status}</div>
             </li>
+            <c:if test="${not empty event.contactName}">
+                <li>
+                    <div class="info-label">Primary Contact</div>
+                    <div class="info-value">${event.contactName}</div>
+                </li>
+            </c:if>
+            <c:if test="${not empty event.contactEmail}">
+                <li>
+                    <div class="info-label">Contact Email</div>
+                    <div class="info-value">${event.contactEmail}</div>
+                </li>
+            </c:if>
+            <c:if test="${not empty event.contactPhone}">
+                <li>
+                    <div class="info-label">Contact Phone</div>
+                    <div class="info-value">${event.contactPhone}</div>
+                </li>
+            </c:if>
         </ul>
 
         <c:choose>

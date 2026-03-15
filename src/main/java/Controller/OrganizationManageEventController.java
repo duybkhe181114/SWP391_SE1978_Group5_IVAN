@@ -69,6 +69,11 @@ public class OrganizationManageEventController extends HttpServlet {
         String startDate = trimToNull(request.getParameter("startDate"));
         String endDate = trimToNull(request.getParameter("endDate"));
         String maxVolunteersRaw = trimToNull(request.getParameter("maxVolunteers"));
+        String contactName = trimToNull(request.getParameter("contactName"));
+        String contactEmail = trimToNull(request.getParameter("contactEmail"));
+        String contactPhone = trimToNull(request.getParameter("contactPhone"));
+        String requirements = trimToNull(request.getParameter("requirements"));
+        String benefits = trimToNull(request.getParameter("benefits"));
 
         Integer organizationId = eventDAO.getOrganizationIdByUserId(userId);
         if (organizationId == null) {
@@ -127,11 +132,21 @@ public class OrganizationManageEventController extends HttpServlet {
                 coverImageUrl,
                 startDate,
                 endDate,
-                maxVolunteers
+                maxVolunteers,
+                contactName,
+                contactEmail,
+                contactPhone,
+                requirements,
+                benefits
         );
 
+        String successKey = "success=event_updated";
+        if (updated && "Rejected".equalsIgnoreCase(currentEvent.getStatus())) {
+            successKey = "success=event_resubmitted";
+        }
+
         redirectWithMessage(response, request, eventId, returnTo,
-                updated ? "success=event_updated" : "error=event_update_failed");
+                updated ? successKey : "error=event_update_failed");
     }
 
     private void handleInviteVolunteer(HttpServletRequest request, HttpServletResponse response,
