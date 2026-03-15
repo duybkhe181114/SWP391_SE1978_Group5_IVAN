@@ -15,6 +15,17 @@ USE [IVAN]
 GO
 
 SET NOCOUNT ON;
+SET XACT_ABORT ON;
+
+IF OBJECT_ID(N'dbo.Users', N'U') IS NULL
+   OR OBJECT_ID(N'dbo.UserProfiles', N'U') IS NULL
+   OR OBJECT_ID(N'dbo.Organizations', N'U') IS NULL
+   OR OBJECT_ID(N'dbo.Events', N'U') IS NULL
+   OR OBJECT_ID(N'dbo.EventRegistrations', N'U') IS NULL
+BEGIN
+    RAISERROR(N'IVAN schema is incomplete. Run ivan_schema_standard.sql successfully before seeding data.', 16, 1);
+    RETURN;
+END;
 
 IF EXISTS (SELECT 1 FROM dbo.Users WHERE Email = N'bulk.admin001@ivan.test')
 BEGIN

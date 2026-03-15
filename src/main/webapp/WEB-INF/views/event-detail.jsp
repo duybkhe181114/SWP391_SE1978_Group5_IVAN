@@ -143,6 +143,10 @@
             line-height: 1.7;
             white-space: pre-wrap;
         }
+        .submission-value-compact {
+            white-space: normal;
+            overflow-wrap: anywhere;
+        }
         .comment-header {
             display: flex;
             justify-content: space-between;
@@ -298,10 +302,10 @@
                     </div>
                     <div class="submission-item">
                         <div class="submission-label">Submitted At</div>
-                        <div class="submission-value">
+                        <div class="submission-value submission-value-compact">
                             <c:choose>
-                                <c:when test="${not empty latestRegistration.appliedAt}">
-                                    <c:out value="${latestRegistration.appliedAt}" />
+                                <c:when test="${not empty latestRegistrationAppliedLabel}">
+                                    <c:out value="${latestRegistrationAppliedLabel}" />
                                 </c:when>
                                 <c:otherwise>Not available</c:otherwise>
                             </c:choose>
