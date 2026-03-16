@@ -96,7 +96,13 @@ public class EventDetailController extends HttpServlet {
                 request.setAttribute("approvedVolunteers", approvedVolunteers);
 
                 DAO.TaskDAO taskDAO = new DAO.TaskDAO();
-                request.setAttribute("eventTasks", taskDAO.getTasksByEvent(eventId));
+                String filterStatus = trimToNull(request.getParameter("filterStatus"));
+                String filterPriority = trimToNull(request.getParameter("filterPriority"));
+                String filterVolunteerId = trimToNull(request.getParameter("filterVolunteerId"));
+                request.setAttribute("eventTasks", taskDAO.getTasksByEventFiltered(eventId, filterStatus, filterPriority, filterVolunteerId));
+                request.setAttribute("filterStatus", filterStatus);
+                request.setAttribute("filterPriority", filterPriority);
+                request.setAttribute("filterVolunteerId", filterVolunteerId);
                 request.getRequestDispatcher("/WEB-INF/views/coordinator-event-manage.jsp")
                         .forward(request, response);
                 return;
