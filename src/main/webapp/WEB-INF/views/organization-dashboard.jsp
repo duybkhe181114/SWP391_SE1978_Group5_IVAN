@@ -73,6 +73,8 @@
             <h2>Quick Actions</h2>
             <div class="btn-group">
                 <a href="${pageContext.request.contextPath}/organization/create-event" class="btn btn-primary">+ Create New Event</a>
+                <a href="${pageContext.request.contextPath}/org/support-requests" class="btn btn-primary">📋 Browse Support Requests</a>
+                <a href="${pageContext.request.contextPath}/org/accepted-requests" class="btn btn-primary">✅ My Accepted Requests</a>
             </div>
         </div>
         

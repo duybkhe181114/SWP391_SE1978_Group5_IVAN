@@ -5,7 +5,7 @@
 <html>
 <head>
     <meta charset="UTF-8">
-    <title>Approved Support Requests - IVAN</title>
+    <title>Accepted Support Requests - IVAN</title>
     <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/base.css">
     <style>
         body { background: #f1f5f9; font-family: 'Inter', 'Segoe UI', sans-serif; margin: 0; }
@@ -14,12 +14,12 @@
         .page-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 28px; }
         .page-header h1 { font-size: 26px; font-weight: 700; color: #1e293b; margin: 0 0 4px; }
         .page-header .subtitle { font-size: 14px; color: #64748b; }
+        .btn-back { display: inline-flex; align-items: center; gap: 6px; padding: 9px 18px; background: white; color: #475569; border: 1.5px solid #e2e8f0; border-radius: 8px; font-size: 13px; font-weight: 600; text-decoration: none; }
+        .btn-back:hover { background: #f8fafc; }
 
-        .info-banner { background: #eff6ff; border: 1.5px solid #bfdbfe; border-radius: 12px; padding: 14px 20px; margin-bottom: 24px; display: flex; align-items: center; gap: 10px; font-size: 13px; color: #1e40af; }
-
-        .filter-bar { display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap; align-items: center; }
-        .search-box input { padding: 8px 14px; border: 1.5px solid #e2e8f0; border-radius: 8px; font-size: 13px; width: 240px; outline: none; }
-        .search-box input:focus { border-color: #6366f1; }
+        .filter-bar { display: flex; gap: 10px; margin-bottom: 20px; }
+        .filter-bar input { padding: 8px 14px; border: 1.5px solid #e2e8f0; border-radius: 8px; font-size: 13px; width: 260px; outline: none; }
+        .filter-bar input:focus { border-color: #6366f1; }
 
         .table-card { background: white; border-radius: 14px; box-shadow: 0 2px 12px rgba(0,0,0,0.05); overflow: hidden; }
         table { width: 100%; border-collapse: collapse; }
@@ -30,9 +30,9 @@
         tbody tr:hover { background: #f8fafc; }
         td { padding: 14px 16px; font-size: 14px; color: #334155; vertical-align: middle; }
 
-        .badge-APPROVED { background: #dcfce7; color: #166534; padding: 4px 12px; border-radius: 20px; font-size: 11px; font-weight: 700; text-transform: uppercase; display: inline-block; }
+        .badge-ACCEPTED { background: #dbeafe; color: #1d4ed8; padding: 4px 12px; border-radius: 20px; font-size: 11px; font-weight: 700; text-transform: uppercase; display: inline-block; }
 
-        .priority-tag { display: inline-flex; align-items: center; gap: 5px; font-size: 12px; font-weight: 600; padding: 3px 10px; border-radius: 20px; }
+        .priority-tag { display: inline-flex; align-items: center; font-size: 12px; font-weight: 600; padding: 3px 10px; border-radius: 20px; }
         .priority-LOW    { background: #f0f9ff; color: #0369a1; }
         .priority-MEDIUM { background: #fffbeb; color: #b45309; }
         .priority-HIGH   { background: #fef2f2; color: #dc2626; }
@@ -41,7 +41,7 @@
         .title-cell .title-text { font-weight: 600; color: #1e293b; }
         .title-cell .id-text { font-size: 12px; color: #94a3b8; }
 
-        .btn-view { padding: 6px 14px; background: #6366f1; color: white; text-decoration: none; border-radius: 6px; font-size: 12px; font-weight: 600; transition: background 0.2s; white-space: nowrap; }
+        .btn-view { padding: 6px 14px; background: #6366f1; color: white; text-decoration: none; border-radius: 6px; font-size: 12px; font-weight: 600; transition: background 0.2s; }
         .btn-view:hover { background: #4f46e5; }
 
         .empty-state { text-align: center; padding: 70px 40px; color: #94a3b8; }
@@ -56,31 +56,22 @@
 <div class="page-wrapper">
     <div class="page-header">
         <div>
-            <h1>📋 Approved Support Requests</h1>
-            <div class="subtitle">Support requests approved by admin — available for your organization to accept</div>
+            <h1>✅ Accepted Support Requests</h1>
+            <div class="subtitle">Support requests your organization has committed to handle</div>
         </div>
-        <a href="${pageContext.request.contextPath}/org/accepted-requests"
-           style="display:inline-flex;align-items:center;gap:6px;padding:9px 18px;background:#1e293b;color:white;border-radius:8px;font-size:13px;font-weight:600;text-decoration:none;">
-            ✅ My Accepted Requests
-        </a>
-    </div>
-
-    <div class="info-banner">
-        ℹ️ Only requests approved by admin are shown here. Click <strong>View</strong> to see details and accept a request.
+        <a href="${pageContext.request.contextPath}/org/support-requests" class="btn-back">← Browse Available Requests</a>
     </div>
 
     <div class="filter-bar">
-        <div class="search-box">
-            <input type="text" id="searchInput" placeholder="🔍 Search by title or location..." oninput="searchTable()">
-        </div>
+        <input type="text" id="searchInput" placeholder="🔍 Search by title or location..." oninput="searchTable()">
     </div>
 
     <div class="table-card">
         <c:choose>
-            <c:when test="${empty requestList}">
+            <c:when test="${empty acceptedList}">
                 <div class="empty-state">
                     <div class="icon">📭</div>
-                    <p>No approved support requests available at the moment.</p>
+                    <p>Your organization hasn't accepted any support requests yet.</p>
                 </div>
             </c:when>
             <c:otherwise>
@@ -93,21 +84,20 @@
                             <th>Location</th>
                             <th>Beneficiary</th>
                             <th>Estimated</th>
+                            <th>Contact</th>
+                            <th>Accepted At</th>
                             <th>Status</th>
-                            <th>Action</th>
                         </tr>
                     </thead>
                     <tbody>
-                        <c:forEach var="r" items="${requestList}">
+                        <c:forEach var="r" items="${acceptedList}">
                             <tr data-title="${r.title}" data-location="${r.supportLocation}">
                                 <td class="title-cell">
                                     <div class="title-text">${r.title}</div>
                                     <div class="id-text">#${r.requestId}</div>
                                 </td>
                                 <td>${not empty r.categoryName ? r.categoryName : '—'}</td>
-                                <td>
-                                    <span class="priority-tag priority-${r.priority}">${r.priority}</span>
-                                </td>
+                                <td><span class="priority-tag priority-${r.priority}">${r.priority}</span></td>
                                 <td>${not empty r.supportLocation ? r.supportLocation : '—'}</td>
                                 <td>${not empty r.beneficiaryName ? r.beneficiaryName : '—'}</td>
                                 <td>
@@ -118,13 +108,18 @@
                                         <c:otherwise>—</c:otherwise>
                                     </c:choose>
                                 </td>
-                                <td><span class="badge-APPROVED">APPROVED</span></td>
                                 <td>
-                                    <a class="btn-view"
-                                       href="${pageContext.request.contextPath}/org/support-request-detail?id=${r.requestId}">
-                                        View →
-                                    </a>
+                                    <div>${not empty r.contactEmail ? r.contactEmail : '—'}</div>
+                                    <div style="font-size:12px;color:#64748b;">${not empty r.contactPhone ? r.contactPhone : ''}</div>
                                 </td>
+                                <td>
+                                    <c:if test="${r.reviewedAt != null}">
+                                        <fmt:parseDate value="${r.reviewedAt}" pattern="yyyy-MM-dd'T'HH:mm" var="parsedDate" type="both"/>
+                                        ${r.reviewedAt}
+                                    </c:if>
+                                    <c:if test="${r.reviewedAt == null}">—</c:if>
+                                </td>
+                                <td><span class="badge-ACCEPTED">ACCEPTED</span></td>
                             </tr>
                         </c:forEach>
                     </tbody>
