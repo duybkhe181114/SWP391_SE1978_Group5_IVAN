@@ -21,7 +21,8 @@ public class CoordinatorPortalController extends HttpServlet {
         Integer userId = (Integer) request.getSession().getAttribute("userId");
         String userRole = (String) request.getSession().getAttribute("userRole");
 
-        if (userId == null || !"Volunteer".equals(userRole)) {
+        boolean canUseCoordinatorPortal = "Volunteer".equals(userRole) || "Coordinator".equals(userRole);
+        if (userId == null || !canUseCoordinatorPortal) {
             response.sendRedirect(request.getContextPath() + "/login");
             return;
         }

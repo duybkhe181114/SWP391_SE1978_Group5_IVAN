@@ -24,6 +24,13 @@ public class EventView {
     private String description;
     private Integer maxVolunteers;
     private Integer currentVolunteers;
+    private String contactName;
+    private String contactEmail;
+    private String contactPhone;
+    private String requirements;
+    private String benefits;
+    private String reviewNote;
+    private LocalDateTime reviewedAt;
     // ===== Getters & Setters =====
 
     public Integer getEventId() {
@@ -138,6 +145,67 @@ public class EventView {
 
     public void setCurrentVolunteers(Integer currentVolunteers) {
         this.currentVolunteers = currentVolunteers;
+    }
+
+    public String getContactName() {
+        return contactName;
+    }
+
+    public void setContactName(String contactName) {
+        this.contactName = contactName;
+    }
+
+    public String getContactEmail() {
+        return contactEmail;
+    }
+
+    public void setContactEmail(String contactEmail) {
+        this.contactEmail = contactEmail;
+    }
+
+    public String getContactPhone() {
+        return contactPhone;
+    }
+
+    public void setContactPhone(String contactPhone) {
+        this.contactPhone = contactPhone;
+    }
+
+    public String getRequirements() {
+        return requirements;
+    }
+
+    public void setRequirements(String requirements) {
+        this.requirements = requirements;
+    }
+
+    public String getBenefits() {
+        return benefits;
+    }
+
+    public void setBenefits(String benefits) {
+        this.benefits = benefits;
+    }
+
+    public String getReviewNote() {
+        return reviewNote;
+    }
+
+    public void setReviewNote(String reviewNote) {
+        this.reviewNote = reviewNote;
+    }
+
+    public LocalDateTime getReviewedAt() {
+        return reviewedAt;
+    }
+
+    public void setReviewedAt(LocalDateTime reviewedAt) {
+        this.reviewedAt = reviewedAt;
+    }
+
+    public Date getReviewedAtAsDate() {
+        return reviewedAt == null ? null :
+                Date.from(reviewedAt.atZone(ZoneId.systemDefault()).toInstant());
     }
 
     public boolean getIsExpired() {

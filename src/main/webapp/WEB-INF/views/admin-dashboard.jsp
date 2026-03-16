@@ -33,7 +33,7 @@
         
         .actions { background: white; padding: 32px; border-radius: 16px; box-shadow: 0 4px 20px rgba(0,0,0,0.06); }
         .actions h2 { font-size: 20px; color: #1e293b; margin-bottom: 20px; font-weight: 600; }
-        .btn-group { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; align-items: stretch; }
+        .btn-group { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 16px; align-items: stretch; }
         .btn { padding: 14px 28px; border-radius: 10px; text-decoration: none; font-weight: 600; font-size: 15px; line-height: 1.5; transition: all 0.3s; display: flex; align-items: center; justify-content: center; text-align: center; min-height: 50px; }
         .btn-primary { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; }
         .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(102,126,234,0.4); }
@@ -45,6 +45,7 @@
         }
         @media (max-width: 768px) {
             .stats-grid { grid-template-columns: 1fr; }
+            .btn-group { grid-template-columns: 1fr; }
         }
     </style>
 </head>
@@ -96,7 +97,9 @@
             <h2>Quick Actions</h2>
             <div class="btn-group">
                 <a href="${pageContext.request.contextPath}/admin/manage-events" class="btn btn-primary">Manage Events</a>
-                <a href="${pageContext.request.contextPath}/admin/review-organizations" class="btn btn-secondary">Review Organizations</a>
+                <a href="${pageContext.request.contextPath}/admin/review-events" class="btn btn-secondary">Event Review Queue</a>
+                <a href="${pageContext.request.contextPath}/admin/manage-organizations" class="btn btn-secondary">Manage Organizations</a>
+                <a href="${pageContext.request.contextPath}/admin/review-organizations" class="btn btn-primary">Review Queue</a>
             </div>
         </div>
     </div>

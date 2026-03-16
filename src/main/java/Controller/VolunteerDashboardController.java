@@ -37,6 +37,15 @@ public class VolunteerDashboardController extends HttpServlet {
 
         TaskDAO taskDAO = new TaskDAO();
         double impactHours = taskDAO.getTotalImpactHours(userId);
+        List<java.util.Map<String, Object>> allTasks = taskDAO.getAllTasksForVolunteer(userId);
+
+        long taskPending    = allTasks.stream().filter(t -> "Pending".equals(t.get("status"))).count();
+        long taskInProgress = allTasks.stream().filter(t -> "In Progress".equals(t.get("status"))).count();
+        long taskDone       = allTasks.stream().filter(t -> "Completed".equals(t.get("status")) || "Confirmed".equals(t.get("status"))).count();
+
+        request.setAttribute("taskPending",    taskPending);
+        request.setAttribute("taskInProgress", taskInProgress);
+        request.setAttribute("taskDone",       taskDone);
 
         EventDAO eventDAO = new EventDAO();
         List<EventView> recommendedEvents = eventDAO.getRecommendedEvents(userId);
