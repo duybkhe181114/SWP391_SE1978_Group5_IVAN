@@ -15,22 +15,20 @@ public class AdminSPRDetailController extends HttpServlet {
             HttpServletResponse response)
             throws ServletException, IOException {
 
-        // ===== RBAC: CHỈ ADMIN =====
+        // Kiểm tra session + role
         HttpSession session = request.getSession(false);
-        if (session == null || session.getAttribute("userRole") == null) {
-            response.sendRedirect(request.getContextPath() + "/login");
-            return;
-        }
-        String userRole = session.getAttribute("userRole").toString();
-        if (!"Admin".equalsIgnoreCase(userRole)) {
-            response.sendRedirect(request.getContextPath() + "/login");
-            return;
+        String userRole = null;
+        if (session != null && session.getAttribute("userRole") != null) {
+            userRole = session.getAttribute("userRole").toString();
         }
 
+        // Truyền userRole vào request để JSP dùng
         request.setAttribute("userRole", userRole);
 
         String idRaw = request.getParameter("id");
+
         int requestId;
+
         try {
             requestId = Integer.parseInt(idRaw);
         } catch (NumberFormatException e) {
@@ -39,12 +37,7 @@ public class AdminSPRDetailController extends HttpServlet {
         }
 
         SupportRequestDAO dao = new SupportRequestDAO();
-        SupportRequest spr = dao.getById(requestId);
-
-        if (spr == null) {
-            response.sendRedirect("viewSpRequestAdmin");
-            return;
-        }
+        SupportRequest spr = dao.getSPRById(requestId);
 
         request.setAttribute("requestDetail", spr);
 

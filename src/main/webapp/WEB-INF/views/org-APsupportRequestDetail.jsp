@@ -1,153 +1,204 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
-<%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
-<%@ taglib uri="http://java.sun.com/jsp/jstl/fmt" prefix="fmt" %>
-
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Support Request #${requestDetail.requestId} - Organization</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/base.css">
+    <title>Charity - Support Request Detail</title>
 
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: 'Inter', 'Segoe UI', sans-serif; background: #f5f7fa; min-height: 100vh; }
+        body {
+            font-family: "Segoe UI", sans-serif;
+            background: #f4f6fa;
+            padding: 40px;
+            margin: 0;
+        }
 
-        .page-wrapper { max-width: 1000px; margin: 0 auto; padding: 32px 24px; }
+        .container {
+            max-width: 1100px;
+            margin: auto;
+        }
 
-        .breadcrumb { display: flex; align-items: center; gap: 8px; font-size: 13px; color: #94a3b8; margin-bottom: 24px; }
-        .breadcrumb a { color: #6366f1; text-decoration: none; font-weight: 500; }
-        .breadcrumb a:hover { text-decoration: underline; }
-        .breadcrumb span.sep { color: #cbd5e1; }
+        .card {
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 6px 25px rgba(0,0,0,0.05);
+        }
 
-        .card { background: #fff; border-radius: 16px; padding: 32px; box-shadow: 0 2px 12px rgba(0,0,0,0.04); margin-bottom: 24px; }
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+        }
 
-        .card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 28px; }
-        .card-header h2 { font-size: 22px; font-weight: 700; color: #1e293b; }
+        h2 {
+            margin: 0;
+            font-size: 22px;
+            color: #2c3e50;
+        }
 
         .back-btn {
-            display: inline-flex; align-items: center; gap: 6px;
-            padding: 10px 20px; background: #f8fafc; color: #475569;
-            text-decoration: none; border-radius: 10px; font-weight: 500; font-size: 13px;
-            border: 1.5px solid #e2e8f0; transition: all 0.2s;
+            padding: 8px 15px;
+            background: #6c757d;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
         }
-        .back-btn:hover { background: #f1f5f9; border-color: #cbd5e1; }
-        .back-btn svg { width: 16px; height: 16px; }
 
-        .section { margin-bottom: 28px; }
+        .back-btn:hover {
+            background: #5a6268;
+        }
+
+        .section {
+            margin-bottom: 30px;
+        }
+
         .section-title {
-            font-size: 12px; font-weight: 700; margin-bottom: 16px; color: #64748b;
-            text-transform: uppercase; letter-spacing: 0.8px;
-            padding-bottom: 8px; border-bottom: 1.5px solid #f1f5f9;
+            font-weight: 600;
+            margin-bottom: 15px;
+            color: #34495e;
+            text-transform: uppercase;
+            font-size: 14px;
+            letter-spacing: 0.5px;
         }
 
-        .grid { display: grid; grid-template-columns: 180px 1fr; row-gap: 14px; column-gap: 20px; }
-        .label { font-weight: 600; color: #64748b; font-size: 13px; }
-        .value { color: #1e293b; font-size: 14px; }
-
-        .description-box { background: #f8fafc; padding: 16px; border-radius: 10px; border: 1px solid #e2e8f0; line-height: 1.7; font-size: 14px; color: #334155; }
-
-        .proof-img { max-width: 400px; border-radius: 12px; border: 1px solid #e2e8f0; margin-top: 8px; }
-
-        .status-badge {
-            display: inline-flex; align-items: center; gap: 6px;
-            padding: 6px 14px; border-radius: 20px; font-size: 12px; font-weight: 700;
-            text-transform: uppercase; letter-spacing: 0.5px;
+        .grid {
+            display: grid;
+            grid-template-columns: 200px 1fr;
+            gap: 10px 20px;
         }
-        .status-badge .dot { width: 7px; height: 7px; border-radius: 50%; }
-        .APPROVED { background: #dcfce7; color: #166534; }
-        .APPROVED .dot { background: #22c55e; }
-        .ACCEPTED { background: #dbeafe; color: #1e40af; }
-        .ACCEPTED .dot { background: #3b82f6; }
 
-        .actions { display: flex; justify-content: flex-end; gap: 12px; margin-top: 28px; }
+        .label {
+            font-weight: 600;
+            color: #555;
+        }
 
-        .btn {
-            display: inline-flex; align-items: center; gap: 6px;
-            padding: 12px 24px; border-radius: 10px; border: none; font-weight: 600;
-            cursor: pointer; font-size: 14px; transition: all 0.2s; font-family: 'Inter', sans-serif;
+        .value {
+            color: #333;
         }
-        .btn:hover { transform: translateY(-1px); }
-        .btn-accept {
-            background: linear-gradient(135deg, #22c55e, #16a34a); color: white;
-            box-shadow: 0 4px 14px rgba(34,197,94,0.3);
-        }
-        .btn-accept:hover { box-shadow: 0 6px 20px rgba(34,197,94,0.4); }
-        .btn svg { width: 18px; height: 18px; }
 
-        .accepted-banner {
-            display: flex; align-items: center; gap: 12px;
-            padding: 16px 20px; background: #eff6ff; border: 1px solid #bfdbfe;
-            border-radius: 12px; color: #1e40af; font-size: 14px; font-weight: 500;
+        .description-box {
+            background: #f8f9fc;
+            padding: 15px;
+            border-radius: 8px;
+            border: 1px solid #eee;
         }
-        .accepted-banner svg { width: 20px; height: 20px; flex-shrink: 0; }
+
+        .proof-img {
+            max-width: 350px;
+            border-radius: 10px;
+            border: 1px solid #ddd;
+            margin-top: 10px;
+        }
+
+        .badge-approved {
+            background: #d4edda;
+            color: #155724;
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-weight: 600;
+            font-size: 13px;
+            display: inline-block;
+        }
+
+        .action-box {
+            background: #f8f9fc;
+            padding: 20px;
+            border-radius: 10px;
+            border: 1px solid #e3e6ea;
+            margin-top: 20px;
+        }
+
+        input, textarea {
+            width: 100%;
+            padding: 10px;
+            border-radius: 8px;
+            border: 1px solid #ccc;
+            margin-top: 5px;
+            margin-bottom: 15px;
+        }
+
+        .actions {
+            display: flex;
+            gap: 10px;
+            justify-content: flex-end;
+        }
+
+        button {
+            padding: 10px 18px;
+            border-radius: 8px;
+            border: none;
+            font-weight: 600;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+
+        .accept-btn {
+            background: #28a745;
+            color: white;
+        }
+
+        .accept-btn:hover {
+            background: #218838;
+        }
+
+        .decline-btn {
+            background: #dc3545;
+            color: white;
+        }
+
+        .decline-btn:hover {
+            background: #c82333;
+        }
+
     </style>
+
+    <script>
+        function goBack() {
+            window.history.back();
+        }
+    </script>
+
 </head>
 <body>
 
-<%@ include file="/components/header.jsp" %>
-
-<div class="page-wrapper">
-
-    <div class="breadcrumb">
-        <a href="${pageContext.request.contextPath}/organization/dashboard">Dashboard</a>
-        <span class="sep">/</span>
-        <a href="${pageContext.request.contextPath}/orgViewSpRequest">Support Requests</a>
-        <span class="sep">/</span>
-        <span>Detail #${requestDetail.requestId}</span>
-    </div>
-
+<div class="container">
     <div class="card">
-        <div class="card-header">
-            <h2>Support Request #${requestDetail.requestId}</h2>
-            <a href="${pageContext.request.contextPath}/orgViewSpRequest" class="back-btn">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
-                Back to List
-            </a>
+
+        <div class="header">
+            <h2>Support Request Detail</h2>
+            <button class="back-btn" onclick="goBack()">← Back</button>
         </div>
 
-        <!-- BASIC INFO -->
+        <!-- REQUEST INFO -->
         <div class="section">
-            <div class="section-title">Basic Information</div>
+            <div class="section-title">Request Information</div>
             <div class="grid">
-                <div class="label">Title</div>
-                <div class="value" style="font-weight:600;">${requestDetail.title}</div>
+                <div class="label">Title:</div>
+                <div class="value">Emergency Medical Support for Child</div>
 
-                <div class="label">Category</div>
-                <div class="value">${requestDetail.categoryName}</div>
+                <div class="label">Category:</div>
+                <div class="value">MEDICAL</div>
 
-                <div class="label">Priority</div>
-                <div class="value" style="font-weight:600;">${requestDetail.priority}</div>
+                <div class="label">Priority:</div>
+                <div class="value">URGENT</div>
 
-                <div class="label">Status</div>
+                <div class="label">Location:</div>
+                <div class="value">Ho Chi Minh City</div>
+
+                <div class="label">Beneficiary:</div>
+                <div class="value">Nguyen Van A</div>
+
+                <div class="label">Affected People:</div>
+                <div class="value">1</div>
+
+                <div class="label">Estimated Amount:</div>
+                <div class="value">$ 5000</div>
+
+                <div class="label">Status:</div>
                 <div class="value">
-                    <span class="status-badge ${requestDetail.status}">
-                        <span class="dot"></span>
-                        ${requestDetail.status}
-                    </span>
-                </div>
-            </div>
-        </div>
-
-        <!-- SUPPORT DETAILS -->
-        <div class="section">
-            <div class="section-title">Support Details</div>
-            <div class="grid">
-                <div class="label">Location</div>
-                <div class="value">${requestDetail.supportLocation}</div>
-
-                <div class="label">Beneficiary</div>
-                <div class="value">${requestDetail.beneficiaryName}</div>
-
-                <div class="label">Affected People</div>
-                <div class="value">${requestDetail.affectedPeople}</div>
-
-                <div class="label">Estimated Amount</div>
-                <div class="value" style="font-weight:600; font-size:16px;">
-                    <c:if test="${requestDetail.estimatedAmount != null && requestDetail.estimatedAmount > 0}">
-                        <fmt:formatNumber value="${requestDetail.estimatedAmount}" type="currency" currencySymbol="$"/>
-                    </c:if>
-                    <c:if test="${requestDetail.estimatedAmount == null || requestDetail.estimatedAmount == 0}">Not specified</c:if>
+                    <span class="badge-approved">APPROVED BY ADMIN</span>
                 </div>
             </div>
         </div>
@@ -155,52 +206,49 @@
         <!-- DESCRIPTION -->
         <div class="section">
             <div class="section-title">Description</div>
-            <div class="description-box">${requestDetail.description}</div>
+            <div class="description-box">
+                A 6-year-old child needs urgent heart surgery but the family cannot afford the medical expenses.
+            </div>
         </div>
 
         <!-- CONTACT -->
         <div class="section">
             <div class="section-title">Contact Information</div>
             <div class="grid">
-                <div class="label">Email</div>
-                <div class="value">${requestDetail.contactEmail}</div>
+                <div class="label">Email:</div>
+                <div class="value">support@example.com</div>
 
-                <div class="label">Phone</div>
-                <div class="value">${requestDetail.contactPhone}</div>
+                <div class="label">Phone:</div>
+                <div class="value">0901234567</div>
             </div>
         </div>
 
-        <!-- PROOF IMAGE -->
-        <c:if test="${not empty requestDetail.proofImageUrl}">
-            <div class="section">
-                <div class="section-title">Proof Image</div>
-                <img src="${pageContext.request.contextPath}/uploads/${requestDetail.proofImageUrl}"
-                     class="proof-img" alt="Proof Image"
-                     onerror="this.style.display='none'"/>
-            </div>
-        </c:if>
+        <!-- PROOF -->
+        <div class="section">
+            <div class="section-title">Proof</div>
+            <img src="https://via.placeholder.com/350x220.png?text=Proof+Image"
+                 class="proof-img" alt="Proof Image"/>
+        </div>
 
-        <%-- ACCEPTED banner --%>
-        <c:if test="${requestDetail.status == 'ACCEPTED'}">
-            <div class="accepted-banner">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
-                This request has already been accepted by your organization.
-            </div>
-        </c:if>
+        <!-- CHARITY ACTION -->
+        <div class="section">
+            <div class="section-title">Charity Decision</div>
 
-        <%-- ACCEPT button (only for APPROVED status) --%>
-        <c:if test="${requestDetail.status == 'APPROVED'}">
-            <div class="actions">
-                <form action="${pageContext.request.contextPath}/updateSupportRequestStatus" method="post">
-                    <input type="hidden" name="requestId" value="${requestDetail.requestId}"/>
-                    <input type="hidden" name="status" value="ACCEPTED"/>
-                    <button type="submit" class="btn btn-accept" onclick="return confirm('Accept this support request? Your organization will be responsible for fulfilling it.')">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
-                        Accept Request
-                    </button>
-                </form>
+            <div class="action-box">
+
+                <label>Funding Amount</label>
+                <input type="number" placeholder="Enter amount you will support">
+
+                <label>Note</label>
+                <textarea placeholder="Internal note (optional)"></textarea>
+
+                <div class="actions">
+                    <button class="decline-btn">Decline</button>
+                    <button class="accept-btn">Accept & Fund</button>
+                </div>
+
             </div>
-        </c:if>
+        </div>
 
     </div>
 </div>

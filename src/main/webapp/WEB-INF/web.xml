@@ -27,7 +27,7 @@
         <servlet-name>loginAsUser</servlet-name>
         <servlet-class>Controller.LoginAsUserController</servlet-class>
     </servlet>
-    
+
     <servlet>
         <servlet-name>adminDashboard</servlet-name>
         <servlet-class>Controller.AdminDashboard</servlet-class>
@@ -77,10 +77,20 @@
         <servlet-name>manageEvents</servlet-name>
         <url-pattern>/admin/manage-events</url-pattern>
     </servlet-mapping>
+
+    <servlet-mapping>
+        <servlet-name>manageEvents</servlet-name>
+        <url-pattern>/admin/review-events</url-pattern>
+    </servlet-mapping>
     
     <servlet-mapping>
         <servlet-name>adminReviewOrganizations</servlet-name>
         <url-pattern>/admin/review-organizations</url-pattern>
+    </servlet-mapping>
+
+    <servlet-mapping>
+        <servlet-name>adminReviewOrganizations</servlet-name>
+        <url-pattern>/admin/manage-organizations</url-pattern>
     </servlet-mapping>
 
 </web-app>

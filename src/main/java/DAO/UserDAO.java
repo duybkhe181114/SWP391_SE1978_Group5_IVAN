@@ -6,21 +6,6 @@ import java.sql.ResultSet;
 
 public class UserDAO extends DBContext {
 
-    // ===== UTILITY: Hash password SHA-256 =====
-    private String hashPassword(String plain) {
-        try {
-            java.security.MessageDigest md = java.security.MessageDigest.getInstance("SHA-256");
-            byte[] hash = md.digest(plain.getBytes(java.nio.charset.StandardCharsets.UTF_8));
-            StringBuilder sb = new StringBuilder();
-            for (byte b : hash) {
-                sb.append(String.format("%02x", b));
-            }
-            return sb.toString();
-        } catch (java.security.NoSuchAlgorithmException e) {
-            throw new RuntimeException("SHA-256 not available", e);
-        }
-    }
-
     // Kiểm tra mật khẩu cũ
     public boolean checkOldPassword(int userId, String oldPass) {
         try {
@@ -32,9 +17,8 @@ public class UserDAO extends DBContext {
             ResultSet rs = ps.executeQuery();
 
             if (rs.next()) {
-                String currentHash = rs.getString("PasswordHash");
-                // So sánh plain-text (tạm thời bỏ hash)
-                return currentHash.equals(oldPass);
+                String currentPass = rs.getString("PasswordHash");
+                return currentPass.equals(oldPass);
             }
 
         } catch (Exception e) {
@@ -44,7 +28,7 @@ public class UserDAO extends DBContext {
         return false;
     }
 
-    // Update password mới (lưu hash)
+    // Update password mới
     public boolean updatePassword(int userId, String newPass) {
         try {
             String sql = "UPDATE Users SET PasswordHash = ? WHERE UserId = ?";
@@ -130,7 +114,7 @@ public class UserDAO extends DBContext {
 
     // Tạo profile rỗng cho Volunteer
     public boolean createEmptyProfile(int userId, String firstName, String lastName) {
-        String sql = "INSERT INTO UserProfiles (UserId, FirstName, LastName) VALUES (?, ?, ?)";
+        String sql = "INSERT INTO UserProfiles (UserId, FirstName, LastName, ApprovalStatus) VALUES (?, ?, ?, 'Approved')";
         try (PreparedStatement ps = connection.prepareStatement(sql)) {
             ps.setInt(1, userId);
             ps.setString(2, firstName);
