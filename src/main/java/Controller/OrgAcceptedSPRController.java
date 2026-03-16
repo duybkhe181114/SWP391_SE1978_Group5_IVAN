@@ -8,8 +8,8 @@ import jakarta.servlet.http.*;
 import java.io.IOException;
 import java.util.List;
 
-@WebServlet("/org/support-requests")
-public class OrgListSPRController extends HttpServlet {
+@WebServlet("/org/accepted-requests")
+public class OrgAcceptedSPRController extends HttpServlet {
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
@@ -27,12 +27,13 @@ public class OrgListSPRController extends HttpServlet {
             return;
         }
 
-        SupportRequestDAO dao = new SupportRequestDAO();
-        // Organization chỉ được xem những request đã được admin APPROVED
-        List<SupportRequest> list = dao.getApprovedSupportRequests();
+        int userId = (Integer) session.getAttribute("userId");
 
-        request.setAttribute("requestList", list);
-        request.getRequestDispatcher("/WEB-INF/views/org-APsupportRequestList.jsp")
+        SupportRequestDAO dao = new SupportRequestDAO();
+        List<SupportRequest> list = dao.getAcceptedByOrg(userId);
+
+        request.setAttribute("acceptedList", list);
+        request.getRequestDispatcher("/WEB-INF/views/org-accepted-spr-list.jsp")
                 .forward(request, response);
     }
 }

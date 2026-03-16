@@ -75,55 +75,38 @@
             <span>${not empty sessionScope.userName ? sessionScope.userName : 'User'}</span>
             <span style="font-size: 10px; margin-left: 2px;">▼</span>
           </div>
+          <div class="dropdown-menu">
+            <div class="dropdown-content">
+              <% if ("Organization".equalsIgnoreCase(userRole)) { %>
+                <a href="${pageContext.request.contextPath}/organization/dashboard">Dashboard</a>
+                <a href="${pageContext.request.contextPath}/organization/create-event">Create Event</a>
+                <a href="${pageContext.request.contextPath}/org/support-requests">Support Requests</a>
+              <% } else if ("Admin".equalsIgnoreCase(userRole)) { %>
+                <a href="${pageContext.request.contextPath}/admin/dashboard">Dashboard</a>
+                <a href="${pageContext.request.contextPath}/admin/manage-events">Manage Events</a>
+                <a href="${pageContext.request.contextPath}/admin/review-events">Event Review Queue</a>
+                <a href="${pageContext.request.contextPath}/admin/manage-users">Manage Users</a>
+                <a href="${pageContext.request.contextPath}/admin/manage-organizations">Manage Organizations</a>
+                <a href="${pageContext.request.contextPath}/admin/review-organizations">Review Queue</a>
+                <a href="${pageContext.request.contextPath}/admin/review-profiles">Review Profiles</a>
+                <a href="${pageContext.request.contextPath}/viewSpRequestAdmin">Support Requests</a>
+              <% } else if ("Coordinator".equalsIgnoreCase(userRole)) { %>
+                <a href="${pageContext.request.contextPath}/coordinator/portal">Dashboard</a>
+                <a href="${pageContext.request.contextPath}/events">Events</a>
+              <% } else { %>
+                <a href="${pageContext.request.contextPath}/volunteer/dashboard">Dashboard</a>
+                <a href="${pageContext.request.contextPath}/volunteer/dashboard#workspaces">My Workspaces</a>
+                <a href="${pageContext.request.contextPath}/viewSpRequestUser">My Requests</a>
+              <% } %>
 
-          <div class="hd-menu" id="headerDropContent">
-
-            <% if ("Organization".equalsIgnoreCase(userRole)) { %>
-                <div class="dd-category">Workspace</div>
-                <a href="${pageContext.request.contextPath}/organization/dashboard" class="dd-item">📊 Dashboard</a>
-                <a href="${pageContext.request.contextPath}/organization/create-event" class="dd-item">➕ Create Event</a>
-
-                <div class="dd-category">Support</div>
-                <a href="${pageContext.request.contextPath}/viewSpRequestAdmin" class="dd-item">💬 Support Requests</a>
-
-            <% } else if ("Admin".equalsIgnoreCase(userRole)) { %>
-                <a href="${pageContext.request.contextPath}/admin/dashboard" class="dd-item">📊 System Dashboard</a>
-
-                <div class="dd-category">Events Management</div>
-                <a href="${pageContext.request.contextPath}/admin/manage-events" class="dd-item">📅 Manage Events</a>
-                <a href="${pageContext.request.contextPath}/admin/review-events" class="dd-item">⏱️ Event Review Queue</a>
-
-                <div class="dd-category">Users & Organizations</div>
-                <a href="${pageContext.request.contextPath}/admin/manage-users" class="dd-item">👥 Manage Users</a>
-                <a href="${pageContext.request.contextPath}/admin/manage-organizations" class="dd-item">🏢 Manage Organizations</a>
-                <a href="${pageContext.request.contextPath}/admin/review-organizations" class="dd-item">📑 Org Review Queue</a>
-                <a href="${pageContext.request.contextPath}/admin/review-profiles" class="dd-item">👤 Profile Review Queue</a>
-
-                <div class="dd-category">System</div>
-                <a href="${pageContext.request.contextPath}/viewSpRequestAdmin" class="dd-item">💬 Support Requests</a>
-
-            <% } else if ("Coordinator".equalsIgnoreCase(userRole)) { %>
-                <div class="dd-category">Management</div>
-                <a href="${pageContext.request.contextPath}/coordinator/portal" class="dd-item">👑 Dashboard</a>
-                <a href="${pageContext.request.contextPath}/events" class="dd-item">📅 Browse Events</a>
-
-            <% } else { %>
-                <div class="dd-category">My Activities</div>
-                <a href="${pageContext.request.contextPath}/volunteer/dashboard" class="dd-item">📊 Dashboard</a>
-                <a href="${pageContext.request.contextPath}/volunteer/dashboard#workspaces" class="dd-item">🚀 My Workspaces</a>
-                <a href="${pageContext.request.contextPath}/viewSpRequestUser" class="dd-item">💬 My Requests</a>
-            <% } %>
-
-            <div class="dd-divider"></div>
-
-            <div class="dd-category">Account</div>
-            <% if ("Organization".equalsIgnoreCase(userRole)) { %>
-                <a href="${pageContext.request.contextPath}/organization/profile" class="dd-item">⚙️ Settings & Profile</a>
-            <% } else { %>
-                <a href="${pageContext.request.contextPath}/profile" class="dd-item">⚙️ Settings & Profile</a>
-            <% } %>
-
-            <a href="${pageContext.request.contextPath}/logout" class="dd-item dd-item-danger">🚪 Logout</a>
+              <% if ("Organization".equalsIgnoreCase(userRole)) { %>
+                <a href="${pageContext.request.contextPath}/organization/profile">My Profile</a>
+              <% } else { %>
+                <a href="${pageContext.request.contextPath}/profile">My Profile</a>
+              <% } %>
+              <hr style="border: 0; border-top: 1px solid #eee; margin: 5px 0;">
+              <a href="${pageContext.request.contextPath}/logout" style="color: #e53e3e;">Logout</a>
+            </div>
           </div>
         </div>
       <% } else { %>

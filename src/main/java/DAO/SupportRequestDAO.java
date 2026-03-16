@@ -2,6 +2,7 @@ package DAO;
 
 import Context.DBContext;
 import Entity.SupportRequest;
+import java.math.BigDecimal;
 import java.sql.*;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -13,14 +14,14 @@ public class SupportRequestDAO extends DBContext {
         List<SupportRequest> list = new ArrayList<>();
 
         String sql = """
-                    SELECT RequestId,
-                           CategoryId,
-                           Description,
-                           Status,
-                           CreatedAt
-                    FROM SupportRequests
-                    WHERE UPPER(Status) = 'APPROVED'
-                    ORDER BY CreatedAt DESC
+                    SELECT r.RequestId, r.Title, r.CategoryId, c.Name AS CategoryName,
+                           r.Priority, r.Status, r.SupportLocation,
+                           r.BeneficiaryName, r.AffectedPeople, r.EstimatedAmount,
+                           r.ContactEmail, r.ContactPhone, r.Description, r.CreatedAt
+                    FROM SupportRequests r
+                    LEFT JOIN SupportCategories c ON r.CategoryId = c.CategoryId
+                    WHERE UPPER(r.Status) = 'APPROVED' AND r.IsDeleted = 0
+                    ORDER BY r.CreatedAt DESC
                 """;
 
         try (PreparedStatement ps = connection.prepareStatement(sql);
@@ -29,9 +30,19 @@ public class SupportRequestDAO extends DBContext {
             while (rs.next()) {
                 SupportRequest sr = new SupportRequest();
                 sr.setRequestId(rs.getInt("RequestId"));
+                sr.setTitle(rs.getString("Title"));
                 sr.setCategoryId(rs.getString("CategoryId"));
-                sr.setDescription(rs.getString("Description"));
+                sr.setCategoryName(rs.getString("CategoryName"));
+                sr.setPriority(rs.getString("Priority"));
                 sr.setStatus(rs.getString("Status"));
+                sr.setSupportLocation(rs.getString("SupportLocation"));
+                sr.setBeneficiaryName(rs.getString("BeneficiaryName"));
+                sr.setAffectedPeople((Integer) rs.getObject("AffectedPeople"));
+                BigDecimal amt1 = (BigDecimal) rs.getObject("EstimatedAmount");
+                sr.setEstimatedAmount(amt1 != null ? amt1.doubleValue() : null);
+                sr.setContactEmail(rs.getString("ContactEmail"));
+                sr.setContactPhone(rs.getString("ContactPhone"));
+                sr.setDescription(rs.getString("Description"));
 
                 Timestamp created = rs.getTimestamp("CreatedAt");
                 if (created != null) {
@@ -197,7 +208,8 @@ public class SupportRequestDAO extends DBContext {
                     sr.setSupportLocation(rs.getString("SupportLocation"));
                     sr.setBeneficiaryName(rs.getString("BeneficiaryName"));
                     sr.setAffectedPeople((Integer) rs.getObject("AffectedPeople"));
-                    sr.setEstimatedAmount((Double) rs.getObject("EstimatedAmount"));
+                    BigDecimal amt2 = (BigDecimal) rs.getObject("EstimatedAmount");
+                    sr.setEstimatedAmount(amt2 != null ? amt2.doubleValue() : null);
                     sr.setContactEmail(rs.getString("ContactEmail"));
                     sr.setContactPhone(rs.getString("ContactPhone"));
                     sr.setProofImageUrl(rs.getString("ProofUrl"));
@@ -415,6 +427,7 @@ public class SupportRequestDAO extends DBContext {
                 r.setRejectReason(rs.getString("RejectReason"));
                 r.setAdminNote(rs.getString("AdminNote"));
                 r.setCreatedBy(rs.getInt("CreatedBy"));
+                r.setReviewedBy((Integer) rs.getObject("ReviewedBy"));
 
                 return r;
             }
@@ -503,6 +516,56 @@ public class SupportRequestDAO extends DBContext {
         } catch (Exception e) {
             e.printStackTrace();
         }
+    }
+
+    public List<SupportRequest> getAcceptedByOrg(int orgUserId) {
+
+        List<SupportRequest> list = new ArrayList<>();
+
+        String sql = """
+                    SELECT r.RequestId, r.Title, r.CategoryId, c.Name AS CategoryName,
+                           r.Priority, r.Status, r.SupportLocation,
+                           r.BeneficiaryName, r.AffectedPeople, r.EstimatedAmount,
+                           r.ContactEmail, r.ContactPhone, r.ReviewedAt
+                    FROM SupportRequests r
+                    LEFT JOIN SupportCategories c ON r.CategoryId = c.CategoryId
+                    WHERE r.Status = 'ACCEPTED'
+                      AND r.ReviewedBy = ?
+                      AND r.IsDeleted = 0
+                    ORDER BY r.ReviewedAt DESC
+                """;
+
+        try (PreparedStatement ps = connection.prepareStatement(sql)) {
+
+            ps.setInt(1, orgUserId);
+
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    SupportRequest sr = new SupportRequest();
+                    sr.setRequestId(rs.getInt("RequestId"));
+                    sr.setTitle(rs.getString("Title"));
+                    sr.setCategoryId(rs.getString("CategoryId"));
+                    sr.setCategoryName(rs.getString("CategoryName"));
+                    sr.setPriority(rs.getString("Priority"));
+                    sr.setStatus(rs.getString("Status"));
+                    sr.setSupportLocation(rs.getString("SupportLocation"));
+                    sr.setBeneficiaryName(rs.getString("BeneficiaryName"));
+                    sr.setAffectedPeople(rs.getInt("AffectedPeople"));
+                    BigDecimal amt = (BigDecimal) rs.getObject("EstimatedAmount");
+                    sr.setEstimatedAmount(amt != null ? amt.doubleValue() : null);
+                    sr.setContactEmail(rs.getString("ContactEmail"));
+                    sr.setContactPhone(rs.getString("ContactPhone"));
+                    Timestamp reviewed = rs.getTimestamp("ReviewedAt");
+                    if (reviewed != null) sr.setReviewedAt(reviewed.toLocalDateTime());
+                    list.add(sr);
+                }
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return list;
     }
 
     public void acceptRequest(int requestId, int organizationUserId) {
