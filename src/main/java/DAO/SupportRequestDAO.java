@@ -13,14 +13,14 @@ public class SupportRequestDAO extends DBContext {
         List<SupportRequest> list = new ArrayList<>();
 
         String sql = """
-                    SELECT RequestId,
-                           CategoryId,
-                           Description,
-                           Status,
-                           CreatedAt
-                    FROM SupportRequests
-                    WHERE UPPER(Status) = 'APPROVED'
-                    ORDER BY CreatedAt DESC
+                    SELECT r.RequestId, r.Title, r.CategoryId, c.Name AS CategoryName,
+                           r.Priority, r.Status, r.SupportLocation,
+                           r.BeneficiaryName, r.AffectedPeople, r.EstimatedAmount,
+                           r.ContactEmail, r.ContactPhone, r.Description, r.CreatedAt
+                    FROM SupportRequests r
+                    LEFT JOIN SupportCategories c ON r.CategoryId = c.CategoryId
+                    WHERE UPPER(r.Status) = 'APPROVED' AND r.IsDeleted = 0
+                    ORDER BY r.CreatedAt DESC
                 """;
 
         try (PreparedStatement ps = connection.prepareStatement(sql);
@@ -29,9 +29,18 @@ public class SupportRequestDAO extends DBContext {
             while (rs.next()) {
                 SupportRequest sr = new SupportRequest();
                 sr.setRequestId(rs.getInt("RequestId"));
+                sr.setTitle(rs.getString("Title"));
                 sr.setCategoryId(rs.getString("CategoryId"));
-                sr.setDescription(rs.getString("Description"));
+                sr.setCategoryName(rs.getString("CategoryName"));
+                sr.setPriority(rs.getString("Priority"));
                 sr.setStatus(rs.getString("Status"));
+                sr.setSupportLocation(rs.getString("SupportLocation"));
+                sr.setBeneficiaryName(rs.getString("BeneficiaryName"));
+                sr.setAffectedPeople((Integer) rs.getObject("AffectedPeople"));
+                sr.setEstimatedAmount((Double) rs.getObject("EstimatedAmount"));
+                sr.setContactEmail(rs.getString("ContactEmail"));
+                sr.setContactPhone(rs.getString("ContactPhone"));
+                sr.setDescription(rs.getString("Description"));
 
                 Timestamp created = rs.getTimestamp("CreatedAt");
                 if (created != null) {
