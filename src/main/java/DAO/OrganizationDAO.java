@@ -52,6 +52,32 @@ public class OrganizationDAO extends DBContext {
         return list;
     }
 
+    public Map<String, Object> getOrgByUserId(int userId) {
+        String sql = """
+                SELECT o.OrganizationId, o.Name, o.Description, o.Phone, o.Email,
+                       o.Address, o.Website, o.LogoUrl
+                FROM Organizations o
+                WHERE o.CreatedBy = ?
+                """;
+        try (PreparedStatement ps = connection.prepareStatement(sql)) {
+            ps.setInt(1, userId);
+            ResultSet rs = ps.executeQuery();
+            if (rs.next()) {
+                Map<String, Object> map = new HashMap<>();
+                map.put("OrganizationId", rs.getInt("OrganizationId"));
+                map.put("Name", rs.getString("Name"));
+                map.put("Description", rs.getString("Description"));
+                map.put("Phone", rs.getString("Phone"));
+                map.put("Email", rs.getString("Email"));
+                map.put("Address", rs.getString("Address"));
+                map.put("Website", rs.getString("Website"));
+                map.put("LogoUrl", rs.getString("LogoUrl"));
+                return map;
+            }
+        } catch (Exception e) { e.printStackTrace(); }
+        return null;
+    }
+
     public Map<String, Object> getOrganizationById(int id) {
         String sql = "SELECT OrganizationId, Name, Description, Phone, Email, Address, Website, CreatedAt, LogoUrl FROM Organizations WHERE OrganizationId = ?";
         try (PreparedStatement ps = connection.prepareStatement(sql)) {

@@ -58,7 +58,19 @@
         .proof-img { max-width: 100%; max-height: 320px; border-radius: 10px; border: 1px solid #e2e8f0; display: block; }
         .no-proof { padding: 24px; background: #f8fafc; border-radius: 10px; text-align: center; color: #94a3b8; font-size: 13px; border: 1.5px dashed #e2e8f0; }
 
-        /* ===== REJECT REASON BOX ===== */
+        /* ===== ACCEPTED BY ORG ===== */
+        .org-card { background: #eff6ff; border: 1.5px solid #bfdbfe; border-radius: 14px; padding: 20px 24px; margin-bottom: 24px; display: flex; gap: 20px; align-items: center; }
+        .org-logo { width: 64px; height: 64px; border-radius: 12px; object-fit: cover; border: 1px solid #dbeafe; background: white; flex-shrink: 0; }
+        .org-logo-placeholder { width: 64px; height: 64px; border-radius: 12px; background: #dbeafe; display: flex; align-items: center; justify-content: center; font-size: 28px; flex-shrink: 0; }
+        .org-info { flex: 1; }
+        .org-info .org-label { font-size: 11px; font-weight: 700; color: #3b82f6; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px; }
+        .org-info .org-name { font-size: 17px; font-weight: 700; color: #1e293b; margin-bottom: 8px; }
+        .org-meta { display: flex; flex-wrap: wrap; gap: 14px; }
+        .org-meta-item { display: flex; align-items: center; gap: 5px; font-size: 13px; color: #475569; }
+        .org-meta-item a { color: #3b82f6; text-decoration: none; }
+        .org-meta-item a:hover { text-decoration: underline; }
+        .btn-view-org { padding: 8px 16px; background: #3b82f6; color: white; text-decoration: none; border-radius: 8px; font-size: 13px; font-weight: 600; white-space: nowrap; transition: background 0.2s; }
+        .btn-view-org:hover { background: #2563eb; }
         .reject-reason-box { background: #fef2f2; border: 1px solid #fecaca; border-radius: 10px; padding: 16px; }
         .reject-reason-box .rr-label { font-size: 12px; font-weight: 700; color: #991b1b; text-transform: uppercase; letter-spacing: 0.4px; margin-bottom: 6px; }
         .reject-reason-box .rr-text { font-size: 14px; color: #7f1d1d; }
@@ -107,13 +119,13 @@
     </div>
 
     <!-- STATUS BANNER -->
+    <c:if test="${requestDetail.status != 'ACCEPTED'}">
     <div class="status-banner ${requestDetail.status}">
         <div class="banner-icon">
             <c:choose>
                 <c:when test="${requestDetail.status == 'PENDING'}">⏳</c:when>
                 <c:when test="${requestDetail.status == 'APPROVED'}">✅</c:when>
                 <c:when test="${requestDetail.status == 'REJECTED'}">❌</c:when>
-                <c:when test="${requestDetail.status == 'ACCEPTED'}">📋</c:when>
                 <c:otherwise>📌</c:otherwise>
             </c:choose>
         </div>
@@ -126,12 +138,46 @@
                     <c:when test="${requestDetail.status == 'PENDING'}">Awaiting admin review</c:when>
                     <c:when test="${requestDetail.status == 'APPROVED'}">Approved by admin — visible to organizations</c:when>
                     <c:when test="${requestDetail.status == 'REJECTED'}">Rejected by admin</c:when>
-                    <c:when test="${requestDetail.status == 'ACCEPTED'}">Accepted by an organization</c:when>
                     <c:otherwise>${requestDetail.status}</c:otherwise>
                 </c:choose>
             </span>
         </div>
     </div>
+    </c:if>
+
+    <!-- ACCEPTED BY ORG -->
+    <c:if test="${requestDetail.status == 'ACCEPTED' && acceptedByOrg != null}">
+        <div class="org-card">
+            <c:choose>
+                <c:when test="${not empty acceptedByOrg.LogoUrl}">
+                    <img src="${pageContext.request.contextPath}/assets/images/organizations/${acceptedByOrg.LogoUrl}"
+                         class="org-logo" alt="${acceptedByOrg.Name}"/>
+                </c:when>
+                <c:otherwise>
+                    <div class="org-logo-placeholder">🏢</div>
+                </c:otherwise>
+            </c:choose>
+            <div class="org-info">
+                <div class="org-name">${acceptedByOrg.Name}</div>
+                <div style="margin-bottom:8px;"><span class="badge badge-ACCEPTED">ACCEPTED</span></div>
+                <div class="org-meta">
+                    <c:if test="${not empty acceptedByOrg.Address}">
+                        <div class="org-meta-item">📍 ${acceptedByOrg.Address}</div>
+                    </c:if>
+                    <c:if test="${not empty acceptedByOrg.Phone}">
+                        <div class="org-meta-item">📞 ${acceptedByOrg.Phone}</div>
+                    </c:if>
+                    <c:if test="${not empty acceptedByOrg.Email}">
+                        <div class="org-meta-item">✉️ ${acceptedByOrg.Email}</div>
+                    </c:if>
+                    <c:if test="${not empty acceptedByOrg.Website}">
+                        <div class="org-meta-item">🌐 <a href="${acceptedByOrg.Website}" target="_blank">${acceptedByOrg.Website}</a></div>
+                    </c:if>
+                </div>
+            </div>
+
+        </div>
+    </c:if>
 
     <!-- REJECT REASON (nếu bị từ chối) -->
     <c:if test="${requestDetail.status == 'REJECTED' && not empty requestDetail.rejectReason}">
