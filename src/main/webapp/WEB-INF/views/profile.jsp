@@ -124,15 +124,50 @@
                         <span style="color: #667eea;">●</span> My Profile
                     </h2>
 
+                    <%-- Avatar upload error --%>
+                    <c:if test="${not empty param.avatarError}">
+                        <div style="background:#fef2f2;color:#991b1b;padding:12px 16px;border-radius:8px;margin-bottom:16px;font-size:14px;">
+                            ❌ ${param.avatarError}
+                        </div>
+                    </c:if>
+
+                    <%-- Avatar section --%>
+                    <div style="display:flex;align-items:center;gap:24px;padding:20px;background:#f8fafc;border-radius:14px;border:1px solid #e2e8f0;margin-bottom:28px;">
+                        <div style="position:relative;flex-shrink:0;">
+                            <div id="avatarPreview" style="width:90px;height:90px;border-radius:50%;overflow:hidden;border:3px solid #e0e7ff;background:#e2e8f0;display:flex;align-items:center;justify-content:center;font-size:36px;">
+                                <c:choose>
+                                    <c:when test="${not empty profile.avatar}">
+                                        <img id="avatarImg" src="${pageContext.request.contextPath}${profile.avatar}" style="width:100%;height:100%;object-fit:cover;"/>
+                                    </c:when>
+                                    <c:otherwise>
+                                        <span id="avatarPlaceholder">👤</span>
+                                    </c:otherwise>
+                                </c:choose>
+                            </div>
+                            <label for="avatarFileInput" style="position:absolute;bottom:0;right:0;width:26px;height:26px;background:#4f46e5;border-radius:50%;display:flex;align-items:center;justify-content:center;cursor:pointer;border:2px solid white;font-size:12px;" title="Change photo">✏️</label>
+                        </div>
+                        <div>
+                            <div style="font-weight:700;font-size:16px;color:#0f172a;margin-bottom:4px;">${profile.fullName}</div>
+                            <div style="font-size:13px;color:#64748b;margin-bottom:10px;">JPG, PNG or WEBP · Max 3 MB</div>
+                            <form id="avatarForm" method="post" action="${pageContext.request.contextPath}/profile/avatar" enctype="multipart/form-data">
+                                <input id="avatarFileInput" type="file" name="avatar" accept="image/jpeg,image/png,image/webp" style="display:none;"
+                                       onchange="previewAndSubmit(this)"/>
+                            </form>
+                            <c:if test="${param.success == 'avatar'}">
+                                <span style="font-size:13px;color:#16a34a;font-weight:600;">✅ Photo updated!</span>
+                            </c:if>
+                        </div>
+                    </div>
+
                     <%-- HIỆN THÔNG BÁO TÙY THEO TRẠNG THÁI --%>
-                    <c:if test="${param.success == 1}">
+                    <c:if test="${param.success == '1'}">
                         <div class="success-message" style="margin-bottom: 20px;">
                             Profile updated successfully!
                         </div>
                     </c:if>
 
                     <%-- THÔNG BÁO PENDING DÀNH CHO LUỒNG MỚI --%>
-                    <c:if test="${param.success == 2 || hasPendingRequest}">
+                    <c:if test="${param.success == '2' || hasPendingRequest}">
                         <div class="success-message" style="background: #e0f2fe; color: #0284c7; border: 1px solid #bae6fd; margin-bottom: 20px;">
                             <i style="margin-right: 5px;">⏳</i> <strong>Pending Approval:</strong> Your profile update request has been submitted and is waiting for admin approval.
                         </div>
@@ -288,5 +323,31 @@
         </div>
     </div>
 </div>
+
+<script>
+function previewAndSubmit(input) {
+    if (!input.files || !input.files[0]) return;
+    var file = input.files[0];
+    var allowed = ['image/jpeg','image/png','image/webp'];
+    if (!allowed.includes(file.type)) {
+        alert('Only JPG, PNG or WEBP images are allowed.');
+        input.value = '';
+        return;
+    }
+    if (file.size > 3 * 1024 * 1024) {
+        alert('File is too large. Maximum size is 3 MB.');
+        input.value = '';
+        return;
+    }
+    // Show instant preview before upload
+    var reader = new FileReader();
+    reader.onload = function(e) {
+        var preview = document.getElementById('avatarPreview');
+        preview.innerHTML = '<img src="' + e.target.result + '" style="width:100%;height:100%;object-fit:cover;"/>';
+    };
+    reader.readAsDataURL(file);
+    document.getElementById('avatarForm').submit();
+}
+</script>
 
 <jsp:include page="/components/footer.jsp"/>

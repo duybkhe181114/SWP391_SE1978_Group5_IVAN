@@ -32,6 +32,7 @@ public class UserProfileDAO extends DBContext {
                     profile.setAddress(rs.getString("Address"));
                     profile.setEmergencyContactName(rs.getString("EmergencyContactName"));
                     profile.setEmergencyContactPhone(rs.getString("EmergencyContactPhone"));
+                    profile.setAvatar(rs.getString("Avatar"));
 
                     Date dob = rs.getDate("DateOfBirth");
                     if (dob != null) {
@@ -47,6 +48,18 @@ public class UserProfileDAO extends DBContext {
         }
 
         return null;
+    }
+
+    public boolean updateAvatar(int userId, String avatarPath) {
+        String sql = "UPDATE UserProfiles SET Avatar = ?, UpdatedAt = SYSDATETIME() WHERE UserId = ?";
+        try (PreparedStatement ps = connection.prepareStatement(sql)) {
+            ps.setString(1, avatarPath);
+            ps.setInt(2, userId);
+            return ps.executeUpdate() > 0;
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return false;
     }
 
     public void updateProfile(UserProfile profile) {
