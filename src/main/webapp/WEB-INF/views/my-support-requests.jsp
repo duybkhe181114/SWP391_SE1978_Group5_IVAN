@@ -484,7 +484,7 @@
                                             </div>
                                             <a class="detail-link"
                                                 href="${pageContext.request.contextPath}/adminSpRequestDetail?id=${r.requestId}">
-                                                View Detail →
+                                                View Detail &rarr;
                                             </a>
                                         </div>
 

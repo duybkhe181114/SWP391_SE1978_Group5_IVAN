@@ -20,29 +20,53 @@ public class CreateSupportRequestController extends HttpServlet {
 
         request.setCharacterEncoding("UTF-8");
 
-        // ===== TẠO ENTITY TRƯỚC =====
-        SupportRequest sr = new SupportRequest();
-
         // ===== LẤY DATA =====
         String title = request.getParameter("title");
-
         String categoryId = request.getParameter("categoryId");
         String priority = request.getParameter("priority");
         String location = request.getParameter("supportLocation");
         String beneficiaryName = request.getParameter("beneficiaryName");
-
+        String description = request.getParameter("description");
+        String email = request.getParameter("contactEmail");
+        String phone = request.getParameter("contactPhone");
         String affectedStr = request.getParameter("affectedPeople");
         String amountStr = request.getParameter("estimatedAmount");
 
+        // ===== SERVER-SIDE VALIDATION =====
+        StringBuilder errors = new StringBuilder();
+
+        if (title == null || title.trim().isEmpty()) {
+            errors.append("Title is required. ");
+        }
+        if (categoryId == null || categoryId.trim().isEmpty()) {
+            errors.append("Category is required. ");
+        }
+        if (description == null || description.trim().isEmpty()) {
+            errors.append("Description is required. ");
+        }
+        if (email != null && !email.trim().isEmpty()
+                && !email.matches("^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$")) {
+            errors.append("Invalid email format. ");
+        }
+
+        if (errors.length() > 0) {
+            // Validation thất bại → forward lại form với lỗi
+            request.setAttribute("error", errors.toString().trim());
+
+            SupportCategoryDAO categoryDAO = new SupportCategoryDAO();
+            request.setAttribute("categories", categoryDAO.getAll());
+
+            request.getRequestDispatcher("/WEB-INF/views/createSupportRequest.jsp")
+                    .forward(request, response);
+            return;
+        }
+
+        // ===== PARSE SỐ =====
         Integer affectedPeople = (affectedStr == null || affectedStr.isEmpty())
                 ? null : Integer.parseInt(affectedStr);
 
         Double estimatedAmount = (amountStr == null || amountStr.isEmpty())
                 ? null : Double.parseDouble(amountStr);
-
-        String description = request.getParameter("description");
-        String email = request.getParameter("contactEmail");
-        String phone = request.getParameter("contactPhone");
 
         // ===== HANDLE FILE UPLOAD =====
         Part filePart = request.getPart("proofImage");
@@ -62,7 +86,8 @@ public class CreateSupportRequestController extends HttpServlet {
             filePart.write(uploadPath + File.separator + fileName);
         }
 
-        // ===== SET ENTITY =====
+        // ===== TẠO ENTITY =====
+        SupportRequest sr = new SupportRequest();
         sr.setTitle(title);
         sr.setCategoryId(categoryId);
         sr.setPriority(priority);
@@ -91,7 +116,7 @@ public class CreateSupportRequestController extends HttpServlet {
         SupportRequestDAO dao = new SupportRequestDAO();
         dao.insert(sr);
 
-        response.sendRedirect("home");
+        response.sendRedirect("viewSpRequestUser");
     }
 
     @Override

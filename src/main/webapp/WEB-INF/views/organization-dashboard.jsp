@@ -92,7 +92,6 @@
                             <th>Location</th>
                             <th>Start Date</th>
                             <th>End Date</th>
-                            <th>Volunteer Limit</th>
                             <th>Status</th>
                             <th>Actions</th>
                         </tr>
@@ -104,7 +103,6 @@
                                 <td>${event.location}</td>
                                 <td>${event.startDate.toLocalDate()}</td>
                                 <td>${event.endDate.toLocalDate()}</td>
-                                <td>${event.maxVolunteers == 0 ? 'Unlimited' : event.maxVolunteers}</td>
                                 <td>
                                     <c:choose>
                                         <c:when test="${event.status == 'Approved'}">
@@ -117,14 +115,9 @@
                                             <span class="badge badge-danger">Rejected</span>
                                         </c:otherwise>
                                     </c:choose>
-                                    <c:if test="${event.status == 'Rejected' and not empty event.reviewNote}">
-                                        <div style="margin-top: 8px; font-size: 12px; line-height: 1.5; color: #991b1b;">
-                                            Admin note: ${event.reviewNote}
-                                        </div>
-                                    </c:if>
                                 </td>
                                 <td>
-                                    <a href="${pageContext.request.contextPath}/event/detail?id=${event.eventId}" class="btn-view">Manage Event</a>
+                                    <a href="${pageContext.request.contextPath}/event/detail?id=${event.eventId}" class="btn-view">View Details</a>
                                 </td>
                             </tr>
                         </c:forEach>

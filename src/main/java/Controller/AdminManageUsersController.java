@@ -1,21 +1,19 @@
 package Controller;
 
 import DAO.AdminUserDAO;
-import DAO.SkillDAO;
-import DTO.UserView;
+import DAO.SkillDAO; // Thêm import này
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-
 import java.io.IOException;
 
 @WebServlet(name = "AdminManageUsersController", urlPatterns = {"/admin/manage-users"})
 public class AdminManageUsersController extends HttpServlet {
 
-    private final AdminUserDAO dao = new AdminUserDAO();
-    private final SkillDAO skillDAO = new SkillDAO();
+    private AdminUserDAO dao = new AdminUserDAO();
+    private SkillDAO skillDAO = new SkillDAO(); //
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
@@ -32,16 +30,21 @@ public class AdminManageUsersController extends HttpServlet {
         String fromDate = request.getParameter("fromDate");
         String toDate = request.getParameter("toDate");
 
-        int page = parsePositiveInt(request.getParameter("page"), 1);
+        int page = 1;
         int pageSize = 5;
 
+        if (request.getParameter("page") != null) {
+            page = Integer.parseInt(request.getParameter("page"));
+        }
+
         int totalUsers = dao.countUsers(q, role, status, fromDate, toDate);
-        int totalPages = Math.max(1, (int) Math.ceil((double) totalUsers / pageSize));
-        page = Math.min(page, totalPages);
+        int totalPages = (int) Math.ceil((double) totalUsers / pageSize);
 
         request.setAttribute("users", dao.filterUsers(q, role, status, fromDate, toDate, page, pageSize));
+
+        // Ném danh sách allSkills sang cho Modal
         request.setAttribute("allSkills", skillDAO.getAll());
-        request.setAttribute("currentAdminId", request.getSession().getAttribute("userId"));
+
         request.setAttribute("currentPage", page);
         request.setAttribute("totalPages", totalPages);
 
@@ -59,15 +62,10 @@ public class AdminManageUsersController extends HttpServlet {
         }
 
         String action = request.getParameter("action");
-        int userId = parsePositiveInt(request.getParameter("userId"), -1);
-        Integer adminId = (Integer) request.getSession().getAttribute("userId");
-
-        if (userId <= 0) {
-            response.sendRedirect(request.getContextPath() + "/admin/manage-users?error=user_not_found");
-            return;
-        }
+        int userId = Integer.parseInt(request.getParameter("userId"));
 
         if ("edit".equals(action)) {
+            // Nhận các tham số mới
             String firstName = request.getParameter("firstName");
             String lastName = request.getParameter("lastName");
             String phone = request.getParameter("phone");
@@ -77,69 +75,16 @@ public class AdminManageUsersController extends HttpServlet {
             String[] skills = request.getParameterValues("skills");
 
             dao.updateUser(userId, firstName, lastName, phone, province, address, newRole, skills);
-            response.sendRedirect(request.getContextPath() + "/admin/manage-users?success=updated");
-            return;
+
+        } else {
+            dao.toggleUserStatus(userId);
         }
 
-        if (adminId != null && adminId == userId) {
-            response.sendRedirect(request.getContextPath() + "/admin/manage-users?error=self_block");
-            return;
-        }
-
-        UserView targetUser = dao.getUserById(userId);
-        if (targetUser == null) {
-            response.sendRedirect(request.getContextPath() + "/admin/manage-users?error=user_not_found");
-            return;
-        }
-
-        String activeParam = request.getParameter("active");
-        if (!"true".equalsIgnoreCase(activeParam) && !"false".equalsIgnoreCase(activeParam)) {
-            response.sendRedirect(request.getContextPath() + "/admin/manage-users?error=status_update_failed");
-            return;
-        }
-
-        boolean activate = Boolean.parseBoolean(activeParam);
-
-        if ("Organization".equalsIgnoreCase(targetUser.getRole())
-                && targetUser.getApprovalStatus() != null
-                && !"Approved".equalsIgnoreCase(targetUser.getApprovalStatus())) {
-            response.sendRedirect(request.getContextPath() + "/admin/manage-users?error=org_review_flow");
-            return;
-        }
-
-        if ("Admin".equalsIgnoreCase(targetUser.getRole())
-                && !activate
-                && targetUser.isActive()
-                && dao.countActiveAdmins() <= 1) {
-            response.sendRedirect(request.getContextPath() + "/admin/manage-users?error=last_admin");
-            return;
-        }
-
-        boolean updated = dao.setUserStatus(userId, activate);
-        if (!updated) {
-            response.sendRedirect(request.getContextPath() + "/admin/manage-users?error=status_update_failed");
-            return;
-        }
-
-        response.sendRedirect(request.getContextPath()
-                + "/admin/manage-users?success=" + (activate ? "unblocked" : "blocked"));
+        response.sendRedirect(request.getContextPath() + "/admin/manage-users");
     }
 
     private boolean isAdmin(HttpServletRequest request) {
         String role = (String) request.getSession().getAttribute("userRole");
         return "Admin".equals(role);
-    }
-
-    private int parsePositiveInt(String rawValue, int defaultValue) {
-        if (rawValue == null || rawValue.isBlank()) {
-            return defaultValue;
-        }
-
-        try {
-            int value = Integer.parseInt(rawValue);
-            return value > 0 ? value : defaultValue;
-        } catch (NumberFormatException e) {
-            return defaultValue;
-        }
     }
 }

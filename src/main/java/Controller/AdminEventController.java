@@ -16,13 +16,11 @@ public class AdminEventController extends HttpServlet {
         
         EventDAO dao = new EventDAO();
         boolean success = false;
-        Integer adminId = (Integer) request.getSession().getAttribute("userId");
-        String reviewNote = request.getParameter("reviewNote");
         
         if ("approve".equals(action)) {
-            success = dao.approveEvent(eventId, adminId, reviewNote);
+            success = dao.approveEvent(eventId);
         } else if ("reject".equals(action)) {
-            success = dao.rejectEvent(eventId, adminId, reviewNote);
+            success = dao.rejectEvent(eventId);
         }
         
         response.sendRedirect(request.getContextPath() + "/admin/events");

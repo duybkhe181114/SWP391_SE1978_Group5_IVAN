@@ -87,6 +87,14 @@ public class EventCoordinatorDAO extends DBContext {
     }
 
     /**
+     * Assign coordinator to a new event (same as promote but for existing
+     * coordinators).
+     */
+    public boolean assign(int eventId, int coordinatorId, int promotedBy) {
+        return promote(eventId, coordinatorId, promotedBy);
+    }
+
+    /**
      * Revoke coordinator access for a specific event.
      */
     public boolean revoke(int eventId, int coordinatorId) {
@@ -170,31 +178,6 @@ public class EventCoordinatorDAO extends DBContext {
         return null;
     }
 
-    public int[] findApprovedVolunteerByEmail(int eventId, String email) {
-        String sql = """
-                    SELECT TOP 1 u.UserId, u.Email
-                    FROM EventRegistrations er
-                    JOIN Users u ON u.UserId = er.VolunteerId
-                    WHERE er.EventId = ?
-                      AND er.Status = 'Approved'
-                      AND u.Email = ?
-                      AND u.IsActive = 1
-                    ORDER BY er.AppliedAt DESC, er.RegistrationId DESC
-                """;
-
-        try (PreparedStatement ps = connection.prepareStatement(sql)) {
-            ps.setInt(1, eventId);
-            ps.setString(2, email.trim());
-            ResultSet rs = ps.executeQuery();
-            if (rs.next()) {
-                return new int[]{rs.getInt("UserId")};
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        return null;
-    }
-
     /**
      * Get approved volunteers for a specific event (to choose from when promoting).
      */
@@ -266,7 +249,7 @@ public class EventCoordinatorDAO extends DBContext {
                     JOIN Events e ON ec.EventId = e.EventId
                     JOIN Users u ON ec.CoordinatorId = u.UserId
                     LEFT JOIN UserProfiles up ON u.UserId = up.UserId
-                    WHERE e.OrganizationId = ? AND ec.Status = 'Active' AND u.IsActive = 1
+                    WHERE e.OrganizationId = ? AND ec.Status = 'Active'
                     ORDER BY u.Email
                 """;
 
@@ -277,59 +260,6 @@ public class EventCoordinatorDAO extends DBContext {
             while (rs.next()) {
                 EventCoordinator ec = new EventCoordinator();
                 ec.setCoordinatorId(rs.getInt("CoordinatorId"));
-                ec.setCoordinatorEmail(rs.getString("CoordinatorEmail"));
-                ec.setCoordinatorName(rs.getString("CoordinatorName"));
-                list.add(ec);
-            }
-
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-
-        return list;
-    }
-
-    public List<EventCoordinator> getActiveCoordinatorsByEvent(int eventId) {
-
-        List<EventCoordinator> list = new ArrayList<>();
-
-        String sql = """
-                    SELECT ec.EventId,
-                           ec.CoordinatorId,
-                           ec.PromotedFromVolunteer,
-                           ec.PromotedAt,
-                           ec.PromotedBy,
-                           ec.Status,
-                           u.Email AS CoordinatorEmail,
-                           ISNULL(up.FullName, u.Email) AS CoordinatorName
-                    FROM EventCoordinators ec
-                    JOIN Users u ON ec.CoordinatorId = u.UserId
-                    LEFT JOIN UserProfiles up ON u.UserId = up.UserId
-                    WHERE ec.EventId = ? AND ec.Status = 'Active'
-                    ORDER BY CoordinatorName ASC, u.Email ASC
-                """;
-
-        try (PreparedStatement ps = connection.prepareStatement(sql)) {
-            ps.setInt(1, eventId);
-            ResultSet rs = ps.executeQuery();
-
-            while (rs.next()) {
-                EventCoordinator ec = new EventCoordinator();
-                ec.setEventId(rs.getInt("EventId"));
-                ec.setCoordinatorId(rs.getInt("CoordinatorId"));
-                ec.setPromotedFromVolunteer(rs.getBoolean("PromotedFromVolunteer"));
-
-                Timestamp promotedAt = rs.getTimestamp("PromotedAt");
-                if (promotedAt != null) {
-                    ec.setPromotedAt(promotedAt.toLocalDateTime());
-                }
-
-                int promotedBy = rs.getInt("PromotedBy");
-                if (!rs.wasNull()) {
-                    ec.setPromotedBy(promotedBy);
-                }
-
-                ec.setStatus(rs.getString("Status"));
                 ec.setCoordinatorEmail(rs.getString("CoordinatorEmail"));
                 ec.setCoordinatorName(rs.getString("CoordinatorName"));
                 list.add(ec);

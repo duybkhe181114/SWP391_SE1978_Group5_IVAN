@@ -43,7 +43,7 @@
 
             <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; margin-bottom: 40px;">
                 <div class="stat-card primary">
-                    <h3>📋 Applications and Invites</h3>
+                    <h3>📋 Total Applied</h3>
                     <div class="number">${registeredEvents}</div>
                 </div>
                 <div class="stat-card warning">
@@ -96,12 +96,6 @@
                                                 </c:when>
                                                 <c:when test="${e.status == 'Rejected'}">
                                                     <span style="background: #fee2e2; color: #991b1b; padding: 4px 10px; border-radius: 6px; font-size: 12px; font-weight: 700;">Rejected</span>
-                                                </c:when>
-                                                <c:when test="${e.status == 'Invited'}">
-                                                    <span style="background: #ede9fe; color: #6d28d9; padding: 4px 10px; border-radius: 6px; font-size: 12px; font-weight: 700;">Invited</span>
-                                                </c:when>
-                                                <c:when test="${e.status == 'Declined'}">
-                                                    <span style="background: #e0f2fe; color: #0369a1; padding: 4px 10px; border-radius: 6px; font-size: 12px; font-weight: 700;">Declined</span>
                                                 </c:when>
                                                 <c:otherwise>
                                                     <span style="background: #fef9c3; color: #854d0e; padding: 4px 10px; border-radius: 6px; font-size: 12px; font-weight: 700;">Pending</span>

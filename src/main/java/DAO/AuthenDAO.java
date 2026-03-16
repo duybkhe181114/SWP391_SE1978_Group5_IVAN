@@ -57,20 +57,5 @@ public class AuthenDAO extends DBContext {
         return null;
     }
 
-    public boolean isUserActive(int userId) {
-        String sql = "SELECT IsActive FROM Users WHERE UserId = ?";
-        try {
-            PreparedStatement ps = connection.prepareStatement(sql);
-            ps.setInt(1, userId);
-            ResultSet rs = ps.executeQuery();
-            if (rs.next()) {
-                return rs.getBoolean("IsActive");
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        return false;
-    }
-
 
 }

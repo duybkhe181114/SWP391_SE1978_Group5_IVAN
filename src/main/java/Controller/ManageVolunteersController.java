@@ -4,6 +4,7 @@ import DAO.EventRegistrationDAO;
 import jakarta.servlet.*;
 import jakarta.servlet.http.*;
 import java.io.IOException;
+import java.util.*;
 
 public class ManageVolunteersController extends HttpServlet {
 
@@ -16,7 +17,14 @@ public class ManageVolunteersController extends HttpServlet {
             response.sendRedirect(request.getContextPath() + "/organization/dashboard");
             return;
         }
-        response.sendRedirect(request.getContextPath() + "/organization/active-team?eventId=" + eventIdParam);
+        int eventId = Integer.parseInt(eventIdParam);
+        
+        EventRegistrationDAO dao = new EventRegistrationDAO();
+        List<Map<String, Object>> volunteers = dao.getVolunteersByEvent(eventId);
+        
+        request.setAttribute("volunteers", volunteers);
+        request.setAttribute("eventId", eventId);
+        request.getRequestDispatcher("/WEB-INF/views/manage-volunteers.jsp").forward(request, response);
     }
     
     @Override
@@ -33,7 +41,7 @@ public class ManageVolunteersController extends HttpServlet {
         EventRegistrationDAO dao = new EventRegistrationDAO();
         
         if ("approve".equals(action)) {
-            dao.approveVolunteer(registrationId, reviewerId);
+            dao.approveVolunteer(registrationId);
         } else if ("reject".equals(action)) {
             String reviewNote = request.getParameter("reviewNote");
             if (reviewNote == null || reviewNote.trim().isEmpty()) {
@@ -44,6 +52,6 @@ public class ManageVolunteersController extends HttpServlet {
             dao.rejectVolunteer(registrationId, reviewerId, reviewNote);
         }
         
-        response.sendRedirect(request.getContextPath() + "/organization/registration-log?eventId=" + eventId);
+        response.sendRedirect(request.getContextPath() + "/organization/manage-volunteers?eventId=" + eventId);
     }
 }

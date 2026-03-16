@@ -8,7 +8,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 
-@WebServlet(name = "RegisterController", urlPatterns = {"/register", "/register/volunteer", "/register/organization", "/register/organization/resubmit"})
+@WebServlet(name = "RegisterController", urlPatterns = {"/register", "/register/volunteer", "/register/user", "/register/organization", "/register/organization/resubmit"})
 public class RegisterController extends HttpServlet {
 
     private UserDAO userDAO = new UserDAO();
@@ -23,6 +23,8 @@ public class RegisterController extends HttpServlet {
             request.getRequestDispatcher("/WEB-INF/views/register-choice.jsp").forward(request, response);
         } else if ("/register/volunteer".equals(path)) {
             request.getRequestDispatcher("/WEB-INF/views/register-volunteer.jsp").forward(request, response);
+        } else if ("/register/user".equals(path)) {
+            request.getRequestDispatcher("/WEB-INF/views/register-user.jsp").forward(request, response);
         } else if ("/register/organization".equals(path)) {
             request.getRequestDispatcher("/WEB-INF/views/register-organization.jsp").forward(request, response);
         } else if ("/register/organization/resubmit".equals(path)) {
@@ -38,6 +40,8 @@ public class RegisterController extends HttpServlet {
         
         if ("/register/volunteer".equals(path)) {
             handleVolunteerRegister(request, response);
+        } else if ("/register/user".equals(path)) {
+            handleUserRegister(request, response);
         } else if ("/register/organization".equals(path)) {
             handleOrganizationRegister(request, response);
         } else if ("/register/organization/resubmit".equals(path)) {
@@ -78,6 +82,42 @@ public class RegisterController extends HttpServlet {
         } else {
             request.setAttribute("error", "Registration failed");
             request.getRequestDispatcher("/WEB-INF/views/register-volunteer.jsp").forward(request, response);
+        }
+    }
+    
+    // Xử lý đăng ký User (giống Volunteer nhưng không tham gia sự kiện)
+    private void handleUserRegister(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+        
+        String email = request.getParameter("email");
+        String password = request.getParameter("password");
+        String confirmPassword = request.getParameter("confirmPassword");
+        String firstName = request.getParameter("firstName");
+        String lastName = request.getParameter("lastName");
+        
+        // Validate
+        if (password == null || !password.equals(confirmPassword)) {
+            request.setAttribute("error", "Passwords do not match");
+            request.getRequestDispatcher("/WEB-INF/views/register-user.jsp").forward(request, response);
+            return;
+        }
+        
+        if (userDAO.emailExists(email)) {
+            request.setAttribute("error", "Email already exists");
+            request.getRequestDispatcher("/WEB-INF/views/register-user.jsp").forward(request, response);
+            return;
+        }
+        
+        // Tạo User (Active ngay, role = User)
+        int userId = userDAO.createVolunteer(email, password);
+        
+        if (userId > 0) {
+            userDAO.assignRole(userId, "User");
+            userDAO.createEmptyProfile(userId, firstName, lastName);
+            response.sendRedirect(request.getContextPath() + "/login?success=registered");
+        } else {
+            request.setAttribute("error", "Registration failed");
+            request.getRequestDispatcher("/WEB-INF/views/register-user.jsp").forward(request, response);
         }
     }
     

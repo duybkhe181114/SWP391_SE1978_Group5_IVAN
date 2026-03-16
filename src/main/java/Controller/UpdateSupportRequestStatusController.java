@@ -48,12 +48,14 @@ public class UpdateSupportRequestStatusController extends HttpServlet {
         // =============================
         if ("APPROVED".equalsIgnoreCase(status) && "ADMIN".equalsIgnoreCase(userRole)) {
             // Admin approve PENDING → APPROVED
-            dao.approveRequestvunh(requestId);
+            String adminNote = request.getParameter("adminNote");
+            dao.approveRequest(requestId, userId, adminNote);
 
         } else if ("REJECTED".equalsIgnoreCase(status) && "ADMIN".equalsIgnoreCase(userRole)) {
             // Admin reject PENDING → REJECTED
             String rejectReason = request.getParameter("rejectReason");
-            dao.rejectRequestvunh(requestId, rejectReason);
+            String adminNote = request.getParameter("adminNote");
+            dao.rejectRequest(requestId, userId, rejectReason, adminNote);
 
         } else if ("ACCEPTED".equalsIgnoreCase(status) && "Organization".equalsIgnoreCase(userRole)) {
             // Organization accept APPROVED → ACCEPTED
@@ -61,13 +63,19 @@ public class UpdateSupportRequestStatusController extends HttpServlet {
 
         } else {
             // Role không được phép → redirect về danh sách
-            response.sendRedirect(request.getContextPath() + "/viewSpRequestAdmin");
+            response.sendRedirect(request.getContextPath() + "/home");
             return;
         }
 
         // =============================
-        // 4. REDIRECT VỀ DANH SÁCH
+        // 4. REDIRECT VỀ DANH SÁCH theo role
         // =============================
-        response.sendRedirect(request.getContextPath() + "/viewSpRequestAdmin");
+        if ("ADMIN".equalsIgnoreCase(userRole)) {
+            response.sendRedirect(request.getContextPath() + "/viewSpRequestAdmin");
+        } else if ("Organization".equalsIgnoreCase(userRole)) {
+            response.sendRedirect(request.getContextPath() + "/orgViewSpRequest");
+        } else {
+            response.sendRedirect(request.getContextPath() + "/home");
+        }
     }
 }

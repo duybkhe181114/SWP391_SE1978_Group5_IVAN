@@ -26,7 +26,7 @@
         <h1>🎯 Create Account</h1>
         
         <% if (request.getAttribute("error") != null) { %>
-            <div class="error">${error}</div>
+            <div class="error">❌ ${error}</div>
         <% } %>
         
         <form method="post" action="${pageContext.request.contextPath}/register/volunteer">

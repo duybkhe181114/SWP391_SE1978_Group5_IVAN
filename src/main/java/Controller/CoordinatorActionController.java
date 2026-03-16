@@ -27,7 +27,7 @@ public class CoordinatorActionController extends HttpServlet {
 
             if ("approve".equals(action)) {
                 int regId = Integer.parseInt(request.getParameter("registrationId"));
-                regDAO.approveVolunteer(regId, coordinatorId);
+                regDAO.approveVolunteer(regId);
             }
             else if ("reject".equals(action)) {
                 int regId = Integer.parseInt(request.getParameter("registrationId"));

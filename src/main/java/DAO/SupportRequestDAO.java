@@ -19,7 +19,7 @@ public class SupportRequestDAO extends DBContext {
                            Status,
                            CreatedAt
                     FROM SupportRequests
-                    WHERE UPPER(Status) = 'APPROVED'
+                    WHERE Status = 'Approved'
                     ORDER BY CreatedAt DESC
                 """;
 
@@ -38,6 +38,55 @@ public class SupportRequestDAO extends DBContext {
                     sr.setCreatedAt(created.toLocalDateTime());
                 }
 
+                list.add(sr);
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return list;
+    }
+
+    public List<SupportRequest> getApprovedWithCategoryName() {
+
+        List<SupportRequest> list = new ArrayList<>();
+
+        String sql = """
+                    SELECT r.RequestId, r.Title, r.CategoryId,
+                           c.Name AS CategoryName,
+                           r.Priority, r.Status, r.SupportLocation,
+                           r.BeneficiaryName, r.AffectedPeople,
+                           r.EstimatedAmount, r.CreatedBy, r.CreatedAt
+                    FROM SupportRequests r
+                    LEFT JOIN SupportCategories c
+                           ON r.CategoryId = c.CategoryId
+                    WHERE r.Status = 'APPROVED'
+                      AND r.IsDeleted = 0
+                    ORDER BY r.CreatedAt DESC
+                """;
+
+        try (PreparedStatement ps = connection.prepareStatement(sql);
+                ResultSet rs = ps.executeQuery()) {
+
+            while (rs.next()) {
+                SupportRequest sr = new SupportRequest();
+                sr.setRequestId(rs.getInt("RequestId"));
+                sr.setTitle(rs.getString("Title"));
+                sr.setCategoryId(rs.getString("CategoryId"));
+                sr.setCategoryName(rs.getString("CategoryName"));
+                sr.setPriority(rs.getString("Priority"));
+                sr.setStatus(rs.getString("Status"));
+                sr.setSupportLocation(rs.getString("SupportLocation"));
+                sr.setBeneficiaryName(rs.getString("BeneficiaryName"));
+                sr.setAffectedPeople(rs.getInt("AffectedPeople"));
+                sr.setEstimatedAmount(rs.getDouble("EstimatedAmount"));
+                sr.setCreatedBy(rs.getInt("CreatedBy"));
+
+                Timestamp created = rs.getTimestamp("CreatedAt");
+                if (created != null) {
+                    sr.setCreatedAt(created.toLocalDateTime());
+                }
                 list.add(sr);
             }
 
@@ -385,38 +434,46 @@ public class SupportRequestDAO extends DBContext {
     public SupportRequest getSPRById(int id) {
 
         String sql = """
-                    SELECT *
-                    FROM SupportRequests
-                    WHERE RequestId = ?
+                    SELECT r.*, c.Name AS CategoryName
+                    FROM SupportRequests r
+                    LEFT JOIN SupportCategories c
+                           ON r.CategoryId = c.CategoryId
+                    WHERE r.RequestId = ? AND r.IsDeleted = 0
                 """;
 
         try (PreparedStatement ps = connection.prepareStatement(sql)) {
 
             ps.setInt(1, id);
-            ResultSet rs = ps.executeQuery();
 
-            if (rs.next()) {
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
 
-                SupportRequest r = new SupportRequest();
+                    SupportRequest r = new SupportRequest();
 
-                r.setRequestId(rs.getInt("RequestId"));
-                r.setTitle(rs.getString("Title"));
-                r.setDescription(rs.getString("Description"));
-                r.setCategoryId(rs.getString("CategoryId"));
-                r.setPriority(rs.getString("Priority"));
-                r.setSupportLocation(rs.getString("SupportLocation"));
-                r.setBeneficiaryName(rs.getString("BeneficiaryName"));
-                r.setAffectedPeople((Integer) rs.getObject("AffectedPeople"));
-                r.setEstimatedAmount(rs.getDouble("EstimatedAmount"));
-                r.setContactEmail(rs.getString("ContactEmail"));
-                r.setContactPhone(rs.getString("ContactPhone"));
-                r.setProofImageUrl(rs.getString("ProofUrl"));
-                r.setStatus(rs.getString("Status"));
-                r.setRejectReason(rs.getString("RejectReason"));
-                r.setAdminNote(rs.getString("AdminNote"));
-                r.setCreatedBy(rs.getInt("CreatedBy"));
+                    r.setRequestId(rs.getInt("RequestId"));
+                    r.setTitle(rs.getString("Title"));
+                    r.setDescription(rs.getString("Description"));
+                    r.setCategoryId(rs.getString("CategoryId"));
+                    r.setCategoryName(rs.getString("CategoryName"));
+                    r.setPriority(rs.getString("Priority"));
+                    r.setSupportLocation(rs.getString("SupportLocation"));
+                    r.setBeneficiaryName(rs.getString("BeneficiaryName"));
+                    r.setAffectedPeople((Integer) rs.getObject("AffectedPeople"));
+                    r.setEstimatedAmount(rs.getDouble("EstimatedAmount"));
+                    r.setContactEmail(rs.getString("ContactEmail"));
+                    r.setContactPhone(rs.getString("ContactPhone"));
+                    r.setProofImageUrl(rs.getString("ProofUrl"));
+                    r.setStatus(rs.getString("Status"));
+                    r.setRejectReason(rs.getString("RejectReason"));
+                    r.setAdminNote(rs.getString("AdminNote"));
+                    r.setCreatedBy(rs.getInt("CreatedBy"));
 
-                return r;
+                    Timestamp created = rs.getTimestamp("CreatedAt");
+                    if (created != null)
+                        r.setCreatedAt(created.toLocalDateTime());
+
+                    return r;
+                }
             }
 
         } catch (Exception e) {
@@ -457,53 +514,8 @@ public class SupportRequestDAO extends DBContext {
         }
     }
 
-    public void approveRequestvunh(int requestId) {
-
-        String sql = """
-                    UPDATE SupportRequests
-                    SET Status = 'APPROVED',
-                        ReviewedAt = GETDATE(),
-                        ReviewedBy = 1,
-                        UpdatedAt = GETDATE()
-                    WHERE RequestId = ?
-                """;
-
-        try (PreparedStatement ps = connection.prepareStatement(sql)) {
-
-            ps.setInt(1, requestId);
-
-            int rows = ps.executeUpdate();
-            System.out.println("Approve updated rows: " + rows);
-
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
-
-    public void rejectRequestvunh(int requestId, String rejectReason) {
-
-        String sql = """
-                    UPDATE SupportRequests
-                    SET Status = 'REJECTED',
-                        RejectReason = ?,
-                        ReviewedAt = GETDATE(),
-                        ReviewedBy = 1,
-                        UpdatedAt = GETDATE()
-                    WHERE RequestId = ?
-                """;
-
-        try (PreparedStatement ps = connection.prepareStatement(sql)) {
-
-            ps.setString(1, rejectReason);
-            ps.setInt(2, requestId);
-
-            int rows = ps.executeUpdate();
-            System.out.println("Reject updated rows: " + rows);
-
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
+    // approveRequestvunh / rejectRequestvunh đã bị xóa
+    // Sử dụng approveRequest(int, int, String) và rejectRequest(int, int, String, String) thay thế
 
     public void acceptRequest(int requestId, int organizationUserId) {
 
