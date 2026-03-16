@@ -99,6 +99,63 @@ public class TaskDAO extends DBContext {
         return false;
     }
 
+    public List<Map<String, Object>> getTasksByEventFiltered(int eventId, String status, String priority, String volunteerId) {
+        List<Map<String, Object>> list = new ArrayList<>();
+        StringBuilder sql = new StringBuilder(
+            "SELECT t.TaskId, t.TaskDescription, t.Status, t.Priority, t.Note, t.VolunteerId, " +
+            "s.WorkDate, s.StartTime, s.EndTime, " +
+            "up.FullName AS VolunteerName " +
+            "FROM Tasks t " +
+            "JOIN Schedules s ON t.TaskId = s.TaskId " +
+            "JOIN UserProfiles up ON t.VolunteerId = up.UserId " +
+            "WHERE t.EventId = ?"
+        );
+
+        if (status != null && !status.isEmpty()) {
+            sql.append(" AND t.Status = ?");
+        }
+        if (priority != null && !priority.isEmpty()) {
+            sql.append(" AND t.Priority = ?");
+        }
+        if (volunteerId != null && !volunteerId.isEmpty()) {
+            sql.append(" AND t.VolunteerId = ?");
+        }
+        sql.append(" ORDER BY s.WorkDate ASC, s.StartTime ASC");
+
+        try (PreparedStatement ps = connection.prepareStatement(sql.toString())) {
+            int paramIndex = 1;
+            ps.setInt(paramIndex++, eventId);
+            if (status != null && !status.isEmpty()) {
+                ps.setString(paramIndex++, status);
+            }
+            if (priority != null && !priority.isEmpty()) {
+                ps.setString(paramIndex++, priority);
+            }
+            if (volunteerId != null && !volunteerId.isEmpty()) {
+                ps.setInt(paramIndex++, Integer.parseInt(volunteerId));
+            }
+
+            ResultSet rs = ps.executeQuery();
+            while (rs.next()) {
+                Map<String, Object> map = new HashMap<>();
+                map.put("taskId", rs.getInt("TaskId"));
+                map.put("description", rs.getString("TaskDescription"));
+                map.put("status", rs.getString("Status"));
+                map.put("priority", rs.getString("Priority"));
+                map.put("note", rs.getString("Note"));
+                map.put("volunteerId", rs.getInt("VolunteerId"));
+                map.put("workDate", rs.getDate("WorkDate"));
+                map.put("startTime", rs.getTime("StartTime"));
+                map.put("endTime", rs.getTime("EndTime"));
+                map.put("volunteerName", rs.getString("VolunteerName"));
+                list.add(map);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return list;
+    }
+
     // 2. Lấy danh sách Task của 1 sự kiện để in ra bảng Tiến độ
     public List<Map<String, Object>> getTasksByEvent(int eventId) {
         List<Map<String, Object>> list = new ArrayList<>();
@@ -189,19 +246,24 @@ public class TaskDAO extends DBContext {
     }
 
     public boolean isVolunteerBusy(int volunteerId, String workDate, String startTime, String endTime) {
+        // Dùng CAST để ép tất cả về kiểu TIME, dập tắt mọi cãi vã giữa Java và SQL Server
         String sql = "SELECT COUNT(*) FROM Tasks t " +
                 "JOIN Schedules s ON t.TaskId = s.TaskId " +
                 "WHERE t.VolunteerId = ? AND s.WorkDate = ? " +
                 "AND t.Status IN ('Pending', 'In Progress') " +
-                "AND (s.StartTime < ? AND s.EndTime > ?)";
+                "AND (CAST(s.StartTime AS TIME) < CAST(? AS TIME) AND CAST(s.EndTime AS TIME) > CAST(? AS TIME))";
+
         try (PreparedStatement ps = connection.prepareStatement(sql)) {
             ps.setInt(1, volunteerId);
             ps.setDate(2, Date.valueOf(workDate));
-            ps.setTime(3, Time.valueOf(endTime + ":00"));
-            ps.setTime(4, Time.valueOf(startTime + ":00"));
+
+            // Truyền thẳng dạng String (ví dụ: "14:30"), SQL Server sẽ tự ép kiểu an toàn
+            ps.setString(3, endTime);
+            ps.setString(4, startTime);
+
             ResultSet rs = ps.executeQuery();
             if (rs.next()) {
-                return rs.getInt(1) > 0;
+                return rs.getInt(1) > 0; // Nếu đếm ra > 0 tức là bị trùng lịch
             }
         } catch (Exception e) {
             e.printStackTrace();
