@@ -11,7 +11,7 @@
         <div style="width: 100px; height: 100px; background: white; border-radius: 50%; border: 4px solid white; box-shadow: 0 4px 10px rgba(0,0,0,0.1); margin-top: -50px; margin-bottom: 20px; display: flex; align-items: center; justify-content: center; overflow: hidden; background: #e2e8f0; font-size: 40px;">
             <c:choose>
                 <c:when test="${not empty vProfile.avatar}">
-                    <img src="${pageContext.request.contextPath}${vProfile.avatar}" style="width: 100%; height: 100%; object-fit: cover;">
+                    <img src="${pageContext.request.contextPath}${vProfile.avatar}" style="width:100%;height:100%;object-fit:cover;">
                 </c:when>
                 <c:otherwise>👤</c:otherwise>
             </c:choose>
