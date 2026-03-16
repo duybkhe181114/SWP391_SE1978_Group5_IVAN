@@ -280,6 +280,7 @@ BEGIN
         VolunteerId INT NOT NULL,
         TaskDescription NVARCHAR(MAX) NOT NULL,
         Status NVARCHAR(50) NOT NULL,
+        Priority NVARCHAR(20) NOT NULL CONSTRAINT DF_Tasks_Priority DEFAULT ('Medium'),
         AssignedAt DATETIME NULL CONSTRAINT DF_Tasks_AssignedAt DEFAULT (GETDATE()),
         CompletedAt DATETIME NULL,
         ConfirmedAt DATETIME NULL,
@@ -289,6 +290,13 @@ BEGIN
         CONSTRAINT FK_Tasks_Coordinator FOREIGN KEY (CoordinatorId) REFERENCES dbo.Users (UserId),
         CONSTRAINT FK_Tasks_Volunteer FOREIGN KEY (VolunteerId) REFERENCES dbo.Users (UserId)
     );
+END
+GO
+
+-- Add Priority column to existing Tasks table if missing
+IF OBJECT_ID(N'dbo.Tasks', N'U') IS NOT NULL AND COL_LENGTH(N'dbo.Tasks', N'Priority') IS NULL
+BEGIN
+    ALTER TABLE dbo.Tasks ADD Priority NVARCHAR(20) NOT NULL CONSTRAINT DF_Tasks_Priority DEFAULT ('Medium');
 END
 GO
 
