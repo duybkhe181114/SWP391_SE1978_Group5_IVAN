@@ -343,10 +343,6 @@
                     <div class="detail-value">${empty event.location ? 'Not provided' : event.location}</div>
                 </div>
                 <div class="detail-box">
-                    <div class="detail-label">Event Status</div>
-                    <div class="detail-value">${empty event.status ? 'Not provided' : event.status}</div>
-                </div>
-                <div class="detail-box">
                     <div class="detail-label">Start Date</div>
                     <div class="detail-value">
                         <c:choose>

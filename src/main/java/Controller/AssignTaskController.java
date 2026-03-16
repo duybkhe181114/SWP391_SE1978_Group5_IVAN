@@ -31,6 +31,7 @@ public class AssignTaskController extends HttpServlet {
         try {
             int volunteerId = Integer.parseInt(request.getParameter("volunteerId"));
             String taskDescription = request.getParameter("taskDescription");
+            String priority = request.getParameter("priority");
             String workDate = request.getParameter("workDate"); // format YYYY-MM-DD
             String startTime = request.getParameter("startTime"); // format HH:MM
             String endTime = request.getParameter("endTime");
@@ -62,7 +63,7 @@ public class AssignTaskController extends HttpServlet {
                 return;
             }
 
-            taskDAO.assignTaskWithSchedule(eventId, coordinatorId, volunteerId, taskDescription, workDate, startTime, endTime);
+            taskDAO.assignTaskWithSchedule(eventId, coordinatorId, volunteerId, taskDescription, workDate, startTime, endTime, priority);
 
             String success = URLEncoder.encode("Task assigned successfully!", "UTF-8");
             response.sendRedirect(request.getContextPath() + "/event/detail?id=" + eventId + "&success=" + success);

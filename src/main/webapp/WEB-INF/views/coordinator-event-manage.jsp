@@ -57,7 +57,7 @@
 
 <div id="tab-tasks" class="tab-content active">
 
-<div style="display:grid;grid-template-columns:350px 1fr;gap:30px;align-items:start;">
+<div style="display:grid;grid-template-columns:370px 1fr;gap:30px;align-items:start;">
 
 <div style="background:white;padding:25px;border-radius:16px;box-shadow:0 4px 20px rgba(0,0,0,0.03);">
 
@@ -69,16 +69,11 @@
 
 <div style="margin-bottom:15px;">
 <label style="display:block;font-size:13px;font-weight:600;margin-bottom:8px;">Assign To *</label>
-
 <select name="volunteerId" required style="width:100%;padding:10px;border:1px solid #cbd5e1;border-radius:8px;">
 <option value="">-- Select Volunteer --</option>
-
 <c:forEach items="${approvedVolunteers}" var="v">
-<option value="${v.volunteerId}">
-${v.fullName} (${v.email})
-</option>
+<option value="${v.volunteerId}">${v.fullName} (${v.email})</option>
 </c:forEach>
-
 </select>
 </div>
 
@@ -87,22 +82,25 @@ ${v.fullName} (${v.email})
 <textarea name="taskDescription" required rows="3" style="width:100%;padding:10px;border:1px solid #cbd5e1;border-radius:8px;"></textarea>
 </div>
 
+<div style="margin-bottom:15px;">
+<label style="display:block;font-size:13px;font-weight:600;margin-bottom:8px;">Priority *</label>
+<select name="priority" required style="width:100%;padding:10px;border:1px solid #cbd5e1;border-radius:8px;">
+<option value="Low">🟢 Low</option>
+<option value="Medium" selected>🟡 Medium</option>
+<option value="High">🔴 High</option>
+</select>
+</div>
+
 <div style="background:#f8fafc;padding:15px;border-radius:8px;margin-bottom:20px;">
-
 <h4 style="margin:0 0 10px 0;font-size:13px;">🗓 Schedule</h4>
-
 <input type="date" name="workDate" required style="width:100%;padding:8px;border:1px solid #cbd5e1;border-radius:6px;margin-bottom:10px;">
-
 <div style="display:flex;gap:10px;">
 <input type="time" name="startTime" required style="width:100%;padding:8px;border:1px solid #cbd5e1;border-radius:6px;">
 <input type="time" name="endTime" required style="width:100%;padding:8px;border:1px solid #cbd5e1;border-radius:6px;">
 </div>
-
 </div>
 
-<button type="submit" class="btn-primary" style="width:100%;padding:12px;border-radius:8px;">
-🚀 Assign Task
-</button>
+<button type="submit" class="btn-primary" style="width:100%;padding:12px;border-radius:8px;">🚀 Assign Task</button>
 
 </form>
 </div>
@@ -111,23 +109,64 @@ ${v.fullName} (${v.email})
 
 <h3 style="margin:0 0 20px 0;font-size:18px;">📊 Task Progress</h3>
 
+<c:if test="${empty eventTasks}">
+<div style="text-align:center;padding:40px;color:#94a3b8;">No tasks assigned yet.</div>
+</c:if>
+
 <c:forEach items="${eventTasks}" var="t">
 
-<div style="padding:15px;border:1px solid #e2e8f0;border-radius:12px;background:#f8fafc;margin-bottom:15px;">
+<c:set var="borderColor" value="#e2e8f0"/>
+<c:if test="${t.priority == 'High'}"><c:set var="borderColor" value="#ef4444"/></c:if>
+<c:if test="${t.priority == 'Medium'}"><c:set var="borderColor" value="#f59e0b"/></c:if>
+<c:if test="${t.priority == 'Low'}"><c:set var="borderColor" value="#10b981"/></c:if>
 
-<div style="display:flex;justify-content:space-between;margin-bottom:8px;">
+<div style="padding:15px;border:1px solid #e2e8f0;border-left:4px solid ${borderColor};border-radius:12px;background:#f8fafc;margin-bottom:15px;">
+
+<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
 <span style="font-weight:700;">${t.volunteerName}</span>
-<span style="font-size:12px;font-weight:700;padding:4px 10px;border-radius:20px;background:#e2e8f0;">
-${t.status}
-</span>
+<div style="display:flex;gap:6px;align-items:center;">
+
+<c:choose>
+<c:when test="${t.priority == 'High'}"><span style="font-size:11px;font-weight:700;padding:3px 8px;border-radius:20px;background:#fee2e2;color:#991b1b;">🔴 High</span></c:when>
+<c:when test="${t.priority == 'Low'}"><span style="font-size:11px;font-weight:700;padding:3px 8px;border-radius:20px;background:#dcfce7;color:#166534;">🟢 Low</span></c:when>
+<c:otherwise><span style="font-size:11px;font-weight:700;padding:3px 8px;border-radius:20px;background:#fef9c3;color:#854d0e;">🟡 Medium</span></c:otherwise>
+</c:choose>
+
+<c:choose>
+<c:when test="${t.status == 'Confirmed'}"><span style="font-size:12px;font-weight:700;padding:4px 10px;border-radius:20px;background:#dcfce7;color:#166534;">✅ Confirmed</span></c:when>
+<c:when test="${t.status == 'Completed'}"><span style="font-size:12px;font-weight:700;padding:4px 10px;border-radius:20px;background:#fef9c3;color:#854d0e;">⏳ Awaiting Confirmation</span></c:when>
+<c:when test="${t.status == 'In Progress'}"><span style="font-size:12px;font-weight:700;padding:4px 10px;border-radius:20px;background:#e0e7ff;color:#3730a3;">🚀 In Progress</span></c:when>
+<c:otherwise><span style="font-size:12px;font-weight:700;padding:4px 10px;border-radius:20px;background:#f1f5f9;color:#475569;">🕒 Pending</span></c:otherwise>
+</c:choose>
+
+</div>
 </div>
 
-<p style="color:#475569;font-size:14px;margin:0 0 10px 0;">
-${t.description}
-</p>
+<p style="color:#475569;font-size:14px;margin:0 0 8px 0;">${t.description}</p>
 
-<div style="font-size:12px;color:#64748b;">
-📅 ${t.workDate} | ⏰ ${t.startTime} - ${t.endTime}
+<c:if test="${not empty t.note}">
+<div style="font-size:12px;color:#64748b;background:#fffbeb;padding:6px 10px;border-radius:6px;margin-bottom:8px;">💬 Volunteer note: ${t.note}</div>
+</c:if>
+
+<div style="font-size:12px;color:#64748b;margin-bottom:10px;">📅 ${t.workDate} | ⏰ ${t.startTime} - ${t.endTime}</div>
+
+<div style="display:flex;gap:8px;">
+<c:if test="${t.status == 'Completed'}">
+<form method="post" action="${pageContext.request.contextPath}/coordinator/task-action" style="margin:0;">
+<input type="hidden" name="eventId" value="${event.eventId}">
+<input type="hidden" name="taskId" value="${t.taskId}">
+<input type="hidden" name="action" value="confirm">
+<button type="submit" style="padding:6px 14px;background:#10b981;color:white;border:none;border-radius:6px;font-size:12px;font-weight:700;cursor:pointer;">✅ Confirm</button>
+</form>
+</c:if>
+<c:if test="${t.status == 'Pending'}">
+<form method="post" action="${pageContext.request.contextPath}/coordinator/task-action" style="margin:0;" onsubmit="return confirm('Delete this task?')">
+<input type="hidden" name="eventId" value="${event.eventId}">
+<input type="hidden" name="taskId" value="${t.taskId}">
+<input type="hidden" name="action" value="delete">
+<button type="submit" style="padding:6px 14px;background:#ef4444;color:white;border:none;border-radius:6px;font-size:12px;font-weight:700;cursor:pointer;">🗑 Delete</button>
+</form>
+</c:if>
 </div>
 
 </div>

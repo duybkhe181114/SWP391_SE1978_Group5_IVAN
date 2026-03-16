@@ -27,9 +27,10 @@ public class UpdateTaskStatusController extends HttpServlet {
             String action = request.getParameter("action"); // 'start' hoặc 'complete'
 
             String newStatus = "start".equals(action) ? "In Progress" : "Completed";
+            String note = request.getParameter("note");
 
             TaskDAO taskDAO = new TaskDAO();
-            taskDAO.updateTaskStatus(taskId, volunteerId, newStatus);
+            taskDAO.updateTaskStatus(taskId, volunteerId, newStatus, note);
 
             response.sendRedirect(request.getContextPath() + "/volunteer/workspace?eventId=" + eventId);
         } catch (Exception e) {
