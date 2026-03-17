@@ -59,6 +59,12 @@ public class UpdateSupportRequestStatusController extends HttpServlet {
             // Organization accept APPROVED → ACCEPTED
             dao.acceptRequest(requestId, userId);
 
+        } else if ("RESUBMIT".equalsIgnoreCase(status)) {
+            // User resubmit REJECTED → PENDING
+            dao.resubmit(requestId, userId);
+            response.sendRedirect(request.getContextPath() + "/viewSpRequestUser");
+            return;
+
         } else {
             // Role không được phép → redirect về danh sách
             response.sendRedirect(request.getContextPath() + "/viewSpRequestAdmin");

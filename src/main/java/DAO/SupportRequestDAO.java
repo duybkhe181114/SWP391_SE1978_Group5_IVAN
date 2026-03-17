@@ -654,6 +654,59 @@ public class SupportRequestDAO extends DBContext {
         return null;
     }
 
+    public void update(SupportRequest sr) {
+        String sql = """
+                    UPDATE SupportRequests
+                    SET Title = ?, CategoryId = ?, Priority = ?, SupportLocation = ?,
+                        BeneficiaryName = ?, AffectedPeople = ?, EstimatedAmount = ?,
+                        Description = ?, ContactEmail = ?, ContactPhone = ?,
+                        Status = 'PENDING', RejectReason = NULL,
+                        ReviewedAt = NULL, ReviewedBy = NULL, UpdatedAt = GETDATE()
+                    WHERE RequestId = ? AND CreatedBy = ? AND Status = 'REJECTED'
+                """;
+        try (PreparedStatement ps = connection.prepareStatement(sql)) {
+            ps.setString(1, sr.getTitle());
+            if (sr.getCategoryId() != null && !sr.getCategoryId().trim().isEmpty())
+                ps.setInt(2, Integer.parseInt(sr.getCategoryId()));
+            else
+                ps.setNull(2, Types.INTEGER);
+            ps.setString(3, sr.getPriority());
+            ps.setString(4, sr.getSupportLocation());
+            ps.setString(5, sr.getBeneficiaryName());
+            if (sr.getAffectedPeople() != null) ps.setInt(6, sr.getAffectedPeople());
+            else ps.setNull(6, Types.INTEGER);
+            if (sr.getEstimatedAmount() != null) ps.setDouble(7, sr.getEstimatedAmount());
+            else ps.setNull(7, Types.DOUBLE);
+            ps.setString(8, sr.getDescription());
+            ps.setString(9, sr.getContactEmail());
+            ps.setString(10, sr.getContactPhone());
+            ps.setInt(11, sr.getRequestId());
+            ps.setInt(12, sr.getCreatedBy());
+            ps.executeUpdate();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void resubmit(int requestId, int userId) {
+        String sql = """
+                    UPDATE SupportRequests
+                    SET Status = 'PENDING',
+                        RejectReason = NULL,
+                        ReviewedAt = NULL,
+                        ReviewedBy = NULL,
+                        UpdatedAt = GETDATE()
+                    WHERE RequestId = ? AND CreatedBy = ? AND Status = 'REJECTED'
+                """;
+        try (PreparedStatement ps = connection.prepareStatement(sql)) {
+            ps.setInt(1, requestId);
+            ps.setInt(2, userId);
+            ps.executeUpdate();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
     public List<SupportRequest> getAllByUser(int userId) {
 
         List<SupportRequest> list = new ArrayList<>();

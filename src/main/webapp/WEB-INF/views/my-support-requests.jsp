@@ -340,6 +340,25 @@
                         letter-spacing: 0.3px;
                     }
 
+                    .resubmit-btn {
+                        display: inline-flex;
+                        align-items: center;
+                        gap: 6px;
+                        padding: 7px 16px;
+                        background: #fff7ed;
+                        color: #c2410c;
+                        border: 1px solid #fed7aa;
+                        border-radius: 8px;
+                        font-size: 13px;
+                        font-weight: 600;
+                        cursor: pointer;
+                        transition: all 0.2s;
+                    }
+                    .resubmit-btn:hover {
+                        background: #ffedd5;
+                        border-color: #fb923c;
+                    }
+
                     /* ===== VIEW DETAIL LINK ===== */
                     .detail-link {
                         font-size: 13px;
@@ -466,12 +485,15 @@
                                                 </span>
                                             </div>
 
-                                            <%-- Show reject reason if rejected --%>
-                                                <c:if test="${r.status == 'REJECTED' && not empty r.rejectReason}">
-                                                    <div class="reject-reason">
-                                                        <strong>❌ Reject Reason</strong>
-                                                        ${r.rejectReason}
-                                                    </div>
+                                            <%-- Show reject reason + resubmit if rejected --%>
+                                                <c:if test="${r.status == 'REJECTED'}">
+                                                    <c:if test="${not empty r.rejectReason}">
+                                                        <div class="reject-reason">
+                                                            <strong>❌ Reject Reason</strong>
+                                                            ${r.rejectReason}
+                                                        </div>
+                                                    </c:if>
+                                                    <a href="${pageContext.request.contextPath}/editSupportRequest?id=${r.requestId}" class="resubmit-btn" style="display:inline-flex;margin-top:10px;">✏️ Edit & Resubmit</a>
                                                 </c:if>
                                         </div>
 

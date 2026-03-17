@@ -43,6 +43,11 @@
         <servlet-class>Controller.AdminReviewOrganizationController</servlet-class>
     </servlet>
 
+    <servlet>
+        <servlet-name>adminEventReports</servlet-name>
+        <servlet-class>Controller.AdminEventReportController</servlet-class>
+    </servlet>
+
     <servlet-mapping>
         <servlet-name>orgDashboard</servlet-name>
         <url-pattern>/organization/dashboard</url-pattern>
@@ -91,6 +96,11 @@
     <servlet-mapping>
         <servlet-name>adminReviewOrganizations</servlet-name>
         <url-pattern>/admin/manage-organizations</url-pattern>
+    </servlet-mapping>
+
+    <servlet-mapping>
+        <servlet-name>adminEventReports</servlet-name>
+        <url-pattern>/admin/event-reports</url-pattern>
     </servlet-mapping>
 
 </web-app>

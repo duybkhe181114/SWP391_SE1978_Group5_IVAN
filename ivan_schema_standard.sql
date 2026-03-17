@@ -604,5 +604,22 @@ BEGIN
 END
 GO
 
+IF OBJECT_ID(N'dbo.ImpactReports', N'U') IS NULL
+BEGIN
+    CREATE TABLE dbo.ImpactReports (
+        ReportId       INT IDENTITY(1,1) NOT NULL,
+        EventId        INT NOT NULL,
+        CreatedBy      INT NOT NULL,
+        Summary        NVARCHAR(MAX) NOT NULL,
+        PeopleImpacted INT NOT NULL CONSTRAINT DF_ImpactReports_PeopleImpacted DEFAULT (0),
+        FundsRaised    DECIMAL(18,2) NULL,
+        CreatedAt      DATETIME NULL CONSTRAINT DF_ImpactReports_CreatedAt DEFAULT (GETDATE()),
+        CONSTRAINT PK_ImpactReports PRIMARY KEY CLUSTERED (ReportId ASC),
+        CONSTRAINT FK_ImpactReports_Events FOREIGN KEY (EventId) REFERENCES dbo.Events (EventId),
+        CONSTRAINT FK_ImpactReports_Users  FOREIGN KEY (CreatedBy) REFERENCES dbo.Users (UserId)
+    );
+END
+GO
+
 PRINT N'IVAN schema is ready. Run ivan_bulk_test_data.sql if you want a large test dataset.';
 GO
