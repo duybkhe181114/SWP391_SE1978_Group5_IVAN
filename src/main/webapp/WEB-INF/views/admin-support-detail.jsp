@@ -109,8 +109,11 @@
             <div class="subtitle">Request #${requestDetail.requestId}</div>
         </div>
         <c:choose>
-            <c:when test="${userRole == 'ADMIN' || userRole == 'Admin'}">
+            <c:when test="${userRole == 'Admin'}">
                 <a href="${pageContext.request.contextPath}/viewSpRequestAdmin" class="btn-back">← Back to List</a>
+            </c:when>
+            <c:when test="${userRole == 'Organization'}">
+                <a href="${pageContext.request.contextPath}/org/support-requests" class="btn-back">← Back to List</a>
             </c:when>
             <c:otherwise>
                 <a href="${pageContext.request.contextPath}/viewSpRequestUser" class="btn-back">← Back to My Requests</a>
@@ -363,9 +366,9 @@
         <div class="action-panel">
             <h3>⚙ Organization Actions</h3>
             <div class="action-buttons">
-                <form action="${pageContext.request.contextPath}/org/support-request-detail" method="post">
+                <form action="${pageContext.request.contextPath}/updateSupportRequestStatus" method="post">
                     <input type="hidden" name="requestId" value="${requestDetail.requestId}"/>
-                    <input type="hidden" name="action" value="ACCEPT"/>
+                    <input type="hidden" name="status" value="ACCEPTED"/>
                     <button type="submit" class="btn-accept">📋 Accept This Request</button>
                 </form>
             </div>

@@ -17,8 +17,19 @@ public class AdminViewSpRequestController extends HttpServlet {
 
         SupportRequestDAO dao = new SupportRequestDAO();
 
-        // Admin xem tất cả
-        List<SupportRequest> list = dao.getALLSPRForAdmin();
+        HttpSession session = request.getSession(false);
+        String userRole = session != null ? (String) session.getAttribute("userRole") : null;
+
+        List<SupportRequest> list;
+        if ("Organization".equalsIgnoreCase(userRole)) {
+            response.sendRedirect(request.getContextPath() + "/org/support-requests");
+            return;
+        } else if ("Admin".equalsIgnoreCase(userRole)) {
+            list = dao.getALLSPRForAdmin();
+        } else {
+            response.sendRedirect(request.getContextPath() + "/login");
+            return;
+        }
 
         request.setAttribute("requestList", list);
 

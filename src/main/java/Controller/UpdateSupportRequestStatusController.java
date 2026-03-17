@@ -46,34 +46,26 @@ public class UpdateSupportRequestStatusController extends HttpServlet {
         // =============================
         // 3. PHÂN QUYỀN + XỬ LÝ
         // =============================
-        if ("APPROVED".equalsIgnoreCase(status) && "ADMIN".equalsIgnoreCase(userRole)) {
-            // Admin approve PENDING → APPROVED
-            dao.approveRequestvunh(requestId);
+        if ("APPROVED".equalsIgnoreCase(status) && "Admin".equalsIgnoreCase(userRole)) {
+            dao.approveRequest(requestId, userId, null);
+            response.sendRedirect(request.getContextPath() + "/viewSpRequestAdmin");
 
-        } else if ("REJECTED".equalsIgnoreCase(status) && "ADMIN".equalsIgnoreCase(userRole)) {
-            // Admin reject PENDING → REJECTED
+        } else if ("REJECTED".equalsIgnoreCase(status) && "Admin".equalsIgnoreCase(userRole)) {
             String rejectReason = request.getParameter("rejectReason");
-            dao.rejectRequestvunh(requestId, rejectReason);
+            dao.rejectRequest(requestId, userId, rejectReason, null);
+            response.sendRedirect(request.getContextPath() + "/viewSpRequestAdmin");
 
         } else if ("ACCEPTED".equalsIgnoreCase(status) && "Organization".equalsIgnoreCase(userRole)) {
-            // Organization accept APPROVED → ACCEPTED
             dao.acceptRequest(requestId, userId);
+            response.sendRedirect(request.getContextPath() + "/org/support-requests");
 
         } else if ("RESUBMIT".equalsIgnoreCase(status)) {
-            // User resubmit REJECTED → PENDING
             dao.resubmit(requestId, userId);
             response.sendRedirect(request.getContextPath() + "/viewSpRequestUser");
-            return;
 
         } else {
-            // Role không được phép → redirect về danh sách
-            response.sendRedirect(request.getContextPath() + "/viewSpRequestAdmin");
-            return;
+            response.sendRedirect(request.getContextPath() + "/home");
         }
-
-        // =============================
-        // 4. REDIRECT VỀ DANH SÁCH
-        // =============================
-        response.sendRedirect(request.getContextPath() + "/viewSpRequestAdmin");
+        return;
     }
 }

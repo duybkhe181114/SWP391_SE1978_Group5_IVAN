@@ -1,4 +1,5 @@
 <%@ page contentType="text/html;charset=UTF-8" %>
+<%@ taglib prefix="c" uri="jakarta.tags.core" %>
 <!DOCTYPE html>
 <html>
 <head>
@@ -220,6 +221,22 @@
 
     <section class="form-card">
         <div class="form-header">
+
+        <%-- Banner support request nếu đến từ accepted-requests --%>
+        <c:if test="${not empty linkedSpr}">
+            <div style="background:#eff6ff;border:1.5px solid #bfdbfe;border-radius:12px;padding:16px 20px;margin-bottom:20px;font-size:14px;color:#1e40af;">
+                <div style="font-weight:700;margin-bottom:8px;">📋 Creating event for Support Request #${linkedSpr.requestId}</div>
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;font-size:13px;">
+                    <div><span style="color:#64748b;">Title:</span> <strong>${linkedSpr.title}</strong></div>
+                    <div><span style="color:#64748b;">Priority:</span> <strong>${linkedSpr.priority}</strong></div>
+                    <div><span style="color:#64748b;">Location:</span> ${not empty linkedSpr.supportLocation ? linkedSpr.supportLocation : '—'}</div>
+                    <div><span style="color:#64748b;">Beneficiary:</span> ${not empty linkedSpr.beneficiaryName ? linkedSpr.beneficiaryName : '—'}</div>
+                    <div><span style="color:#64748b;">Affected:</span> ${linkedSpr.affectedPeople} people</div>
+                    <div><span style="color:#64748b;">Contact:</span> ${not empty linkedSpr.contactEmail ? linkedSpr.contactEmail : '—'}</div>
+                </div>
+            </div>
+            <input type="hidden" name="supportRequestId" value="${linkedSpr.requestId}">
+        </c:if>
             <h2>Event Submission Form</h2>
             <p>Fields marked with an asterisk are required. Rejected events can be updated and resubmitted later from the event management screen.</p>
         </div>

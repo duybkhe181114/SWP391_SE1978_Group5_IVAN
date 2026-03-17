@@ -62,7 +62,7 @@ public class EventDAO extends DBContext {
         return list;
     }
     
-    public boolean createEvent(String title, String description, String location,
+    public int createEvent(String title, String description, String location,
                                String coverImageUrl, String startDate, String endDate,
                                int requiredVolunteers, int orgId, String contactName,
                                String contactEmail, String contactPhone,
@@ -73,25 +73,15 @@ public class EventDAO extends DBContext {
                                ContactName, ContactEmail, ContactPhone, Requirements, Benefits)
             VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'Pending', GETDATE(), GETDATE(), ?, ?, ?, ?, ?)
         """;
-        
-        try (PreparedStatement ps = connection.prepareStatement(sql)) {
+        try (PreparedStatement ps = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
             ps.setString(1, title);
             ps.setString(2, description);
             ps.setString(3, location);
             ps.setString(4, coverImageUrl);
-            
-            if (startDate != null && !startDate.isEmpty()) {
-                ps.setDate(5, java.sql.Date.valueOf(startDate));
-            } else {
-                ps.setNull(5, java.sql.Types.DATE);
-            }
-            
-            if (endDate != null && !endDate.isEmpty()) {
-                ps.setDate(6, java.sql.Date.valueOf(endDate));
-            } else {
-                ps.setNull(6, java.sql.Types.DATE);
-            }
-            
+            if (startDate != null && !startDate.isEmpty()) ps.setDate(5, java.sql.Date.valueOf(startDate));
+            else ps.setNull(5, java.sql.Types.DATE);
+            if (endDate != null && !endDate.isEmpty()) ps.setDate(6, java.sql.Date.valueOf(endDate));
+            else ps.setNull(6, java.sql.Types.DATE);
             ps.setInt(7, requiredVolunteers);
             ps.setInt(8, orgId);
             ps.setString(9, contactName);
@@ -99,12 +89,32 @@ public class EventDAO extends DBContext {
             ps.setString(11, contactPhone);
             ps.setString(12, requirements);
             ps.setString(13, benefits);
-            
-            return ps.executeUpdate() > 0;
+            ps.executeUpdate();
+            ResultSet keys = ps.getGeneratedKeys();
+            if (keys.next()) return keys.getInt(1);
         } catch (Exception e) {
             e.printStackTrace();
         }
-        return false;
+        return -1;
+    }
+
+    public void linkEventToRequest(int requestId, int eventId) {
+        String sql = "INSERT INTO SupportRequestEvents (RequestId, EventId) VALUES (?, ?)";
+        try (PreparedStatement ps = connection.prepareStatement(sql)) {
+            ps.setInt(1, requestId);
+            ps.setInt(2, eventId);
+            ps.executeUpdate();
+        } catch (Exception e) { e.printStackTrace(); }
+    }
+
+    public Integer getLinkedEventId(int requestId) {
+        String sql = "SELECT EventId FROM SupportRequestEvents WHERE RequestId = ?";
+        try (PreparedStatement ps = connection.prepareStatement(sql)) {
+            ps.setInt(1, requestId);
+            ResultSet rs = ps.executeQuery();
+            if (rs.next()) return rs.getInt(1);
+        } catch (Exception e) { e.printStackTrace(); }
+        return null;
     }
     
     public boolean approveEvent(int eventId, Integer adminId, String reviewNote) {

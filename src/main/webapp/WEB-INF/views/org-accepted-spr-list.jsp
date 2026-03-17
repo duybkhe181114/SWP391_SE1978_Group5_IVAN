@@ -21,8 +21,8 @@
         .filter-bar input { padding: 8px 14px; border: 1.5px solid #e2e8f0; border-radius: 8px; font-size: 13px; width: 260px; outline: none; }
         .filter-bar input:focus { border-color: #6366f1; }
 
-        .table-card { background: white; border-radius: 14px; box-shadow: 0 2px 12px rgba(0,0,0,0.05); overflow: hidden; }
-        table { width: 100%; border-collapse: collapse; }
+        .table-card { background: white; border-radius: 14px; box-shadow: 0 2px 12px rgba(0,0,0,0.05); overflow-x: auto; }
+        table { width: 100%; border-collapse: collapse; min-width: 900px; }
         thead { background: #1e293b; }
         thead th { padding: 14px 16px; text-align: left; font-size: 12px; font-weight: 600; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.5px; }
         tbody tr { border-bottom: 1px solid #f1f5f9; transition: background 0.15s; }
@@ -44,7 +44,10 @@
         .btn-view { padding: 6px 14px; background: #6366f1; color: white; text-decoration: none; border-radius: 6px; font-size: 12px; font-weight: 600; transition: background 0.2s; }
         .btn-view:hover { background: #4f46e5; }
 
-        .empty-state { text-align: center; padding: 70px 40px; color: #94a3b8; }
+        .btn-create-event { padding: 6px 14px; background: linear-gradient(135deg,#6366f1,#8b5cf6); color: white; text-decoration: none; border-radius: 6px; font-size: 12px; font-weight: 600; transition: all 0.2s; white-space: nowrap; }
+        .btn-create-event:hover { opacity: 0.88; }
+        .btn-view-event { padding: 6px 14px; background: #f0fdf4; color: #16a34a; border: 1.5px solid #bbf7d0; text-decoration: none; border-radius: 6px; font-size: 12px; font-weight: 600; white-space: nowrap; }
+        .btn-view-event:hover { background: #dcfce7; }
         .empty-state .icon { font-size: 48px; margin-bottom: 12px; }
         .empty-state p { font-size: 14px; }
     </style>
@@ -84,9 +87,8 @@
                             <th>Location</th>
                             <th>Beneficiary</th>
                             <th>Estimated</th>
-                            <th>Contact</th>
-                            <th>Accepted At</th>
                             <th>Status</th>
+                            <th>Action</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -108,18 +110,17 @@
                                         <c:otherwise>—</c:otherwise>
                                     </c:choose>
                                 </td>
-                                <td>
-                                    <div>${not empty r.contactEmail ? r.contactEmail : '—'}</div>
-                                    <div style="font-size:12px;color:#64748b;">${not empty r.contactPhone ? r.contactPhone : ''}</div>
-                                </td>
-                                <td>
-                                    <c:if test="${r.reviewedAt != null}">
-                                        <fmt:parseDate value="${r.reviewedAt}" pattern="yyyy-MM-dd'T'HH:mm" var="parsedDate" type="both"/>
-                                        ${r.reviewedAt}
-                                    </c:if>
-                                    <c:if test="${r.reviewedAt == null}">—</c:if>
-                                </td>
                                 <td><span class="badge-ACCEPTED">ACCEPTED</span></td>
+                                <td>
+                                    <c:choose>
+                                        <c:when test="${linkedEventMap[r.requestId] != null}">
+                                            <a href="${pageContext.request.contextPath}/events/${linkedEventMap[r.requestId]}" class="btn-view-event">✅ View Event</a>
+                                        </c:when>
+                                        <c:otherwise>
+                                            <a href="${pageContext.request.contextPath}/organization/create-event?supportRequestId=${r.requestId}" class="btn-create-event">➕ Create Event</a>
+                                        </c:otherwise>
+                                    </c:choose>
+                                </td>
                             </tr>
                         </c:forEach>
                     </tbody>

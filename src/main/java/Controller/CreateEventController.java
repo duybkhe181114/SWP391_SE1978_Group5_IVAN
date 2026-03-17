@@ -1,6 +1,8 @@
 package Controller;
 
 import DAO.EventDAO;
+import DAO.SupportRequestDAO;
+import Entity.SupportRequest;
 import jakarta.servlet.*;
 import jakarta.servlet.http.*;
 import java.io.IOException;
@@ -14,6 +16,16 @@ public class CreateEventController extends HttpServlet {
         if (!isOrganization(request)) {
             response.sendRedirect(request.getContextPath() + "/login");
             return;
+        }
+        // Nếu đến từ accepted-requests, load thông tin support request
+        String sprIdRaw = request.getParameter("supportRequestId");
+        if (sprIdRaw != null && !sprIdRaw.isEmpty()) {
+            try {
+                int sprId = Integer.parseInt(sprIdRaw);
+                SupportRequestDAO sprDao = new SupportRequestDAO();
+                SupportRequest spr = sprDao.getSPRById(sprId);
+                if (spr != null) request.setAttribute("linkedSpr", spr);
+            } catch (NumberFormatException ignored) {}
         }
         request.getRequestDispatcher("/WEB-INF/views/create-event.jsp").forward(request, response);
     }
@@ -35,6 +47,7 @@ public class CreateEventController extends HttpServlet {
             String contactPhone = trimToNull(request.getParameter("contactPhone"));
             String requirements = trimToNull(request.getParameter("requirements"));
             String benefits = trimToNull(request.getParameter("benefits"));
+            String sprIdRaw = request.getParameter("supportRequestId");
             
             HttpSession session = request.getSession(false);
             
@@ -96,14 +109,25 @@ public class CreateEventController extends HttpServlet {
                 return;
             }
             
-            boolean success = dao.createEvent(title, description, location, coverImageUrl, startDate, endDate,
+            int eventId = dao.createEvent(title, description, location, coverImageUrl, startDate, endDate,
                                              requiredVolunteers, organizationId, contactName,
                                              contactEmail, contactPhone, requirements, benefits);
-            
-            if (success) {
+
+            if (eventId > 0) {
+                // Link event với support request nếu có
+                if (sprIdRaw != null && !sprIdRaw.isEmpty()) {
+                    try { dao.linkEventToRequest(Integer.parseInt(sprIdRaw), eventId); }
+                    catch (NumberFormatException ignored) {}
+                }
                 response.sendRedirect(request.getContextPath() + "/organization/dashboard?msg=Event created successfully. Waiting for admin approval.");
             } else {
                 request.setAttribute("error", "Failed to create event");
+                if (sprIdRaw != null && !sprIdRaw.isEmpty()) {
+                    try {
+                        SupportRequest spr = new SupportRequestDAO().getSPRById(Integer.parseInt(sprIdRaw));
+                        if (spr != null) request.setAttribute("linkedSpr", spr);
+                    } catch (NumberFormatException ignored) {}
+                }
                 request.getRequestDispatcher("/WEB-INF/views/create-event.jsp").forward(request, response);
             }
             

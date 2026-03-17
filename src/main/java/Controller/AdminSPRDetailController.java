@@ -23,6 +23,11 @@ public class AdminSPRDetailController extends HttpServlet {
             userRole = session.getAttribute("userRole").toString();
         }
 
+        if (userRole == null) {
+            response.sendRedirect(request.getContextPath() + "/login");
+            return;
+        }
+
         request.setAttribute("userRole", userRole);
 
         String idRaw = request.getParameter("id");
