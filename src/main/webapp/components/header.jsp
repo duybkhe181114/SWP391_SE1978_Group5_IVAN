@@ -92,6 +92,7 @@
                 <div class="dd-category">Events Management</div>
                 <a href="${pageContext.request.contextPath}/admin/manage-events" class="dd-item">📅 Manage Events</a>
                 <a href="${pageContext.request.contextPath}/admin/review-events" class="dd-item">⏱️ Event Review Queue</a>
+                <a href="${pageContext.request.contextPath}/admin/event-reports" class="dd-item">📈 Event Reports</a>
 
                 <div class="dd-category">Users & Organizations</div>
                 <a href="${pageContext.request.contextPath}/admin/manage-users" class="dd-item">👥 Manage Users</a>
