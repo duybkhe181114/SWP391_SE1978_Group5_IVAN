@@ -145,8 +145,11 @@
                 </div>
                 <div class="form-group">
                     <label>Detailed Description <span class="req">*</span></label>
-                    <textarea name="description" id="description" placeholder="Describe the situation clearly — what happened, who is affected, what kind of support is needed..."></textarea>
-                    <div class="field-error" id="descErr">Description is required (min 20 characters)</div>
+                    <textarea name="description" id="description" placeholder="Describe the situation clearly — what happened, who is affected, what kind of support is needed..." oninput="updateCounter()"></textarea>
+                    <div style="display:flex;justify-content:space-between;align-items:center;margin-top:4px;">
+                        <div class="field-error" id="descErr" style="margin-top:0;">Description is required (minimum 20 characters)</div>
+                        <span id="descCounter" style="font-size:12px;color:#94a3b8;">0 characters</span>
+                    </div>
                 </div>
                 <div class="form-group">
                     <label>Upload Proof Image (Optional)</label>
@@ -203,6 +206,13 @@
 </div>
 
 <script>
+    function updateCounter() {
+        const len = document.getElementById('description').value.length;
+        const counter = document.getElementById('descCounter');
+        counter.textContent = len + ' characters';
+        counter.style.color = len < 20 ? '#ef4444' : '#22c55e';
+    }
+
     function markInvalid(id, errId, show) {
         const el = document.getElementById(id);
         const err = document.getElementById(errId);

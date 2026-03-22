@@ -397,39 +397,41 @@ public class SupportRequestDAO extends DBContext {
     public SupportRequest getSPRById(int id) {
 
         String sql = """
-                    SELECT *
-                    FROM SupportRequests
-                    WHERE RequestId = ?
+                    SELECT r.*, c.Name AS CategoryName
+                    FROM SupportRequests r
+                    LEFT JOIN SupportCategories c ON r.CategoryId = c.CategoryId
+                    WHERE r.RequestId = ?
                 """;
 
         try (PreparedStatement ps = connection.prepareStatement(sql)) {
 
             ps.setInt(1, id);
-            ResultSet rs = ps.executeQuery();
-
-            if (rs.next()) {
-
-                SupportRequest r = new SupportRequest();
-
-                r.setRequestId(rs.getInt("RequestId"));
-                r.setTitle(rs.getString("Title"));
-                r.setDescription(rs.getString("Description"));
-                r.setCategoryId(rs.getString("CategoryId"));
-                r.setPriority(rs.getString("Priority"));
-                r.setSupportLocation(rs.getString("SupportLocation"));
-                r.setBeneficiaryName(rs.getString("BeneficiaryName"));
-                r.setAffectedPeople((Integer) rs.getObject("AffectedPeople"));
-                r.setEstimatedAmount(rs.getDouble("EstimatedAmount"));
-                r.setContactEmail(rs.getString("ContactEmail"));
-                r.setContactPhone(rs.getString("ContactPhone"));
-                r.setProofImageUrl(rs.getString("ProofUrl"));
-                r.setStatus(rs.getString("Status"));
-                r.setRejectReason(rs.getString("RejectReason"));
-                r.setAdminNote(rs.getString("AdminNote"));
-                r.setCreatedBy(rs.getInt("CreatedBy"));
-                r.setReviewedBy((Integer) rs.getObject("ReviewedBy"));
-
-                return r;
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    SupportRequest r = new SupportRequest();
+                    r.setRequestId(rs.getInt("RequestId"));
+                    r.setTitle(rs.getString("Title"));
+                    r.setDescription(rs.getString("Description"));
+                    r.setCategoryId(String.valueOf(rs.getInt("CategoryId")));
+                    r.setCategoryName(rs.getString("CategoryName"));
+                    r.setPriority(rs.getString("Priority"));
+                    r.setSupportLocation(rs.getString("SupportLocation"));
+                    r.setBeneficiaryName(rs.getString("BeneficiaryName"));
+                    r.setAffectedPeople((Integer) rs.getObject("AffectedPeople"));
+                    BigDecimal amt = (BigDecimal) rs.getObject("EstimatedAmount");
+                    r.setEstimatedAmount(amt != null ? amt.doubleValue() : null);
+                    r.setContactEmail(rs.getString("ContactEmail"));
+                    r.setContactPhone(rs.getString("ContactPhone"));
+                    r.setProofImageUrl(rs.getString("ProofUrl"));
+                    r.setStatus(rs.getString("Status"));
+                    r.setRejectReason(rs.getString("RejectReason"));
+                    r.setAdminNote(rs.getString("AdminNote"));
+                    r.setCreatedBy(rs.getInt("CreatedBy"));
+                    r.setReviewedBy((Integer) rs.getObject("ReviewedBy"));
+                    Timestamp created = rs.getTimestamp("CreatedAt");
+                    if (created != null) r.setCreatedAt(created.toLocalDateTime());
+                    return r;
+                }
             }
 
         } catch (Exception e) {
@@ -655,14 +657,15 @@ public class SupportRequestDAO extends DBContext {
     }
 
     public void update(SupportRequest sr) {
+        // Update SQL also allows PENDING status
         String sql = """
                     UPDATE SupportRequests
                     SET Title = ?, CategoryId = ?, Priority = ?, SupportLocation = ?,
                         BeneficiaryName = ?, AffectedPeople = ?, EstimatedAmount = ?,
                         Description = ?, ContactEmail = ?, ContactPhone = ?,
-                        Status = 'PENDING', RejectReason = NULL,
+                        RejectReason = NULL,
                         ReviewedAt = NULL, ReviewedBy = NULL, UpdatedAt = GETDATE()
-                    WHERE RequestId = ? AND CreatedBy = ? AND Status = 'REJECTED'
+                    WHERE RequestId = ? AND CreatedBy = ? AND Status IN ('REJECTED', 'PENDING')
                 """;
         try (PreparedStatement ps = connection.prepareStatement(sql)) {
             ps.setString(1, sr.getTitle());

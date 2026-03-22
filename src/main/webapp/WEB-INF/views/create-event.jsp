@@ -235,8 +235,7 @@
                     <div><span style="color:#64748b;">Contact:</span> ${not empty linkedSpr.contactEmail ? linkedSpr.contactEmail : '—'}</div>
                 </div>
             </div>
-            <input type="hidden" name="supportRequestId" value="${linkedSpr.requestId}">
-        </c:if>
+            </c:if>
             <h2>Event Submission Form</h2>
             <p>Fields marked with an asterisk are required. Rejected events can be updated and resubmitted later from the event management screen.</p>
         </div>
@@ -246,6 +245,9 @@
         <% } %>
 
         <form method="post" action="${pageContext.request.contextPath}/organization/create-event">
+            <c:if test="${not empty linkedSpr}">
+                <input type="hidden" name="supportRequestId" value="${linkedSpr.requestId}">
+            </c:if>
             <div class="form-grid">
                 <div class="form-group span-2">
                     <label>Event Title <span>*</span></label>

@@ -26,8 +26,10 @@ public class EditSupportRequestController extends HttpServlet {
 
         SupportRequest sr = new SupportRequestDAO().getSPRById(requestId);
 
-        // Chỉ cho phép owner edit request bị REJECTED
-        if (sr == null || !sr.getCreatedBy().equals(userId) || !"REJECTED".equalsIgnoreCase(sr.getStatus())) {
+        // Chỉ cho phép owner edit khi PENDING hoặc REJECTED
+        if (sr == null || !sr.getCreatedBy().equals(userId)
+                || "ACCEPTED".equalsIgnoreCase(sr.getStatus())
+                || "APPROVED".equalsIgnoreCase(sr.getStatus())) {
             response.sendRedirect(request.getContextPath() + "/viewSpRequestUser");
             return;
         }
@@ -68,8 +70,15 @@ public class EditSupportRequestController extends HttpServlet {
         sr.setContactEmail(request.getParameter("contactEmail"));
         sr.setContactPhone(request.getParameter("contactPhone"));
 
-        new SupportRequestDAO().update(sr);
-
+        SupportRequestDAO dao = new SupportRequestDAO();
+        SupportRequest existing = dao.getSPRById(requestId);
+        // Chỉ cho phép edit khi PENDING hoặc REJECTED và đúng owner
+        if (existing == null || !existing.getCreatedBy().equals(userId)
+                || ("ACCEPTED".equalsIgnoreCase(existing.getStatus()) || "APPROVED".equalsIgnoreCase(existing.getStatus()))) {
+            response.sendRedirect(request.getContextPath() + "/viewSpRequestUser");
+            return;
+        }
+        dao.update(sr);
         response.sendRedirect(request.getContextPath() + "/viewSpRequestUser");
     }
 }

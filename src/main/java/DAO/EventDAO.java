@@ -98,25 +98,6 @@ public class EventDAO extends DBContext {
         return -1;
     }
 
-    public void linkEventToRequest(int requestId, int eventId) {
-        String sql = "INSERT INTO SupportRequestEvents (RequestId, EventId) VALUES (?, ?)";
-        try (PreparedStatement ps = connection.prepareStatement(sql)) {
-            ps.setInt(1, requestId);
-            ps.setInt(2, eventId);
-            ps.executeUpdate();
-        } catch (Exception e) { e.printStackTrace(); }
-    }
-
-    public Integer getLinkedEventId(int requestId) {
-        String sql = "SELECT EventId FROM SupportRequestEvents WHERE RequestId = ?";
-        try (PreparedStatement ps = connection.prepareStatement(sql)) {
-            ps.setInt(1, requestId);
-            ResultSet rs = ps.executeQuery();
-            if (rs.next()) return rs.getInt(1);
-        } catch (Exception e) { e.printStackTrace(); }
-        return null;
-    }
-    
     public boolean approveEvent(int eventId, Integer adminId, String reviewNote) {
         String sql = """
             UPDATE Events
@@ -129,19 +110,14 @@ public class EventDAO extends DBContext {
         """;
         try (PreparedStatement ps = connection.prepareStatement(sql)) {
             ps.setString(1, reviewNote);
-            if (adminId == null) {
-                ps.setNull(2, Types.INTEGER);
-            } else {
-                ps.setInt(2, adminId);
-            }
+            if (adminId == null) ps.setNull(2, Types.INTEGER);
+            else ps.setInt(2, adminId);
             ps.setInt(3, eventId);
             return ps.executeUpdate() > 0;
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+        } catch (Exception e) { e.printStackTrace(); }
         return false;
     }
-    
+
     public boolean rejectEvent(int eventId, Integer adminId, String reviewNote) {
         String sql = """
             UPDATE Events
@@ -488,6 +464,26 @@ public class EventDAO extends DBContext {
         }
     }
     
+    public Integer getLinkedEventId(int supportRequestId) {
+        String sql = "SELECT EventId FROM SupportRequestEvents WHERE RequestId = ?";
+        try (PreparedStatement ps = connection.prepareStatement(sql)) {
+            ps.setInt(1, supportRequestId);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) return rs.getInt(1);
+            }
+        } catch (Exception e) { e.printStackTrace(); }
+        return null;
+    }
+
+    public void linkEventToRequest(int supportRequestId, int eventId) {
+        String sql = "INSERT INTO SupportRequestEvents (RequestId, EventId) VALUES (?, ?)";
+        try (PreparedStatement ps = connection.prepareStatement(sql)) {
+            ps.setInt(1, supportRequestId);
+            ps.setInt(2, eventId);
+            ps.executeUpdate();
+        } catch (Exception e) { e.printStackTrace(); }
+    }
+
     public int getTotalUsers() {
         String sql = "SELECT COUNT(*) FROM Users WHERE IsActive = 1";
         try (PreparedStatement ps = connection.prepareStatement(sql);

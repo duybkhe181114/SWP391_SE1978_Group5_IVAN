@@ -90,9 +90,10 @@
         /* priority */
         .pri { display: inline-flex; align-items: center; gap: 5px; font-size: 13px; font-weight: 600; }
         .pri-dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
-        .pri-dot-Low,.pri-dot-LOW       { background: #22c55e; }
-        .pri-dot-Medium,.pri-dot-MEDIUM { background: #f59e0b; }
-        .pri-dot-High,.pri-dot-HIGH     { background: #ef4444; }
+        .pri-dot-Low,.pri-dot-LOW         { background: #22c55e; }
+        .pri-dot-Medium,.pri-dot-MEDIUM   { background: #f59e0b; }
+        .pri-dot-High,.pri-dot-HIGH       { background: #ef4444; }
+        .pri-dot-Urgent,.pri-dot-URGENT   { background: #7c3aed; }
 
         /* amount */
         .amount { font-variant-numeric: tabular-nums; font-weight: 500; }
@@ -226,7 +227,7 @@
                                 </td>
                                 <td class="action-col">
                                     <a class="btn-view" href="${pageContext.request.contextPath}/adminSpRequestDetail?id=${r.requestId}">View</a>
-                                    <c:if test="${r.status == 'REJECTED'}">
+                                    <c:if test="${r.status == 'REJECTED' || r.status == 'PENDING'}">
                                         <a class="btn-edit" href="${pageContext.request.contextPath}/editSupportRequest?id=${r.requestId}">✏️ Edit</a>
                                     </c:if>
                                 </td>

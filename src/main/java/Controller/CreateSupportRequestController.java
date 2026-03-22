@@ -77,11 +77,12 @@ public class CreateSupportRequestController extends HttpServlet {
 
         Object userObj = request.getSession().getAttribute("userId");
 
-        if (userObj != null) {
-            sr.setCreatedBy((Integer) userObj);
-        } else {
-            sr.setCreatedBy(null);
+        if (userObj == null) {
+            response.sendRedirect(request.getContextPath() + "/login");
+            return;
         }
+
+        sr.setCreatedBy((Integer) userObj);
         sr.setStatus("PENDING");
         sr.setCreatedAt(LocalDateTime.now());
         sr.setUpdatedAt(LocalDateTime.now());
@@ -91,7 +92,7 @@ public class CreateSupportRequestController extends HttpServlet {
         SupportRequestDAO dao = new SupportRequestDAO();
         dao.insert(sr);
 
-        response.sendRedirect("home");
+        response.sendRedirect(request.getContextPath() + "/viewSpRequestUser");
     }
 
     @Override
@@ -103,6 +104,11 @@ public class CreateSupportRequestController extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
+
+        if (request.getSession().getAttribute("userId") == null) {
+            response.sendRedirect(request.getContextPath() + "/login");
+            return;
+        }
 
         SupportCategoryDAO categoryDAO = new SupportCategoryDAO();
         request.setAttribute("categories", categoryDAO.getAll());

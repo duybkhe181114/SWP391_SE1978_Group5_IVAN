@@ -116,7 +116,7 @@
                                         <a href="${pageContext.request.contextPath}/adminSpRequestDetail?id=${r.requestId}" class="btn-view">🔍 Detail</a>
                                         <c:choose>
                                             <c:when test="${linkedEventMap[r.requestId] != null}">
-                                                <a href="${pageContext.request.contextPath}/events/${linkedEventMap[r.requestId]}" class="btn-view-event">✅ View Event</a>
+                                                <a href="${pageContext.request.contextPath}/event/detail?id=${linkedEventMap[r.requestId]}" class="btn-view-event">✅ View Event</a>
                                             </c:when>
                                             <c:otherwise>
                                                 <a href="${pageContext.request.contextPath}/organization/create-event?supportRequestId=${r.requestId}" class="btn-create-event">➕ Create Event</a>

@@ -51,6 +51,11 @@
             ${sr.rejectReason}
         </div>
     </c:if>
+    <c:if test="${sr.status == 'PENDING'}">
+        <div style="background:#fffbeb;border:1px solid #fde68a;border-radius:12px;padding:14px 20px;margin-bottom:24px;font-size:14px;color:#92400e;">
+            <strong>⏳ This request is pending review.</strong> You can still update it before admin reviews.
+        </div>
+    </c:if>
 
     <form action="${pageContext.request.contextPath}/editSupportRequest" method="post" id="editForm" novalidate>
         <input type="hidden" name="requestId" value="${sr.requestId}">
@@ -74,7 +79,7 @@
                         <select name="categoryId" id="categoryId">
                             <option value="">-- Select Support Type --</option>
                             <c:forEach var="cat" items="${categories}">
-                                <option value="${cat.categoryId}" ${sr.categoryId == cat.categoryId ? 'selected' : ''}>${cat.name}</option>
+                                <option value="${cat.categoryId}" ${sr.categoryId == cat.categoryId.toString() ? 'selected' : ''}>${cat.name}</option>
                             </c:forEach>
                         </select>
                         <div class="field-error" id="categoryErr">Please select a support type</div>
@@ -162,7 +167,14 @@
             <div class="form-body">
                 <div class="form-actions">
                     <a href="${pageContext.request.contextPath}/viewSpRequestUser" class="btn-cancel">Cancel</a>
-                    <button type="submit" class="btn-submit">🔄 Save & Resubmit →</button>
+                    <c:choose>
+                        <c:when test="${sr.status == 'PENDING'}">
+                            <button type="submit" class="btn-submit">&#128190; Save Changes &#8594;</button>
+                        </c:when>
+                        <c:otherwise>
+                            <button type="submit" class="btn-submit">&#128260; Save &amp; Resubmit &#8594;</button>
+                        </c:otherwise>
+                    </c:choose>
                 </div>
             </div>
         </div>
