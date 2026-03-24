@@ -657,13 +657,13 @@ public class SupportRequestDAO extends DBContext {
     }
 
     public void update(SupportRequest sr) {
-        // Update SQL also allows PENDING status
         String sql = """
                     UPDATE SupportRequests
                     SET Title = ?, CategoryId = ?, Priority = ?, SupportLocation = ?,
                         BeneficiaryName = ?, AffectedPeople = ?, EstimatedAmount = ?,
                         Description = ?, ContactEmail = ?, ContactPhone = ?,
-                        RejectReason = NULL,
+                        Status = 'PENDING',
+                        RejectReason = NULL, AdminNote = NULL,
                         ReviewedAt = NULL, ReviewedBy = NULL, UpdatedAt = GETDATE()
                     WHERE RequestId = ? AND CreatedBy = ? AND Status IN ('REJECTED', 'PENDING')
                 """;
