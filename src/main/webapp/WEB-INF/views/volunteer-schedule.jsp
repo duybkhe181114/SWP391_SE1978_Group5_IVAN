@@ -56,11 +56,9 @@
         center: 'title',
         right: 'dayGridMonth,timeGridWeek,timeGridDay'
       },
-      slotMinTime: '06:00:00',
-      slotMaxTime: '22:00:00',
       allDaySlot: false,
       height: 'auto',
-      eventMinHeight: 85,
+      slotEventOverlap: false, // Fix: Prevent visual stacking/overlapping in time grids
 
       // ---> TUYỆT CHIÊU CỨU MONTH VIEW <---
       eventDisplay: 'block', // Ép FullCalendar vẽ nguyên một khối màu ở Month View

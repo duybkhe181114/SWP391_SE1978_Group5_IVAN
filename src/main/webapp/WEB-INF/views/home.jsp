@@ -16,8 +16,6 @@
 
     <jsp:include page="/components/how-it-works.jsp"/>
     <jsp:include page="/components/trusted-orgs.jsp"/>
-    <jsp:include page="/components/impact-stats.jsp"/>
-
     <jsp:include page="/components/footer.jsp"/>
 </body>
 </html>

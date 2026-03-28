@@ -97,6 +97,9 @@ public class LoginAsUserController extends HttpServlet {
             } else if (orgProfile != null && orgProfile.get("representativeName") != null) {
                 displayName = String.valueOf(orgProfile.get("representativeName"));
             }
+            if (orgProfile != null && orgProfile.get("logoUrl") != null) {
+                session.setAttribute("userAvatar", orgProfile.get("logoUrl"));
+            }
         } else {
             UserProfileDAO profileDAO = new UserProfileDAO();
             UserProfile profile = profileDAO.getByUserId(user.getUserId());
@@ -108,6 +111,9 @@ public class LoginAsUserController extends HttpServlet {
                 }
             } else {
                 displayName = email.substring(0, email.indexOf("@"));
+            }
+            if (profile != null && profile.getAvatar() != null) {
+                session.setAttribute("userAvatar", profile.getAvatar());
             }
         }
         session.setAttribute("userName", displayName);

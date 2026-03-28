@@ -9,6 +9,80 @@ import java.util.Map;
 
 public class TaskDAO extends DBContext {
 
+    public List<Map<String, Object>> getPendingReviewTasks(int coordinatorId) {
+        List<Map<String, Object>> list = new ArrayList<>();
+        String sql = "SELECT t.TaskId, t.TaskDescription, t.Priority, t.Note, " +
+                "s.WorkDate, s.StartTime, s.EndTime, " +
+                "e.EventId, e.Title AS EventName, up.FullName AS VolunteerName " +
+                "FROM Tasks t " +
+                "JOIN Schedules s ON t.TaskId = s.TaskId " +
+                "JOIN Events e ON t.EventId = e.EventId " +
+                "JOIN UserProfiles up ON t.VolunteerId = up.UserId " +
+                "WHERE t.CoordinatorId = ? AND t.Status = 'Completed' " +
+                "ORDER BY t.CompletedAt DESC";
+
+        try (PreparedStatement ps = connection.prepareStatement(sql)) {
+            ps.setInt(1, coordinatorId);
+            ResultSet rs = ps.executeQuery();
+            while (rs.next()) {
+                Map<String, Object> map = new HashMap<>();
+                map.put("taskId", rs.getInt("TaskId"));
+                map.put("description", rs.getString("TaskDescription"));
+                map.put("priority", rs.getString("Priority"));
+                map.put("note", rs.getString("Note"));
+                map.put("workDate", rs.getDate("WorkDate"));
+                map.put("startTime", rs.getTime("StartTime"));
+                map.put("endTime", rs.getTime("EndTime"));
+                map.put("eventId", rs.getInt("EventId"));
+                map.put("eventName", rs.getString("EventName"));
+                map.put("volunteerName", rs.getString("VolunteerName"));
+                list.add(map);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return list;
+    }
+
+    public boolean updateAndReassignTask(int taskId, int coordinatorId, int newVolunteerId, String description, String workDate, String startTime, String endTime, String priority) {
+        String updateTaskSql = "UPDATE Tasks SET VolunteerId = ?, TaskDescription = ?, Priority = ?, Status = 'Pending', Note = NULL, CompletedAt = NULL WHERE TaskId = ? AND CoordinatorId = ?";
+        String updateScheduleSql = "UPDATE Schedules SET WorkDate = ?, StartTime = ?, EndTime = ? WHERE TaskId = ?";
+
+        try {
+            connection.setAutoCommit(false);
+
+            try (PreparedStatement psTask = connection.prepareStatement(updateTaskSql)) {
+                psTask.setInt(1, newVolunteerId);
+                psTask.setString(2, description);
+                psTask.setString(3, priority != null ? priority : "Medium");
+                psTask.setInt(4, taskId);
+                psTask.setInt(5, coordinatorId);
+                int rows = psTask.executeUpdate();
+                if (rows == 0) {
+                    connection.rollback();
+                    return false;
+                }
+            }
+
+            try (PreparedStatement psSchedule = connection.prepareStatement(updateScheduleSql)) {
+                psSchedule.setDate(1, Date.valueOf(workDate));
+                psSchedule.setTime(2, Time.valueOf(startTime + ":00"));
+                psSchedule.setTime(3, Time.valueOf(endTime + ":00"));
+                psSchedule.setInt(4, taskId);
+                psSchedule.executeUpdate();
+            }
+
+            connection.commit();
+            return true;
+        } catch (Exception e) {
+            try { connection.rollback(); } catch (SQLException ex) { ex.printStackTrace(); }
+            e.printStackTrace();
+        } finally {
+            try { connection.setAutoCommit(true); } catch (SQLException ex) { ex.printStackTrace(); }
+        }
+        return false;
+    }
+
     public boolean assignTaskWithSchedule(int eventId, int coordinatorId, int volunteerId, String description, String workDate, String startTime, String endTime, String priority) {
         String insertTaskSql = "INSERT INTO Tasks (EventId, CoordinatorId, VolunteerId, TaskDescription, Status, Priority, AssignedAt) VALUES (?, ?, ?, ?, 'Pending', ?, GETDATE())";
         String insertScheduleSql = "INSERT INTO Schedules (TaskId, WorkDate, StartTime, EndTime, CreatedAt) VALUES (?, ?, ?, ?, GETDATE())";
@@ -102,9 +176,15 @@ public class TaskDAO extends DBContext {
     public List<Map<String, Object>> getTasksByEventFiltered(int eventId, String status, String priority, String volunteerId) {
         List<Map<String, Object>> list = new ArrayList<>();
         StringBuilder sql = new StringBuilder(
-            "SELECT t.TaskId, t.TaskDescription, t.Status, t.Priority, t.Note, t.VolunteerId, " +
+            "SELECT t.TaskId, t.TaskDescription, t.Status, t.Priority, t.Note, t.VolunteerId, t.CompletedAt, " +
             "s.WorkDate, s.StartTime, s.EndTime, " +
-            "up.FullName AS VolunteerName " +
+            "up.FullName AS VolunteerName, " +
+            "(CASE " +
+            "  WHEN t.CompletedAt IS NULL THEN DATEDIFF(MINUTE, s.StartTime, s.EndTime) " +
+            "  WHEN t.CompletedAt <= DATEADD(MINUTE, DATEDIFF(MINUTE, '00:00:00', s.StartTime), CAST(s.WorkDate AS DATETIME)) THEN 0 " +
+            "  WHEN t.CompletedAt >= DATEADD(MINUTE, DATEDIFF(MINUTE, '00:00:00', s.EndTime), CAST(s.WorkDate AS DATETIME)) THEN DATEDIFF(MINUTE, s.StartTime, s.EndTime) " +
+            "  ELSE DATEDIFF(MINUTE, DATEADD(MINUTE, DATEDIFF(MINUTE, '00:00:00', s.StartTime), CAST(s.WorkDate AS DATETIME)), t.CompletedAt) " +
+            "END) AS DurationMinutes " +
             "FROM Tasks t " +
             "JOIN Schedules s ON t.TaskId = s.TaskId " +
             "JOIN UserProfiles up ON t.VolunteerId = up.UserId " +
@@ -120,7 +200,7 @@ public class TaskDAO extends DBContext {
         if (volunteerId != null && !volunteerId.isEmpty()) {
             sql.append(" AND t.VolunteerId = ?");
         }
-        sql.append(" ORDER BY s.WorkDate ASC, s.StartTime ASC");
+        sql.append(" ORDER BY t.TaskId DESC");
 
         try (PreparedStatement ps = connection.prepareStatement(sql.toString())) {
             int paramIndex = 1;
@@ -148,6 +228,10 @@ public class TaskDAO extends DBContext {
                 map.put("startTime", rs.getTime("StartTime"));
                 map.put("endTime", rs.getTime("EndTime"));
                 map.put("volunteerName", rs.getString("VolunteerName"));
+                map.put("completedAt", rs.getTimestamp("CompletedAt"));
+                int durationMins1 = rs.getInt("DurationMinutes");
+                map.put("durationMinutes", durationMins1);
+                map.put("durationText", String.format("%dh %02dm", durationMins1 / 60, durationMins1 % 60));
                 list.add(map);
             }
         } catch (Exception e) {
@@ -195,7 +279,13 @@ public class TaskDAO extends DBContext {
     public List<Map<String, Object>> getTasksForVolunteerInEvent(int eventId, int volunteerId) {
         List<Map<String, Object>> list = new ArrayList<>();
         String sql = "SELECT t.TaskId, t.TaskDescription, t.Status, t.Priority, " +
-                "s.WorkDate, s.StartTime, s.EndTime, up.FullName AS CoordinatorName " +
+                "s.WorkDate, s.StartTime, s.EndTime, up.FullName AS CoordinatorName, t.CompletedAt, " +
+                "(CASE " +
+                "  WHEN t.CompletedAt IS NULL THEN DATEDIFF(MINUTE, s.StartTime, s.EndTime) " +
+                "  WHEN t.CompletedAt <= DATEADD(MINUTE, DATEDIFF(MINUTE, '00:00:00', s.StartTime), CAST(s.WorkDate AS DATETIME)) THEN 0 " +
+                "  WHEN t.CompletedAt >= DATEADD(MINUTE, DATEDIFF(MINUTE, '00:00:00', s.EndTime), CAST(s.WorkDate AS DATETIME)) THEN DATEDIFF(MINUTE, s.StartTime, s.EndTime) " +
+                "  ELSE DATEDIFF(MINUTE, DATEADD(MINUTE, DATEDIFF(MINUTE, '00:00:00', s.StartTime), CAST(s.WorkDate AS DATETIME)), t.CompletedAt) " +
+                "END) AS DurationMinutes " +
                 "FROM Tasks t " +
                 "JOIN Schedules s ON t.TaskId = s.TaskId " +
                 "JOIN UserProfiles up ON t.CoordinatorId = up.UserId " +
@@ -216,6 +306,10 @@ public class TaskDAO extends DBContext {
                 map.put("startTime", rs.getTime("StartTime"));
                 map.put("endTime", rs.getTime("EndTime"));
                 map.put("coordinatorName", rs.getString("CoordinatorName"));
+                map.put("completedAt", rs.getTimestamp("CompletedAt"));
+                int durationMins2 = rs.getInt("DurationMinutes");
+                map.put("durationMinutes", durationMins2);
+                map.put("durationText", String.format("%dh %02dm", durationMins2 / 60, durationMins2 % 60));
                 list.add(map);
             }
         } catch (Exception e) {
@@ -307,20 +401,46 @@ public class TaskDAO extends DBContext {
     }
 
     public double getTotalImpactHours(int volunteerId) {
-        double totalHours = 0;
-        String sql = "SELECT SUM(DATEDIFF(MINUTE, s.StartTime, s.EndTime)) / 60.0 " +
+        int totalMinutes = 0;
+        String sql = "SELECT SUM(" +
+                "  CASE " +
+                "    WHEN t.CompletedAt IS NULL THEN DATEDIFF(MINUTE, s.StartTime, s.EndTime) " +
+                "    WHEN t.CompletedAt <= DATEADD(MINUTE, DATEDIFF(MINUTE, '00:00:00', s.StartTime), CAST(s.WorkDate AS DATETIME)) THEN 0 " +
+                "    WHEN t.CompletedAt >= DATEADD(MINUTE, DATEDIFF(MINUTE, '00:00:00', s.EndTime), CAST(s.WorkDate AS DATETIME)) THEN DATEDIFF(MINUTE, s.StartTime, s.EndTime) " +
+                "    ELSE DATEDIFF(MINUTE, DATEADD(MINUTE, DATEDIFF(MINUTE, '00:00:00', s.StartTime), CAST(s.WorkDate AS DATETIME)), t.CompletedAt) " +
+                "  END) " +
                 "FROM Tasks t JOIN Schedules s ON t.TaskId = s.TaskId " +
                 "WHERE t.VolunteerId = ? AND t.Status IN ('Completed', 'Confirmed')";
         try (java.sql.PreparedStatement ps = connection.prepareStatement(sql)) {
             ps.setInt(1, volunteerId);
             try (java.sql.ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) {
-                    totalHours = rs.getDouble(1);
+                    totalMinutes = rs.getInt(1);
                 }
             }
         } catch (Exception e) {
             e.printStackTrace();
         }
-        return Math.round(totalHours * 10.0) / 10.0; // Làm tròn 1 chữ số thập phân
+        
+        int hours = totalMinutes / 60;
+        int minutes = totalMinutes % 60;
+        String formatted = String.format(java.util.Locale.US, "%d.%02d", hours, minutes);
+        return Double.parseDouble(formatted);
+    }
+
+    public String getVolunteerName(int volunteerId) {
+        String name = "Volunteer ID " + volunteerId; // Default fallback
+        String sql = "SELECT FullName FROM UserProfiles WHERE UserId=?";
+
+        try (PreparedStatement ps = connection.prepareStatement(sql)) {
+            ps.setInt(1, volunteerId);
+            ResultSet rs = ps.executeQuery();
+            if (rs.next()) {
+                name = rs.getString("FullName");
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return name;
     }
 }
