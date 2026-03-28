@@ -160,9 +160,9 @@
                             <div class="task-desc">${t.description}</div>
                             <span class="priority-badge priority-${t.priority}">
                                 <c:choose>
-                                    <c:when test="${t.priority == 'High'}">🔴</c:when>
-                                    <c:when test="${t.priority == 'Low'}">🟢</c:when>
-                                    <c:otherwise>🟡</c:otherwise>
+                                    <c:when test="${t.priority == 'High'}">&#9679;</c:when>
+                                    <c:when test="${t.priority == 'Low'}">&#9679;</c:when>
+                                    <c:otherwise>&#9679;</c:otherwise>
                                 </c:choose>
                                 ${t.priority}
                             </span>
@@ -205,9 +205,9 @@
                             <div class="task-desc">${t.description}</div>
                             <span class="priority-badge priority-${t.priority}">
                                 <c:choose>
-                                    <c:when test="${t.priority == 'High'}">🔴</c:when>
-                                    <c:when test="${t.priority == 'Low'}">🟢</c:when>
-                                    <c:otherwise>🟡</c:otherwise>
+                                    <c:when test="${t.priority == 'High'}">&#9679;</c:when>
+                                    <c:when test="${t.priority == 'Low'}">&#9679;</c:when>
+                                    <c:otherwise>&#9679;</c:otherwise>
                                 </c:choose>
                                 ${t.priority}
                             </span>
@@ -251,9 +251,9 @@
                             <div class="task-desc" style="color:#475569;">${t.description}</div>
                             <span class="priority-badge priority-${t.priority}">
                                 <c:choose>
-                                    <c:when test="${t.priority == 'High'}">🔴</c:when>
-                                    <c:when test="${t.priority == 'Low'}">🟢</c:when>
-                                    <c:otherwise>🟡</c:otherwise>
+                                    <c:when test="${t.priority == 'High'}">&#9679;</c:when>
+                                    <c:when test="${t.priority == 'Low'}">&#9679;</c:when>
+                                    <c:otherwise>&#9679;</c:otherwise>
                                 </c:choose>
                                 ${t.priority}
                             </span>
@@ -262,6 +262,10 @@
                             <div class="task-meta-row">📅 <span>${t.workDate}</span></div>
                             <div class="task-meta-row">⏰ <span>${t.startTime} – ${t.endTime}</span></div>
                             <div class="task-meta-row">👤 <span>${t.coordinatorName}</span></div>
+                            <c:if test="${not empty t.completedAt}">
+                                <div class="task-meta-row" style="color:#059669; font-weight: 600;">✅ Finished: <fmt:formatDate value="${t.completedAt}" pattern="dd MMM, HH:mm"/></div>
+                                <div class="task-meta-row" style="color:#4f46e5; font-weight: 600;">⏳ Duration: ${t.durationText}</div>
+                            </c:if>
                         </div>
                         <c:if test="${t.status == 'Confirmed'}">
                             <div class="done-badge done-confirmed">✅ Confirmed by Coordinator</div>

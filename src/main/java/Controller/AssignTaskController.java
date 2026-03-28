@@ -1,5 +1,6 @@
 package Controller;
 
+import Context.DBContext;
 import DAO.EventDAO;
 import DAO.TaskDAO;
 import DTO.EventView;
@@ -10,6 +11,8 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.net.URLEncoder;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.time.LocalDate;
 import java.time.LocalTime;
 
@@ -29,7 +32,13 @@ public class AssignTaskController extends HttpServlet {
         int eventId = Integer.parseInt(request.getParameter("eventId"));
 
         try {
-            int volunteerId = Integer.parseInt(request.getParameter("volunteerId"));
+            String[] volunteerIdsStr = request.getParameterValues("volunteerId");
+            if (volunteerIdsStr == null || volunteerIdsStr.length == 0) {
+                String error = URLEncoder.encode("Please select at least one volunteer!", "UTF-8");
+                response.sendRedirect(request.getContextPath() + "/event/detail?id=" + eventId + "&error=" + error);
+                return;
+            }
+
             String taskDescription = request.getParameter("taskDescription");
             String priority = request.getParameter("priority");
             String workDate = request.getParameter("workDate"); // format YYYY-MM-DD
@@ -57,15 +66,25 @@ public class AssignTaskController extends HttpServlet {
             }
 
             TaskDAO taskDAO = new TaskDAO();
-            if (taskDAO.isVolunteerBusy(volunteerId, workDate, startTime, endTime)) {
-                String error = URLEncoder.encode("This volunteer already has an overlapping task!", "UTF-8");
-                response.sendRedirect(request.getContextPath() + "/event/detail?id=" + eventId + "&error=" + error);
-                return;
+            
+            // Validate all volunteers first
+            for (String vIdStr : volunteerIdsStr) {
+                int volunteerId = Integer.parseInt(vIdStr);
+                if (taskDAO.isVolunteerBusy(volunteerId, workDate, startTime, endTime)) {
+                    String busyName = taskDAO.getVolunteerName(volunteerId);
+                    String error = URLEncoder.encode(busyName + " already has an overlapping task! Please adjust schedule.", "UTF-8");
+                    response.sendRedirect(request.getContextPath() + "/event/detail?id=" + eventId + "&error=" + error);
+                    return;
+                }
             }
 
-            taskDAO.assignTaskWithSchedule(eventId, coordinatorId, volunteerId, taskDescription, workDate, startTime, endTime, priority);
+            // Assign to all if validation passed
+            for (String vIdStr : volunteerIdsStr) {
+                int volunteerId = Integer.parseInt(vIdStr);
+                taskDAO.assignTaskWithSchedule(eventId, coordinatorId, volunteerId, taskDescription, workDate, startTime, endTime, priority);
+            }
 
-            String success = URLEncoder.encode("Task assigned successfully!", "UTF-8");
+            String success = URLEncoder.encode("Task assigned successfully to " + volunteerIdsStr.length + " volunteer(s)!", "UTF-8");
             response.sendRedirect(request.getContextPath() + "/event/detail?id=" + eventId + "&success=" + success);
 
         } catch (Exception e) {

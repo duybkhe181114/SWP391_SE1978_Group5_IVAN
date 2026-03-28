@@ -15,9 +15,16 @@
 
   /* ====== DROPDOWN ĐỘC QUYỀN (TRÁNH XUNG ĐỘT BASE.CSS) ====== */
   .hd-wrapper { position: relative; }
-  .hd-btn { display: flex; align-items: center; gap: 8px; cursor: pointer; padding: 8px 16px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 30px; font-weight: 600; color: #0f172a; transition: 0.2s; user-select: none; }
-  .hd-btn:hover, .hd-btn.active { background: #f1f5f9; border-color: #cbd5e1; box-shadow: 0 2px 5px rgba(0,0,0,0.02); }
-  .hd-btn .avatar { width: 28px; height: 28px; background: #c7d2fe; color: #4f46e5; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 14px; }
+  .hd-btn { display: flex; align-items: center; gap: 10px; cursor: pointer; padding: 6px 16px 6px 6px; background: white; border: 1px solid #e2e8f0; border-radius: 30px; font-weight: 600; color: #0f172a; transition: 0.2s; user-select: none; box-shadow: 0 2px 4px rgba(0,0,0,0.02); }
+  .hd-btn:hover, .hd-btn.active { background: #f8fafc; border-color: #cbd5e1; box-shadow: 0 4px 10px rgba(0,0,0,0.05); }
+
+  .avatar-vol { width: 36px; height: 36px; border-radius: 50%; object-fit: cover; border: 2px solid #e0e7ff; background: #e0e7ff; display:flex; align-items:center; justify-content:center; }
+  .avatar-org { width: 36px; height: 36px; border-radius: 8px; object-fit: contain; border: 1px solid #e2e8f0; background: #fff; padding: 2px; display:flex; align-items:center; justify-content:center; }
+  .avatar-admin { width: 36px; height: 36px; border-radius: 8px; background: #1e293b; color:#fff; display:flex; align-items:center; justify-content:center; font-weight:800; font-size:12px; }
+  
+  .hd-user-info { display: flex; flex-direction: column; line-height: 1.2; text-align: left; }
+  .hd-user-name { font-size: 14px; font-weight: 700; color: #1e293b; max-width: 130px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .hd-user-role { font-size: 11px; font-weight: 600; color: #64748b; text-transform: uppercase; letter-spacing: 0.5px; }
 
   /* Chặn display:none của base.css bằng display:block !important */
   .hd-menu { visibility: hidden; opacity: 0; position: absolute; right: 0; top: 120%; background: white; min-width: 260px; box-shadow: 0 10px 40px rgba(0,0,0,0.15); border-radius: 16px; border: 1px solid #e2e8f0; padding: 10px 0; transition: all 0.2s ease; transform: translateY(10px); z-index: 10000; display: block !important; }
@@ -71,9 +78,36 @@
       <% String userRole = (String) session.getAttribute("userRole"); if (userRole != null) { %>
         <div class="hd-wrapper">
           <div class="hd-btn" id="headerDropBtn" onclick="toggleHeaderMenu(event)">
-            <div class="avatar">👤</div>
-            <span>${not empty sessionScope.userName ? sessionScope.userName : 'User'}</span>
-            <span style="font-size: 10px; margin-left: 2px;">▼</span>
+            <% String userAvatar = (String) session.getAttribute("userAvatar"); %>
+
+            <% if ("Admin".equals(userRole)) { %>
+               <div class="avatar-admin">ADM</div>
+            <% } else if ("Organization".equals(userRole)) { %>
+               <% if (userAvatar != null && !userAvatar.trim().isEmpty()) { %>
+                 <img src="<%= request.getContextPath() %><%= userAvatar %>" alt="Logo" class="avatar-org">
+               <% } else { %>
+                 <div class="avatar-org" style="font-size:16px;">🏢</div>
+               <% } %>
+            <% } else { %>
+               <% if (userAvatar != null && !userAvatar.trim().isEmpty()) { %>
+                 <img src="<%= request.getContextPath() %><%= userAvatar %>" alt="Avatar" class="avatar-vol">
+               <% } else { %>
+                 <div class="avatar-vol" style="font-size:16px;">👤</div>
+               <% } %>
+            <% } %>
+
+            <div class="hd-user-info">
+               <span class="hd-user-name">
+                 <% if ("Admin".equals(userRole)) { %>
+                    System Admin
+                 <% } else { %>
+                    <%= session.getAttribute("userName") != null ? session.getAttribute("userName") : "User" %>
+                 <% } %>
+               </span>
+               <span class="hd-user-role"><%= userRole != null ? userRole : "Guest" %></span>
+            </div>
+            
+            <span style="font-size: 10px; margin-left: 2px; color:#94a3b8;">▼</span>
           </div>
 
           <div class="hd-menu" id="headerDropContent">

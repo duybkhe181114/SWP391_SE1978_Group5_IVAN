@@ -144,12 +144,13 @@
 
 <div class="form-group">
 <label class="form-label">Assign To</label>
-<select name="volunteerId" required class="form-select">
-<option value="">-- Select Volunteer --</option>
+<select name="volunteerId" required class="form-select" multiple style="min-height: 120px;">
+<option value="" disabled>-- Select Volunteer(s) --</option>
 <c:forEach items="${approvedVolunteers}" var="v">
 <option value="${v.volunteerId}">${v.fullName}</option>
 </c:forEach>
 </select>
+<small style="color: #64748b; margin-top: 6px; display: block;">Hold Ctrl (Windows) or Cmd (Mac) to select multiple</small>
 </div>
 
 <div class="form-group">
@@ -266,6 +267,10 @@
 <div class="task-meta">
 <span>📅 ${t.workDate}</span>
 <span>⏰ ${t.startTime} - ${t.endTime}</span>
+<c:if test="${not empty t.completedAt}">
+    <span style="color:#10b981;font-weight:600;">✅ Finished: <fmt:formatDate value="${t.completedAt}" pattern="dd MMM, HH:mm"/></span>
+    <span style="color:#6366f1;font-weight:600;">⏳ Duration: ${t.durationText}</span>
+</c:if>
 </div>
 
 <c:if test="${t.status == 'Completed' || t.status == 'Pending'}">
@@ -275,8 +280,9 @@
 <input type="hidden" name="eventId" value="${event.eventId}">
 <input type="hidden" name="taskId" value="${t.taskId}">
 <input type="hidden" name="action" value="confirm">
-<button type="submit" class="btn-confirm">✅ Confirm Task</button>
+<button type="submit" class="btn-confirm">✅ Confirm</button>
 </form>
+<button type="button" class="btn-delete" onclick="openReassignModal('${t.taskId}', '${t.volunteerId}', '${fn:escapeXml(t.description)}', '${t.priority}', '${t.workDate}', '${t.startTime}', '${t.endTime}')">❌ Reject & Reassign</button>
 </c:if>
 <c:if test="${t.status == 'Pending'}">
 <form method="post" action="${pageContext.request.contextPath}/coordinator/task-action" style="margin:0" onsubmit="return confirm('Delete this task?')">
@@ -391,6 +397,53 @@
 </div>
 </div>
 
+<div id="reassignModal" style="display: none; position: fixed; inset: 0; background: rgba(15, 23, 42, 0.6); backdrop-filter: blur(4px); z-index: 9999; align-items: center; justify-content: center;">
+<div style="background: white; border-radius: 20px; width: 90%; max-width: 500px; padding: 30px; position: relative; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.3);">
+<button type="button" onclick="closeReassignModal()" class="modal-close">✕</button>
+<h3 style="margin-top: 0; font-size: 18px; font-weight: 800; color: #0f172a; margin-bottom: 20px;">❌ Reject & Reassign Task</h3>
+<form method="post" action="${pageContext.request.contextPath}/coordinator/task-action">
+<input type="hidden" name="eventId" value="${event.eventId}">
+<input type="hidden" name="taskId" id="reassignTaskId">
+<input type="hidden" name="action" value="reject_reassign">
+
+<div class="form-group">
+<label class="form-label">Assign To</label>
+<select name="volunteerId" id="reassignVolunteerId" required class="form-select">
+<c:forEach items="${approvedVolunteers}" var="v">
+<option value="${v.volunteerId}">${v.fullName}</option>
+</c:forEach>
+</select>
+</div>
+
+<div class="form-group">
+<label class="form-label">Task Description</label>
+<textarea name="taskDescription" id="reassignTaskDescription" required class="form-textarea"></textarea>
+</div>
+
+<div class="form-group">
+<label class="form-label">Priority Level</label>
+<select name="priority" id="reassignPriority" required class="form-select">
+<option value="Low">🟢 Low</option>
+<option value="Medium">🟡 Medium</option>
+<option value="High">🔴 High</option>
+</select>
+</div>
+
+<div class="form-group">
+<label class="form-label">Date</label>
+<input type="date" name="workDate" id="reassignWorkDate" required class="form-input">
+</div>
+
+<div class="time-row" style="margin-bottom: 20px;">
+<input type="time" name="startTime" id="reassignStartTime" required class="form-input">
+<input type="time" name="endTime" id="reassignEndTime" required class="form-input">
+</div>
+
+<button type="submit" class="btn-primary" style="background:#ef4444;">Submit Reassignment</button>
+</form>
+</div>
+</div>
+
 <script>
 function switchTab(evt,tabId){
 document.querySelectorAll('.tab-content').forEach(el=>el.classList.remove('active'))
@@ -409,6 +462,21 @@ fetch('${pageContext.request.contextPath}/volunteer/profile?id='+volunteerId)
 
 function closeProfileModal(){
 document.getElementById('profileModal').style.display='none'
+}
+
+function openReassignModal(taskId, volunteerId, description, priority, workDate, startTime, endTime) {
+    document.getElementById('reassignTaskId').value = taskId;
+    document.getElementById('reassignVolunteerId').value = volunteerId;
+    document.getElementById('reassignTaskDescription').value = description;
+    document.getElementById('reassignPriority').value = priority;
+    document.getElementById('reassignWorkDate').value = workDate;
+    document.getElementById('reassignStartTime').value = startTime;
+    document.getElementById('reassignEndTime').value = endTime;
+    document.getElementById('reassignModal').style.display = 'flex';
+}
+
+function closeReassignModal() {
+    document.getElementById('reassignModal').style.display = 'none';
 }
 
 window.onload=function(){

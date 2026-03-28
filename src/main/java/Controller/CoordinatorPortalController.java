@@ -1,6 +1,7 @@
 package Controller;
 
 import DAO.EventCoordinatorDAO;
+import DAO.TaskDAO;
 import DTO.EventView;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
@@ -34,6 +35,11 @@ public class CoordinatorPortalController extends HttpServlet {
         request.setAttribute("stats", stats);
 
         request.setAttribute("managedEvents", managedEvents);
+
+        TaskDAO taskDAO = new TaskDAO();
+        List<Map<String, Object>> pendingReviewTasks = taskDAO.getPendingReviewTasks(userId);
+        request.setAttribute("pendingReviewTasks", pendingReviewTasks);
+
         request.getRequestDispatcher("/WEB-INF/views/coordinator-portal.jsp").forward(request, response);
     }
 }
