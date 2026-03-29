@@ -23,48 +23,57 @@ public class CoordinatorConfirmTaskController extends HttpServlet {
         }
 
         int eventId = Integer.parseInt(request.getParameter("eventId"));
-        int taskId = Integer.parseInt(request.getParameter("taskId"));
+        int taskId  = Integer.parseInt(request.getParameter("taskId"));
         String action = request.getParameter("action");
+        String redirectBase = request.getContextPath() + "/event/detail?id=" + eventId;
 
         TaskDAO taskDAO = new TaskDAO();
         String msg;
 
         try {
             if ("confirm".equals(action)) {
+                // Only FLEXIBLE tasks need manual confirmation
                 boolean ok = taskDAO.confirmTask(taskId);
                 msg = ok ? URLEncoder.encode("Task confirmed!", "UTF-8")
-                         : URLEncoder.encode("Could not confirm task.", "UTF-8");
-                response.sendRedirect(request.getContextPath() + "/event/detail?id=" + eventId
-                        + (ok ? "&success=" : "&error=") + msg);
+                         : URLEncoder.encode("Could not confirm task (may already be Confirmed or is a SCHEDULED task).", "UTF-8");
+                response.sendRedirect(redirectBase + (ok ? "&success=" : "&error=") + msg);
+
             } else if ("delete".equals(action)) {
                 boolean ok = taskDAO.deleteTask(taskId, coordinatorId);
                 msg = ok ? URLEncoder.encode("Task deleted.", "UTF-8")
                          : URLEncoder.encode("Could not delete task.", "UTF-8");
-                response.sendRedirect(request.getContextPath() + "/event/detail?id=" + eventId
-                        + (ok ? "&success=" : "&error=") + msg);
+                response.sendRedirect(redirectBase + (ok ? "&success=" : "&error=") + msg);
+
             } else if ("reject_reassign".equals(action)) {
                 int newVolunteerId = Integer.parseInt(request.getParameter("volunteerId"));
                 String taskDescription = request.getParameter("taskDescription").trim();
-                
                 if (!taskDescription.startsWith("[Reassigned]")) {
                     taskDescription = "[Reassigned] " + taskDescription;
                 }
-                
+
                 String priority = request.getParameter("priority");
-                String workDate = request.getParameter("workDate");
-                String startTime = request.getParameter("startTime");
-                String endTime = request.getParameter("endTime");
-                
-                // Note: Normally we'd validate overlapping schedule here too, similar to AssignTaskController
-                // Simplified here for brevity, assuming the coordinator checks the schedule
-                
-                boolean ok = taskDAO.updateAndReassignTask(taskId, coordinatorId, newVolunteerId, taskDescription, workDate, startTime, endTime, priority);
+                String taskType = request.getParameter("taskType");   // FLEXIBLE or SCHEDULED
+                String location = request.getParameter("location");   // optional
+
+                String dueDateStr = null, startStr = null, endStr = null;
+                if ("FLEXIBLE".equals(taskType)) {
+                    String raw = request.getParameter("dueDate");
+                    if (raw != null) dueDateStr = raw.replace("T", " ") + (raw.length() == 16 ? ":00" : "");
+                } else {
+                    String sRaw = request.getParameter("startDateTime");
+                    String eRaw = request.getParameter("endDateTime");
+                    if (sRaw != null) startStr = sRaw.replace("T", " ") + (sRaw.length() == 16 ? ":00" : "");
+                    if (eRaw != null) endStr   = eRaw.replace("T", " ") + (eRaw.length() == 16 ? ":00" : "");
+                }
+
+                boolean ok = taskDAO.updateAndReassignTask(taskId, coordinatorId, newVolunteerId,
+                        taskDescription, taskType, priority, dueDateStr, startStr, endStr, location);
                 msg = ok ? URLEncoder.encode("Task rejected and successfully reassigned!", "UTF-8")
                          : URLEncoder.encode("Could not reassign task.", "UTF-8");
-                response.sendRedirect(request.getContextPath() + "/event/detail?id=" + eventId
-                        + (ok ? "&success=" : "&error=") + msg);
+                response.sendRedirect(redirectBase + (ok ? "&success=" : "&error=") + msg);
+
             } else {
-                response.sendRedirect(request.getContextPath() + "/event/detail?id=" + eventId);
+                response.sendRedirect(redirectBase);
             }
         } catch (Exception e) {
             e.printStackTrace();
