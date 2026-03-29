@@ -8,6 +8,13 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 
+/**
+ * Volunteer task status actions:
+ *  - FLEXIBLE:  action=accept  → AcceptedAt=now, Status=In Progress
+ *               action=complete → CompletedAt=now, Status=Completed (awaits coordinator)
+ *  - SCHEDULED: action=checkin  → AcceptedAt=now, Status=In Progress
+ *               action=checkout → CompletedAt=now, Status=Confirmed (auto-confirmed)
+ */
 @WebServlet(name = "UpdateTaskStatusController", urlPatterns = {"/volunteer/update-task"})
 public class UpdateTaskStatusController extends HttpServlet {
 
@@ -23,16 +30,35 @@ public class UpdateTaskStatusController extends HttpServlet {
 
         try {
             int eventId = Integer.parseInt(request.getParameter("eventId"));
-            int taskId = Integer.parseInt(request.getParameter("taskId"));
-            String action = request.getParameter("action"); // 'start' hoặc 'complete'
+            int taskId  = Integer.parseInt(request.getParameter("taskId"));
+            String action = request.getParameter("action");
+            String redirectUrl = request.getContextPath() + "/volunteer/workspace?eventId=" + eventId;
 
-            String newStatus = "start".equals(action) ? "In Progress" : "Completed";
-            String note = request.getParameter("note");
+            TaskDAO dao = new TaskDAO();
 
-            TaskDAO taskDAO = new TaskDAO();
-            taskDAO.updateTaskStatus(taskId, volunteerId, newStatus, note);
+            switch (action) {
+                case "accept":
+                    // FLEXIBLE: volunteer accepts → In Progress
+                    dao.acceptTask(taskId, volunteerId);
+                    break;
+                case "complete":
+                    // FLEXIBLE: volunteer marks complete → Completed (needs coordinator confirm)
+                    String note = request.getParameter("note");
+                    dao.completeFlexibleTask(taskId, volunteerId, note);
+                    break;
+                case "checkin":
+                    // SCHEDULED: volunteer checks in → In Progress
+                    dao.acceptTask(taskId, volunteerId);
+                    break;
+                case "checkout":
+                    // SCHEDULED: volunteer checks out → Confirmed (auto)
+                    dao.checkOutScheduledTask(taskId, volunteerId);
+                    break;
+                default:
+                    break;
+            }
 
-            response.sendRedirect(request.getContextPath() + "/volunteer/workspace?eventId=" + eventId);
+            response.sendRedirect(redirectUrl);
         } catch (Exception e) {
             e.printStackTrace();
             response.sendRedirect(request.getContextPath() + "/home");
